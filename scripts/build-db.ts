@@ -4,7 +4,7 @@
  * la red (usa la caché de Scryfall en data/scryfall-cache.json).
  */
 import { DB_PATH } from "../src/lib/db";
-import { dropDatabase, migrate, openForWrite } from "../src/lib/db/migrate";
+import { dropDatabase, journalMode, migrate, openForWrite } from "../src/lib/db/migrate";
 import { loadStoreDefinitions } from "../src/lib/ingest/registry";
 import { syncStore } from "../src/lib/ingest/run";
 import { getStats, upsertGame } from "../src/lib/db/queries";
@@ -28,6 +28,16 @@ async function main() {
     console.log(
       `  ${def.slug}: ${result.upserted} listings` +
         (result.error ? ` (error: ${result.error})` : ""),
+    );
+  }
+
+  // La app abre esta base en sólo lectura desde un filesystem inmutable, así
+  // que un artefacto en WAL sería un 500 en cada request. Que reviente aquí.
+  const mode = journalMode(db);
+  if (mode.toLowerCase() === "wal") {
+    throw new Error(
+      `data/tcgpool.db quedó en journal_mode=${mode}. Tiene que ser 'delete' ` +
+        `para poder abrirse en runtime (filesystem de sólo lectura).`,
     );
   }
 

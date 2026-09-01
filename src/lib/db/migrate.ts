@@ -10,7 +10,17 @@ import { DB_PATH, getDb } from "@/lib/db";
  */
 export function openForWrite(): Database {
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-  return getDb({ create: true });
+  const db = getDb({ create: true });
+  // `delete`, no WAL: el archivo que se publica tiene que poder abrirse desde
+  // un filesystem de sólo lectura, y una base en WAL necesita crear -wal/-shm.
+  db.pragma("journal_mode = DELETE");
+  return db;
+}
+
+/** Journal mode con el que quedó el archivo (para verificarlo tras construir). */
+export function journalMode(db: Database): string {
+  const rows = db.pragma("journal_mode") as Array<{ journal_mode: string }>;
+  return rows[0]?.journal_mode ?? "unknown";
 }
 
 /** Crea el esquema si no existe. Idempotente. */

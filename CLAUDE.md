@@ -50,6 +50,11 @@ app móvil nativa. Web responsive es suficiente.
 - **`src/lib/db/index.ts` no toca `fs`.** Next traza los accesos a disco para
   empaquetar las funciones serverless; el acceso a archivos vive en
   `src/lib/db/migrate.ts`, que sólo usan los scripts.
+- **En runtime la base se abre en SÓLO LECTURA y nunca en WAL.** El filesystem
+  de la función serverless es inmutable: abrirla en modo escritura o fijar
+  `journal_mode = WAL` tira "attempt to write a readonly database" en cada
+  request. `openForWrite` deja el archivo en `journal_mode=delete` y `db:build`
+  falla si sale en WAL.
 - **Una fuente de datos = un adaptador** en `src/lib/ingest/adapters/`, que
   devuelve `RawListing[]`. Sumar una tienda Shopify no debe requerir código.
 - **`npm run build` tiene que funcionar sin red.** `db:build` resuelve nombres

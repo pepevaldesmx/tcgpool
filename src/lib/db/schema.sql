@@ -13,7 +13,6 @@
 -- logística.
 -- ---------------------------------------------------------------------------
 
-PRAGMA journal_mode = WAL;
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS games (

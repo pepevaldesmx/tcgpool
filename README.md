@@ -62,8 +62,12 @@ producción. No hay nada que configurar en el dashboard, porque `npm run build`
 reconstruye la base y `next.config.ts` incluye `data/tcgpool.db` en el trazado
 de archivos de las funciones serverless.
 
-En runtime la base es de **sólo lectura**: actualizar el catálogo es commitear
-snapshots nuevos y redesplegar, no escribir en SQLite desde la app.
+En runtime la base es de **sólo lectura**, y se abre así: el filesystem de la
+función serverless es inmutable, de modo que abrirla en modo escritura —o
+dejarla en WAL, que exige crear `-wal`/`-shm` junto al archivo— responde 500 en
+cada request. Por eso `db:build` verifica que el artefacto salga en
+`journal_mode=delete`. Actualizar el catálogo es commitear snapshots nuevos y
+redesplegar, nunca escribir en SQLite desde la app.
 
 ### Sincronización periódica
 
