@@ -8,7 +8,12 @@
       "city": "CDMX",
       "sourceType": "shopify",
       "domainVerified": true,
-      "sourceConfig": { "domain": "mtgmexico.com", "maxPages": 20 }
+      "sourceConfig": {
+        "domain": "mtgmexico.com",
+        "maxPages": 20
+      },
+      "lat": 19.4326,
+      "lng": -99.1332
     },
     {
       "slug": "yellow-rabbit",
@@ -17,7 +22,12 @@
       "city": "Guadalajara",
       "sourceType": "shopify",
       "domainVerified": false,
-      "sourceConfig": { "domain": "yellowrabbit.com.mx", "maxPages": 20 }
+      "sourceConfig": {
+        "domain": "yellowrabbit.com.mx",
+        "maxPages": 20
+      },
+      "lat": 20.6597,
+      "lng": -103.3496
     },
     {
       "slug": "tao-games",
@@ -26,7 +36,12 @@
       "city": "Monterrey",
       "sourceType": "shopify",
       "domainVerified": false,
-      "sourceConfig": { "domain": "taogames.mx", "maxPages": 20 }
+      "sourceConfig": {
+        "domain": "taogames.mx",
+        "maxPages": 20
+      },
+      "lat": 25.6866,
+      "lng": -100.3161
     },
     {
       "slug": "mtg-wolf",
@@ -36,7 +51,10 @@
       "sourceType": "manual",
       "domainVerified": false,
       "_nota": "Corre en Wix: no expone /products.json. Se ingiere de data/snapshots/mtg-wolf.manual.json hasta que exista un scraper.",
-      "sourceConfig": {}
+      "sourceConfig": {},
+      "lat": 19.4326,
+      "lng": -99.1332
     }
-  ]
+  ],
+  "_nota_coords": "lat/lng son el centro de la ciudad, no la dirección de la tienda: sólo sirven para ordenar por cercanía."
 }

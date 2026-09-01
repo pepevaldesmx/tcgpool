@@ -76,6 +76,8 @@ export function upsertStore(
     name: string;
     url: string;
     city?: string;
+    lat?: number;
+    lng?: number;
     sourceType: string;
     sourceConfig: Record<string, unknown>;
     shipsNationwide?: boolean;
@@ -83,10 +85,11 @@ export function upsertStore(
   },
 ): number {
   db.prepare(
-    `INSERT INTO stores (slug, name, url, city, source_type, source_config, ships_nationwide, active)
-     VALUES (@slug, @name, @url, @city, @sourceType, @sourceConfig, @ships, @active)
+    `INSERT INTO stores (slug, name, url, city, lat, lng, source_type, source_config, ships_nationwide, active)
+     VALUES (@slug, @name, @url, @city, @lat, @lng, @sourceType, @sourceConfig, @ships, @active)
      ON CONFLICT(slug) DO UPDATE SET
        name = excluded.name, url = excluded.url, city = excluded.city,
+       lat = excluded.lat, lng = excluded.lng,
        source_type = excluded.source_type, source_config = excluded.source_config,
        ships_nationwide = excluded.ships_nationwide, active = excluded.active`,
   ).run({
@@ -94,6 +97,8 @@ export function upsertStore(
     name: s.name,
     url: s.url,
     city: s.city ?? null,
+    lat: s.lat ?? null,
+    lng: s.lng ?? null,
     sourceType: s.sourceType,
     sourceConfig: JSON.stringify(s.sourceConfig ?? {}),
     ships: s.shipsNationwide === false ? 0 : 1,
@@ -440,29 +445,70 @@ export interface StorePublic {
   name: string;
   url: string;
   city: string | null;
+  lat: number | null;
+  lng: number | null;
   sourceType: string;
   lastSyncedAt: string | null;
   listingCount: number;
   inStockCount: number;
   cardCount: number;
+  /** Vendedores afiliados avalados por esta tienda (fase 2; hoy siempre 0). */
+  affiliateCount: number;
 }
 
+/**
+ * Tiendas con su inventario. `inStockCount` suma TODOS los listings que despacha
+ * la tienda, así que cuando existan afiliados (fase 2) entran solos en el total
+ * sin tocar esta consulta.
+ *
+ * Orden por defecto: inventario disponible, de mayor a menor. El orden por
+ * cercanía se hace en el cliente, que es quien conoce la ubicación.
+ */
 export function listStoresPublic(): StorePublic[] {
   const db = getDb();
   return db
     .prepare(
-      `SELECT s.id, s.slug, s.name, s.url, s.city, s.source_type AS sourceType,
-              s.last_synced_at AS lastSyncedAt,
+      `SELECT s.id, s.slug, s.name, s.url, s.city, s.lat, s.lng,
+              s.source_type AS sourceType, s.last_synced_at AS lastSyncedAt,
               COUNT(l.id) AS listingCount,
               SUM(CASE WHEN l.in_stock = 1 THEN 1 ELSE 0 END) AS inStockCount,
-              COUNT(DISTINCT p.card_id) AS cardCount
+              COUNT(DISTINCT p.card_id) AS cardCount,
+              (SELECT COUNT(*) FROM sellers se
+                WHERE se.store_id = s.id AND se.type = 'affiliate' AND se.active = 1
+              ) AS affiliateCount
        FROM stores s
        LEFT JOIN listings l ON l.store_id = s.id
        LEFT JOIN printings p ON p.id = l.printing_id
+       WHERE s.active = 1
        GROUP BY s.id
-       ORDER BY s.name`,
+       ORDER BY inStockCount DESC, s.name`,
     )
     .all() as StorePublic[];
+}
+
+export interface GamePublic {
+  id: string;
+  name: string;
+  cardCount: number;
+  inStockCount: number;
+}
+
+/** Los TCG del catálogo. Los que aún no tienen fuente salen con 0. */
+export function listGames(): GamePublic[] {
+  const db = getDb();
+  return db
+    .prepare(
+      `SELECT g.id, g.name,
+              COUNT(DISTINCT c.id) AS cardCount,
+              SUM(CASE WHEN l.in_stock = 1 THEN 1 ELSE 0 END) AS inStockCount
+       FROM games g
+       LEFT JOIN cards c ON c.game_id = g.id
+       LEFT JOIN printings p ON p.card_id = c.id
+       LEFT JOIN listings l ON l.printing_id = p.id
+       GROUP BY g.id
+       ORDER BY inStockCount DESC, g.name`,
+    )
+    .all() as GamePublic[];
 }
 
 export interface Stats {
@@ -512,4 +558,53 @@ export function isSampleData(): boolean {
     .prepare(`SELECT COUNT(*) AS n FROM sync_runs WHERE source = 'live' AND status = 'ok'`)
     .get() as { n: number };
   return row.n === 0;
+}
+
+// ---------------------------------------------------------------------------
+// Búsqueda por lista (decklist)
+// ---------------------------------------------------------------------------
+
+/**
+ * Resuelve un nombre suelto a una carta del catálogo: primero exacto, luego la
+ * mejor coincidencia de FTS. Devuelve null si no hay nada razonable.
+ */
+export function findCardByName(name: string): CardSummary | null {
+  const db = getDb();
+  const matchKey = normalizeText(name);
+  if (!matchKey) return null;
+
+  const exact = db
+    .prepare(`${CARD_SUMMARY_SELECT} WHERE c.match_key = ? GROUP BY c.id`)
+    .get(matchKey) as CardSummary | undefined;
+  if (exact) return exact;
+
+  return searchCards(name, { limit: 1 })[0] ?? null;
+}
+
+export interface CardStorePrice {
+  cardId: number;
+  storeId: number;
+  storeSlug: string;
+  storeName: string;
+  storeCity: string | null;
+  priceCents: number;
+}
+
+/** Precio más barato con stock de cada carta en cada tienda. */
+export function getCheapestByCardAndStore(cardIds: number[]): CardStorePrice[] {
+  if (!cardIds.length) return [];
+  const db = getDb();
+  const placeholders = cardIds.map(() => "?").join(",");
+  return db
+    .prepare(
+      `SELECT p.card_id AS cardId, s.id AS storeId, s.slug AS storeSlug,
+              s.name AS storeName, s.city AS storeCity,
+              MIN(l.price_cents) AS priceCents
+       FROM listings l
+       JOIN printings p ON p.id = l.printing_id
+       JOIN stores s ON s.id = l.store_id
+       WHERE l.in_stock = 1 AND p.card_id IN (${placeholders})
+       GROUP BY p.card_id, s.id`,
+    )
+    .all(...cardIds) as CardStorePrice[];
 }

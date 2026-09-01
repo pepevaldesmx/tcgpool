@@ -113,3 +113,30 @@ describe("normalizeListing", () => {
     assert.equal(result?.inStock, false);
   });
 });
+
+describe("looksLikeSingle: ruido por palabra completa", () => {
+  it("no confunde una carta con un término de ruido que la contiene", () => {
+    // "counter" está en la lista de ruido por los dice counters; Counterspell
+    // es una de las cartas más comunes de Magic y se estaba descartando.
+    const cards = [
+      "Counterspell [Commander Masters]",
+      "Boxing Ring [Assassin's Creed]",
+      "Dockside Extortionist [Commander Legends]",
+    ];
+    for (const title of cards) {
+      assert.equal(looksLikeSingle({ ...base, title }), true, title);
+    }
+  });
+
+  it("sigue descartando el sellado y los accesorios", () => {
+    const noise = [
+      "Dados de vida Ultra Pro",
+      "Counters de +1/+1",
+      "Deck Box Ultra Pro",
+      "Foundations Booster Box",
+    ];
+    for (const title of noise) {
+      assert.equal(looksLikeSingle({ ...base, title }), false, title);
+    }
+  });
+});

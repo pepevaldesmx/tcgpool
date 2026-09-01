@@ -67,6 +67,10 @@ app móvil nativa. Web responsive es suficiente.
   pantallas nunca usan colores literales: cambiar de piel es reescribir ese
   bloque. Paleta actual: papel gris azulado, tinta azul marino, turquesa
   profundo como único acento, titulares con serif.
+- **Dos motores de búsqueda, no uno**: carta suelta (`/buscar`) y lista pegada
+  (`/lista`, que responde "qué tienda cubre más de tu lista"). El segundo es el
+  que las tiendas ya ofrecen sobre su propio inventario; el valor está en
+  cruzarlo entre tiendas.
 - La UI está en español mexicano; los nombres de carta se quedan en inglés
   porque así los titulan las tiendas.
 

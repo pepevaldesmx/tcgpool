@@ -34,6 +34,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   Buscar
                 </Link>
                 <Link
+                  href="/lista"
+                  className="rounded px-3 py-1.5 font-medium text-muted transition hover:bg-hover hover:text-ink"
+                >
+                  Listas
+                </Link>
+                <Link
                   href="/tiendas"
                   className="rounded px-3 py-1.5 font-medium text-muted transition hover:bg-hover hover:text-ink"
                 >

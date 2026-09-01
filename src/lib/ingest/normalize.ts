@@ -149,8 +149,11 @@ const NON_SINGLE = [
   "bundle",
   "display",
   "sobre",
+  "sobres",
   "sleeve",
+  "sleeves",
   "protector",
+  "protectores",
   "micas",
   "playmat",
   "tapete",
@@ -158,9 +161,12 @@ const NON_SINGLE = [
   "portafolio",
   "binder",
   "dado",
+  "dados",
   "dice",
   "counter",
+  "counters",
   "contador",
+  "contadores",
   "preventa",
   "gift card",
   "tarjeta de regalo",
@@ -172,11 +178,20 @@ const NON_SINGLE = [
   "precon",
 ];
 
+/**
+ * Los términos de ruido se comparan como PALABRA COMPLETA, no como subcadena.
+ * Con `includes` sencillo, "counter" (pensado para los dice counters) se comía
+ * Counterspell, y "box" se comería cualquier carta con esa sílaba.
+ */
+const NON_SINGLE_RE = new RegExp(
+  `\\b(?:${NON_SINGLE.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`,
+);
+
 export function looksLikeSingle(listing: RawListing): boolean {
   const haystack = normalizeText(
     [listing.title, listing.productType, (listing.tags ?? []).join(" ")].join(" "),
   );
-  if (NON_SINGLE.some((needle) => haystack.includes(needle))) return false;
+  if (NON_SINGLE_RE.test(haystack)) return false;
   // Un single sin nombre parseable no sirve para el buscador.
   return parseTitle(listing.title).cardName.length > 1;
 }

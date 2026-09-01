@@ -84,6 +84,8 @@ export async function syncStore(
     name: def.name,
     url: def.url,
     city: def.city,
+    lat: def.lat,
+    lng: def.lng,
     sourceType: def.sourceType,
     sourceConfig: def.sourceConfig,
     active: def.active,

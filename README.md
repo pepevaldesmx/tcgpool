@@ -82,6 +82,7 @@ src/
   app/                     Next.js (App Router)
     page.tsx               home + buscador + cartas repartidas entre tiendas
     buscar/                resultados de búsqueda
+    lista/                 pega una decklist: qué tienda cubre más y a qué costo
     carta/[slug]/          LA vista: todos los listings de una carta, con filtros
     tiendas/               tiendas conectadas y frescura de cada sync
     api/sugerencias/       autocomplete
@@ -93,6 +94,7 @@ src/
       adapters/shopify.ts  feed público /products.json
       adapters/manual.ts   tiendas sin feed (MTG Wolf corre en Wix)
       normalize.ts         título de tienda -> carta + set + idioma + foil + condición
+  decklist.ts            parser de listas pegadas (Moxfield, Archidekt, a mano)
       run.ts               orquesta: fetch -> normaliza -> resuelve -> upsert
     cards/scryfall.ts      nombre canónico + imagen
 scripts/

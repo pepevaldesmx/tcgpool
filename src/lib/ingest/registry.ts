@@ -7,6 +7,9 @@ export interface StoreDefinition {
   name: string;
   url: string;
   city?: string;
+  /** Centro de la ciudad, para ordenar por cercanía. No es la dirección. */
+  lat?: number;
+  lng?: number;
   sourceType: SourceType;
   sourceConfig: Record<string, unknown>;
   domainVerified?: boolean;

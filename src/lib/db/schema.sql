@@ -26,6 +26,10 @@ CREATE TABLE IF NOT EXISTS stores (
   name           TEXT NOT NULL,
   url            TEXT NOT NULL,
   city           TEXT,
+  -- Coordenadas APROXIMADAS (centro de la ciudad), sólo para ordenar tiendas
+  -- por cercanía. No son la dirección de la tienda.
+  lat            REAL,
+  lng            REAL,
   -- 'shopify' | 'manual' | 'wix' | ...  -> decide qué adaptador de ingesta usar
   source_type    TEXT NOT NULL,
   source_config  TEXT NOT NULL DEFAULT '{}',   -- JSON con lo específico del adaptador
