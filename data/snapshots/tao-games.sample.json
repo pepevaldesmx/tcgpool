@@ -1,0 +1,1018 @@
+{
+  "_sample": true,
+  "_nota": "Feed de MUESTRA con la forma exacta de /products.json de Shopify. Cartas, sets e imágenes son reales (Scryfall); precios, condiciones y stock son sintéticos. Reemplazar con `npm run sync -- --live`.",
+  "_generated_at": "2026-09-01T19:03:53.145Z",
+  "products": [
+    {
+      "id": 1000,
+      "title": "Sol Ring - Secrets of Strixhaven Commander",
+      "handle": "sol-ring-soc",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Secrets of Strixhaven Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900000,
+          "title": "Near Mint",
+          "price": "35.00",
+          "available": true,
+          "sku": "tao-games-soc-128-NM"
+        },
+        {
+          "id": 900001,
+          "title": "Lightly Played",
+          "price": "27.00",
+          "available": true,
+          "sku": "tao-games-soc-128-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/8/7/870ec754-a76c-40ea-9b81-81b3dca1f62c.jpg?1783903816"
+        }
+      ]
+    },
+    {
+      "id": 1001,
+      "title": "Lightning Bolt - Marvel Super Heroes Commander",
+      "handle": "lightning-bolt-msc",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900002,
+          "title": "Heavily Played",
+          "price": "7.00",
+          "available": true,
+          "sku": "tao-games-msc-806-HP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/7/6/7673784e-db4b-43a1-8d55-1bb9fc1e284f.jpg?1783903008"
+        }
+      ]
+    },
+    {
+      "id": 1002,
+      "title": "Lightning Bolt - Jumpstart",
+      "handle": "lightning-bolt-jmp",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Jumpstart",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900003,
+          "title": "Lightly Played",
+          "price": "47.00",
+          "available": true,
+          "sku": "tao-games-jmp-342-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/e/ce711943-c1a1-43a0-8b89-8d169cfb8e06.jpg?1783930384"
+        }
+      ]
+    },
+    {
+      "id": 1003,
+      "title": "Counterspell - Masters 25",
+      "handle": "counterspell-a25",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Masters 25",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900004,
+          "title": "Near Mint",
+          "price": "63.00",
+          "available": false,
+          "sku": "tao-games-a25-50-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/c/cca8eb95-d071-46a4-885c-3da25b401806.jpg?1783935182"
+        }
+      ]
+    },
+    {
+      "id": 1004,
+      "title": "Counterspell - Duskmourn: House of Horror Commander",
+      "handle": "counterspell-dsc",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Duskmourn: House of Horror Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900005,
+          "title": "Near Mint",
+          "price": "61.00",
+          "available": true,
+          "sku": "tao-games-dsc-114-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/4/f/4f616706-ec97-4923-bb1e-11a69fbaa1f8.jpg?1783909630"
+        }
+      ]
+    },
+    {
+      "id": 1005,
+      "title": "Swords to Plowshares - Edge of Eternities Commander",
+      "handle": "swords-to-plowshares-eoc",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Edge of Eternities Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900006,
+          "title": "Near Mint",
+          "price": "28.00",
+          "available": true,
+          "sku": "tao-games-eoc-45-NM"
+        },
+        {
+          "id": 900007,
+          "title": "Near Mint",
+          "price": "31.00",
+          "available": true,
+          "sku": "tao-games-eoc-45-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/0/e/0e7ff4dc-af63-4342-9a44-d059e62bd14c.jpg?1783906053"
+        }
+      ]
+    },
+    {
+      "id": 1006,
+      "title": "Swords to Plowshares - Marvel Super Heroes Commander",
+      "handle": "swords-to-plowshares-msc",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900008,
+          "title": "Near Mint Español",
+          "price": "30.00",
+          "available": false,
+          "sku": "tao-games-msc-143-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/b/4/b4e9c870-23c0-413a-ae39-265f09da16d1.jpg?1783903243"
+        }
+      ]
+    },
+    {
+      "id": 1007,
+      "title": "Swords to Plowshares - Duskmourn: House of Horror Commander",
+      "handle": "swords-to-plowshares-dsc",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Duskmourn: House of Horror Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900009,
+          "title": "Moderately Played",
+          "price": "19.00",
+          "available": true,
+          "sku": "tao-games-dsc-106-MP"
+        },
+        {
+          "id": 900010,
+          "title": "Moderately Played",
+          "price": "19.00",
+          "available": false,
+          "sku": "tao-games-dsc-106-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/b/1/b16321b6-3e28-424b-ac72-038cc4ed6458.jpg?1783909630"
+        }
+      ]
+    },
+    {
+      "id": 1008,
+      "title": "Cyclonic Rift - Ravnica Remastered",
+      "handle": "cyclonic-rift-rvr",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Ravnica Remastered",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900011,
+          "title": "Near Mint Español",
+          "price": "830.00",
+          "available": true,
+          "sku": "tao-games-rvr-40-NM"
+        },
+        {
+          "id": 900012,
+          "title": "Moderately Played",
+          "price": "492.00",
+          "available": true,
+          "sku": "tao-games-rvr-40-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/d/f/dfb7c4b9-f2f4-4d4e-baf2-86551c8150fe.jpg?1783913339"
+        }
+      ]
+    },
+    {
+      "id": 1009,
+      "title": "Arcane Signet - Marvel Super Heroes Commander - Foil",
+      "handle": "arcane-signet-msc",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900013,
+          "title": "Near Mint",
+          "price": "8.00",
+          "available": true,
+          "sku": "tao-games-msc-191-NM"
+        },
+        {
+          "id": 900014,
+          "title": "Near Mint",
+          "price": "11.00",
+          "available": false,
+          "sku": "tao-games-msc-191-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/1/c/1cad1bd2-7c56-4ce0-99a6-b2a49c1288dd.jpg?1783903222"
+        }
+      ]
+    },
+    {
+      "id": 1010,
+      "title": "Rhystic Study - Prophecy - Foil",
+      "handle": "rhystic-study-pcy",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Prophecy",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900015,
+          "title": "Near Mint",
+          "price": "7920.00",
+          "available": false,
+          "sku": "tao-games-pcy-45-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/3/3/3394cefd-a3c6-4917-8f46-234e441ecfb6.jpg?1783945789"
+        }
+      ]
+    },
+    {
+      "id": 1011,
+      "title": "Rhystic Study - Final Fantasy: Through the Ages - Foil",
+      "handle": "rhystic-study-fca",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Final Fantasy: Through the Ages",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900016,
+          "title": "Moderately Played",
+          "price": "6345.00",
+          "available": true,
+          "sku": "tao-games-fca-31-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/d/cd212de7-25f6-4b3b-a35b-df7d87fe205b.jpg?1783906385"
+        }
+      ]
+    },
+    {
+      "id": 1012,
+      "title": "Smothering Tithe - Wilds of Eldraine: Enchanting Tales",
+      "handle": "smothering-tithe-wot",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Wilds of Eldraine: Enchanting Tales",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900017,
+          "title": "Lightly Played",
+          "price": "3737.00",
+          "available": false,
+          "sku": "tao-games-wot-67-LP"
+        },
+        {
+          "id": 900018,
+          "title": "Lightly Played",
+          "price": "3127.00",
+          "available": true,
+          "sku": "tao-games-wot-67-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/5/8/58178dd4-c61e-4017-b2e6-2d8308ded4fd.jpg?1783914914"
+        }
+      ]
+    },
+    {
+      "id": 1013,
+      "title": "Smothering Tithe - Wilds of Eldraine: Enchanting Tales",
+      "handle": "smothering-tithe-wot",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Wilds of Eldraine: Enchanting Tales",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900019,
+          "title": "Near Mint Español",
+          "price": "1201.00",
+          "available": true,
+          "sku": "tao-games-wot-13-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/f/6/f6c69c2f-729b-49ed-909d-57190a728e11.jpg?1783914931"
+        }
+      ]
+    },
+    {
+      "id": 1014,
+      "title": "Thoughtseize - Breaking News",
+      "handle": "thoughtseize-otp",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Breaking News",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900020,
+          "title": "Near Mint",
+          "price": "158.00",
+          "available": true,
+          "sku": "tao-games-otp-20-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/5/e/5e85d5db-ced3-406d-90d2-e506a9332468.jpg?1783911723"
+        }
+      ]
+    },
+    {
+      "id": 1015,
+      "title": "Brainstorm - Murders at Karlov Manor Commander",
+      "handle": "brainstorm-mkc",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Murders at Karlov Manor Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900021,
+          "title": "Near Mint Español",
+          "price": "57.00",
+          "available": true,
+          "sku": "tao-games-mkc-96-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/8/4/84479779-d570-4eee-9982-f6e918b4d75b.jpg?1783913019"
+        }
+      ]
+    },
+    {
+      "id": 1016,
+      "title": "Cultivate - Marvel Super Heroes Commander",
+      "handle": "cultivate-msc",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900022,
+          "title": "Near Mint",
+          "price": "8.00",
+          "available": true,
+          "sku": "tao-games-msc-172-NM"
+        },
+        {
+          "id": 900023,
+          "title": "Lightly Played",
+          "price": "7.00",
+          "available": true,
+          "sku": "tao-games-msc-172-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/e/6/e60deb92-f7dd-4f4e-9036-e47dd586f985.jpg?1783903229"
+        }
+      ]
+    },
+    {
+      "id": 1017,
+      "title": "Beast Within - Edge of Eternities Commander",
+      "handle": "beast-within-eoc",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Edge of Eternities Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900024,
+          "title": "Heavily Played",
+          "price": "8.00",
+          "available": true,
+          "sku": "tao-games-eoc-93-HP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/c/ccac70d4-6e04-4802-8bb8-021368a40e14.jpg?1783906036"
+        }
+      ]
+    },
+    {
+      "id": 1018,
+      "title": "Anguished Unmaking - Shadows over Innistrad",
+      "handle": "anguished-unmaking-soi",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Shadows over Innistrad",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900025,
+          "title": "Lightly Played",
+          "price": "39.00",
+          "available": false,
+          "sku": "tao-games-soi-242-LP"
+        },
+        {
+          "id": 900026,
+          "title": "Near Mint Español",
+          "price": "46.00",
+          "available": true,
+          "sku": "tao-games-soi-242-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/9/0/90ced4fa-6509-4f7a-9da7-efc70de6f90c.jpg?1783937714"
+        }
+      ]
+    },
+    {
+      "id": 1019,
+      "title": "Dockside Extortionist - Avatar: The Last Airbender Eternal",
+      "handle": "dockside-extortionist-tle",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Avatar: The Last Airbender Eternal",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900027,
+          "title": "Lightly Played Español",
+          "price": "109.00",
+          "available": true,
+          "sku": "tao-games-tle-28-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/7/c75ee954-9a94-4be2-965d-58979a560827.jpg?1783904852"
+        }
+      ]
+    },
+    {
+      "id": 1020,
+      "title": "Aura Shards - Commander 2011",
+      "handle": "aura-shards-cmd",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Commander 2011",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900028,
+          "title": "Near Mint",
+          "price": "477.00",
+          "available": true,
+          "sku": "tao-games-cmd-182-NM"
+        },
+        {
+          "id": 900029,
+          "title": "Lightly Played",
+          "price": "473.00",
+          "available": true,
+          "sku": "tao-games-cmd-182-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/a/6/a6222cc6-996e-4b73-af87-e837bf1eb921.jpg?1783941186"
+        }
+      ]
+    },
+    {
+      "id": 1021,
+      "title": "Esper Sentinel - Modern Horizons 2",
+      "handle": "esper-sentinel-mh2",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Modern Horizons 2",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900030,
+          "title": "Near Mint",
+          "price": "1292.00",
+          "available": true,
+          "sku": "tao-games-mh2-328-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/6/7/676758ee-dac8-4c97-8a62-fff25bcbb6df.jpg?1783926764"
+        }
+      ]
+    },
+    {
+      "id": 1022,
+      "title": "Wrath of God - Commander Masters",
+      "handle": "wrath-of-god-cmm",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Commander Masters",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900031,
+          "title": "Near Mint Español",
+          "price": "74.00",
+          "available": true,
+          "sku": "tao-games-cmm-70-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/5/3/537d2b05-3f52-45d6-8fe3-26282085d0c6.jpg?1783915706"
+        }
+      ]
+    },
+    {
+      "id": 1023,
+      "title": "Ponder - Duskmourn: House of Horror Commander",
+      "handle": "ponder-dsc",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Duskmourn: House of Horror Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900032,
+          "title": "Near Mint",
+          "price": "78.00",
+          "available": true,
+          "sku": "tao-games-dsc-73-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/8/c/8cbab1d1-25cb-456f-8d1c-3d64eb7265ea.jpg?1783909642"
+        }
+      ]
+    },
+    {
+      "id": 1024,
+      "title": "Preordain - Duel Decks: Venser vs. Koth",
+      "handle": "preordain-ddi",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Duel Decks: Venser vs. Koth",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900033,
+          "title": "Near Mint",
+          "price": "18.00",
+          "available": true,
+          "sku": "tao-games-ddi-24-NM"
+        },
+        {
+          "id": 900034,
+          "title": "Near Mint",
+          "price": "16.00",
+          "available": true,
+          "sku": "tao-games-ddi-24-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/3/2/32f90bd2-6d5c-444d-a1f6-653997f3a8a6.jpg?1783940777"
+        }
+      ]
+    },
+    {
+      "id": 1025,
+      "title": "Chromatic Lantern - Teenage Mutant Ninja Turtles Eternal - Foil",
+      "handle": "chromatic-lantern-tmc",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Teenage Mutant Ninja Turtles Eternal",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900035,
+          "title": "Moderately Played",
+          "price": "16.00",
+          "available": true,
+          "sku": "tao-games-tmc-58-MP"
+        },
+        {
+          "id": 900036,
+          "title": "Lightly Played",
+          "price": "20.00",
+          "available": true,
+          "sku": "tao-games-tmc-58-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/6/8/68625010-3e4e-4400-b503-bf381a7fd81b.jpg?1783904155"
+        }
+      ]
+    },
+    {
+      "id": 1026,
+      "title": "Sensei's Divining Top - Double Masters 2022",
+      "handle": "sensei-s-divining-top-2x2",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Double Masters 2022",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900037,
+          "title": "Heavily Played Español",
+          "price": "374.00",
+          "available": true,
+          "sku": "tao-games-2x2-314-HP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/e/5/e5142b7a-e580-4737-a4aa-2590f6610ceb.jpg?1783921788"
+        }
+      ]
+    },
+    {
+      "id": 1027,
+      "title": "Doubling Season - Double Masters",
+      "handle": "doubling-season-2xm",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Double Masters",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900038,
+          "title": "Lightly Played",
+          "price": "629.00",
+          "available": true,
+          "sku": "tao-games-2xm-164-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/8/6/8676d164-c76e-402b-a649-6ded3f549b6e.jpg?1783930148"
+        }
+      ]
+    },
+    {
+      "id": 1028,
+      "title": "Demonic Tutor - Unlimited Edition",
+      "handle": "demonic-tutor-2ed",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Unlimited Edition",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900039,
+          "title": "Near Mint",
+          "price": "3682.00",
+          "available": true,
+          "sku": "tao-games-2ed-105-NM"
+        },
+        {
+          "id": 900040,
+          "title": "Near Mint",
+          "price": "3471.00",
+          "available": true,
+          "sku": "tao-games-2ed-105-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/8/c8d5d6a5-6807-4a80-9460-7633dc430ee9.jpg?1783948567"
+        }
+      ]
+    },
+    {
+      "id": 1029,
+      "title": "Sylvan Library - Commander Collection: Green - Foil",
+      "handle": "sylvan-library-cc1",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Commander Collection: Green",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900041,
+          "title": "Near Mint",
+          "price": "580.00",
+          "available": true,
+          "sku": "tao-games-cc1-5-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/7/a/7a483778-b88b-473f-9217-7583e69b3e70.jpg?1783928560"
+        }
+      ]
+    },
+    {
+      "id": 1030,
+      "title": "Phyrexian Arena - Foundations",
+      "handle": "phyrexian-arena-fdn",
+      "vendor": "Tao Games",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Foundations",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900042,
+          "title": "Near Mint",
+          "price": "114.00",
+          "available": true,
+          "sku": "tao-games-fdn-180-NM"
+        },
+        {
+          "id": 900043,
+          "title": "Near Mint Español",
+          "price": "77.00",
+          "available": true,
+          "sku": "tao-games-fdn-180-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/0/7/0784b6f0-9ebf-43d2-ba0f-a6bc93ba0c48.jpg?1783909072"
+        }
+      ]
+    },
+    {
+      "id": 1031,
+      "title": "Foundations Play Booster Box",
+      "handle": "foundations-play-booster-box",
+      "vendor": "Tao Games",
+      "product_type": "Sellado",
+      "tags": [
+        "Sellado"
+      ],
+      "variants": [
+        {
+          "id": 900044,
+          "title": "Default Title",
+          "price": "1743.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1032,
+      "title": "Bloomburrow Bundle",
+      "handle": "bloomburrow-bundle",
+      "vendor": "Tao Games",
+      "product_type": "Sellado",
+      "tags": [
+        "Sellado"
+      ],
+      "variants": [
+        {
+          "id": 900045,
+          "title": "Default Title",
+          "price": "4193.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1033,
+      "title": "Micas Dragon Shield Matte Negro (100)",
+      "handle": "micas-dragon-shield-matte-negro-100-",
+      "vendor": "Tao Games",
+      "product_type": "Accesorios",
+      "tags": [
+        "Accesorios"
+      ],
+      "variants": [
+        {
+          "id": 900046,
+          "title": "Default Title",
+          "price": "3799.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1034,
+      "title": "Playmat MTG México",
+      "handle": "playmat-mtg-m-xico",
+      "vendor": "Tao Games",
+      "product_type": "Accesorios",
+      "tags": [
+        "Accesorios"
+      ],
+      "variants": [
+        {
+          "id": 900047,
+          "title": "Default Title",
+          "price": "4338.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1035,
+      "title": "Deck Box Ultra Pro Satin Tower",
+      "handle": "deck-box-ultra-pro-satin-tower",
+      "vendor": "Tao Games",
+      "product_type": "Accesorios",
+      "tags": [
+        "Accesorios"
+      ],
+      "variants": [
+        {
+          "id": 900048,
+          "title": "Default Title",
+          "price": "2665.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1036,
+      "title": "Commander Deck: Eldrazi Unbound",
+      "handle": "commander-deck-eldrazi-unbound",
+      "vendor": "Tao Games",
+      "product_type": "Sellado",
+      "tags": [
+        "Sellado"
+      ],
+      "variants": [
+        {
+          "id": 900049,
+          "title": "Default Title",
+          "price": "3760.00",
+          "available": true
+        }
+      ],
+      "images": []
+    }
+  ]
+}

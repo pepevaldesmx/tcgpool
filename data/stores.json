@@ -1,0 +1,42 @@
+{
+  "_nota": "Registro de tiendas. `domainVerified: false` = el dominio se tomó del brief o se dedujo y NO se ha podido confirmar desde este entorno (la política de red de la sesión bloquea el egress a estos hosts). Confírmalo antes de correr `npm run sync -- --live`.",
+  "stores": [
+    {
+      "slug": "mtg-mexico",
+      "name": "MTG México",
+      "url": "https://mtgmexico.com",
+      "city": "CDMX",
+      "sourceType": "shopify",
+      "domainVerified": true,
+      "sourceConfig": { "domain": "mtgmexico.com", "maxPages": 20 }
+    },
+    {
+      "slug": "yellow-rabbit",
+      "name": "Yellow Rabbit",
+      "url": "https://yellowrabbit.com.mx",
+      "city": "Guadalajara",
+      "sourceType": "shopify",
+      "domainVerified": false,
+      "sourceConfig": { "domain": "yellowrabbit.com.mx", "maxPages": 20 }
+    },
+    {
+      "slug": "tao-games",
+      "name": "Tao Games",
+      "url": "https://taogames.mx",
+      "city": "Monterrey",
+      "sourceType": "shopify",
+      "domainVerified": false,
+      "sourceConfig": { "domain": "taogames.mx", "maxPages": 20 }
+    },
+    {
+      "slug": "mtg-wolf",
+      "name": "MTG Wolf",
+      "url": "https://mtgwolf.com",
+      "city": "CDMX",
+      "sourceType": "manual",
+      "domainVerified": false,
+      "_nota": "Corre en Wix: no expone /products.json. Se ingiere de data/snapshots/mtg-wolf.manual.json hasta que exista un scraper.",
+      "sourceConfig": {}
+    }
+  ]
+}

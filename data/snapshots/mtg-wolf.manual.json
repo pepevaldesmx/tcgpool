@@ -1,0 +1,319 @@
+{
+  "_sample": true,
+  "_nota": "MTG Wolf corre en Wix y no expone un feed público equivalente a /products.json. Estos listings son de MUESTRA, capturados en el shape que espera el adaptador manual.",
+  "_generated_at": "2026-09-01T19:03:53.146Z",
+  "listings": [
+    {
+      "externalId": "wolf-5000",
+      "title": "Sol Ring [Marvel Super Heroes Commander]",
+      "variantTitle": "LP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 27,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/sol-ring",
+      "imageUrl": "https://cards.scryfall.io/normal/front/a/7/a739dd30-1fce-49db-99fb-15e346f4f2db.jpg?1783903212"
+    },
+    {
+      "externalId": "wolf-5001",
+      "title": "Lightning Bolt [Ravnica: Clue Edition]",
+      "variantTitle": "HP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 27,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/lightning-bolt",
+      "imageUrl": "https://cards.scryfall.io/normal/front/7/7/77c6fa74-5543-42ac-9ead-0e890b188e99.jpg?1783912538"
+    },
+    {
+      "externalId": "wolf-5002",
+      "title": "Counterspell [Commander Legends]",
+      "variantTitle": "LP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 47,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/counterspell",
+      "imageUrl": "https://cards.scryfall.io/normal/front/c/e/ce30f926-bc06-46ee-9f35-0cdf09a67043.jpg?1783928722"
+    },
+    {
+      "externalId": "wolf-5003",
+      "title": "Swords to Plowshares [Marvel Super Heroes Commander]",
+      "variantTitle": "LP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 33,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/swords-to-plowshares",
+      "imageUrl": "https://cards.scryfall.io/normal/front/b/4/b4e9c870-23c0-413a-ae39-265f09da16d1.jpg?1783903243"
+    },
+    {
+      "externalId": "wolf-5004",
+      "title": "Cyclonic Rift [Commander Masters]",
+      "variantTitle": "LP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 573,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/cyclonic-rift",
+      "imageUrl": "https://cards.scryfall.io/normal/front/c/7/c77ebe57-ea56-4300-b293-6260c4c01a43.jpg?1783915703"
+    },
+    {
+      "externalId": "wolf-5005",
+      "title": "Arcane Signet [Marvel Super Heroes Commander]",
+      "variantTitle": "LP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 8,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/arcane-signet",
+      "imageUrl": "https://cards.scryfall.io/normal/front/e/c/ec924d56-d1d9-4226-9e73-cfcc5ab4f708.jpg?1783903223"
+    },
+    {
+      "externalId": "wolf-5006",
+      "title": "Rhystic Study [Jumpstart]",
+      "variantTitle": "HP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 966,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/rhystic-study",
+      "imageUrl": "https://cards.scryfall.io/normal/front/d/6/d6914dba-0d27-4055-ac34-b3ebf5802221.jpg?1783930449"
+    },
+    {
+      "externalId": "wolf-5007",
+      "title": "Smothering Tithe [Wilds of Eldraine: Enchanting Tales]",
+      "variantTitle": "MP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 869,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/smothering-tithe",
+      "imageUrl": "https://cards.scryfall.io/normal/front/f/6/f6c69c2f-729b-49ed-909d-57190a728e11.jpg?1783914931"
+    },
+    {
+      "externalId": "wolf-5008",
+      "title": "Birds of Paradise [Marvel Super Heroes Commander]",
+      "variantTitle": "NM / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 220,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/birds-of-paradise",
+      "imageUrl": "https://cards.scryfall.io/normal/front/4/9/492c2f9a-51e7-4e0f-9899-23bf43ea988b.jpg?1783903230"
+    },
+    {
+      "externalId": "wolf-5009",
+      "title": "Path to Exile [Lorwyn Eclipsed Commander]",
+      "variantTitle": "LP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 34,
+      "available": false,
+      "productUrl": "https://mtgwolf.com/product-page/path-to-exile",
+      "imageUrl": "https://cards.scryfall.io/normal/front/3/5/35649ef0-b2fd-429f-be5f-766d5cea5994.jpg?1783904565"
+    },
+    {
+      "externalId": "wolf-5010",
+      "title": "Thoughtseize [Double Masters]",
+      "variantTitle": "HP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 125,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/thoughtseize",
+      "imageUrl": "https://cards.scryfall.io/normal/front/b/2/b281a308-ab6b-47b6-bec7-632c9aaecede.jpg?1783930173"
+    },
+    {
+      "externalId": "wolf-5011",
+      "title": "Fatal Push [Secret Lair Drop]",
+      "variantTitle": "LP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 62,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/fatal-push",
+      "imageUrl": "https://cards.scryfall.io/normal/front/3/a/3a51438f-d3fc-4e55-9866-fe2d19eadb54.jpg?1783905566"
+    },
+    {
+      "externalId": "wolf-5012",
+      "title": "Anguished Unmaking [Secret Lair Drop]",
+      "variantTitle": "LP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 178,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/anguished-unmaking",
+      "imageUrl": "https://cards.scryfall.io/normal/front/3/8/387ccdf8-b3f4-4b38-af53-b979886b8ff1.jpg?1783905087"
+    },
+    {
+      "externalId": "wolf-5013",
+      "title": "Teferi's Protection [Secret Lair Drop]",
+      "variantTitle": "NM / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 1090,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/teferi-s-protection",
+      "imageUrl": "https://cards.scryfall.io/normal/front/b/7/b7210c3a-bbd3-4f3a-933b-a5618a4f7a52.jpg?1783912449"
+    },
+    {
+      "externalId": "wolf-5014",
+      "title": "Dockside Extortionist [Commander 2019]",
+      "variantTitle": "NM / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 214,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/dockside-extortionist",
+      "imageUrl": "https://cards.scryfall.io/normal/front/5/7/571bc9eb-8d13-4008-86b5-2e348a326d58.jpg?1783932806"
+    },
+    {
+      "externalId": "wolf-5015",
+      "title": "Heroic Intervention [Marvel Universe]",
+      "variantTitle": "LP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 177,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/heroic-intervention",
+      "imageUrl": "https://cards.scryfall.io/normal/front/a/5/a51d8579-a99c-417b-ba71-7f2204ebea2a.jpg?1783903310"
+    },
+    {
+      "externalId": "wolf-5016",
+      "title": "Blasphemous Act [Edge of Eternities Commander]",
+      "variantTitle": "MP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 14,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/blasphemous-act",
+      "imageUrl": "https://cards.scryfall.io/normal/front/f/b/fbeeb7d0-cda8-414b-82d3-a83f1883bdd2.jpg?1783906038"
+    },
+    {
+      "externalId": "wolf-5017",
+      "title": "Aura Shards [The List]",
+      "variantTitle": "HP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 266,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/aura-shards",
+      "imageUrl": "https://cards.scryfall.io/normal/front/e/e/ee38a29d-20a4-48bb-8116-b62fe9342b84.jpg?1783926572"
+    },
+    {
+      "externalId": "wolf-5018",
+      "title": "Ponder [Duskmourn: House of Horror Commander]",
+      "variantTitle": "LP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 84,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/ponder",
+      "imageUrl": "https://cards.scryfall.io/normal/front/8/c/8cbab1d1-25cb-456f-8d1c-3d64eb7265ea.jpg?1783909642"
+    },
+    {
+      "externalId": "wolf-5019",
+      "title": "Chromatic Lantern [Outlaws of Thunder Junction Commander]",
+      "variantTitle": "NM / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 34,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/chromatic-lantern",
+      "imageUrl": "https://cards.scryfall.io/normal/front/8/f/8f6448b1-ffc7-43f0-b713-881016ce9485.jpg?1783911890"
+    },
+    {
+      "externalId": "wolf-5020",
+      "title": "Vampiric Tutor [Dominaria Remastered]",
+      "variantTitle": "MP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 765,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/vampiric-tutor",
+      "imageUrl": "https://cards.scryfall.io/normal/front/7/7/77ad722a-d6f3-483e-bd13-e0923cc8a265.jpg?1787730554"
+    },
+    {
+      "externalId": "wolf-5021",
+      "title": "Demonic Tutor [Unlimited Edition]",
+      "variantTitle": "NM / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 3263,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/demonic-tutor",
+      "imageUrl": "https://cards.scryfall.io/normal/front/c/8/c8d5d6a5-6807-4a80-9460-7633dc430ee9.jpg?1783948567"
+    },
+    {
+      "externalId": "wolf-5022",
+      "title": "Phyrexian Arena [Commander Collection: Black]",
+      "variantTitle": "LP / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 132,
+      "available": true,
+      "productUrl": "https://mtgwolf.com/product-page/phyrexian-arena",
+      "imageUrl": "https://cards.scryfall.io/normal/front/b/4/b4142d3b-9c17-4a26-949e-3fc3e600fd1c.jpg?1783924136"
+    },
+    {
+      "externalId": "wolf-5023",
+      "title": "Deflecting Swat [Commander Masters]",
+      "variantTitle": "NM / Inglés",
+      "productType": "Singles",
+      "tags": [
+        "Magic"
+      ],
+      "priceMxn": 2855,
+      "available": false,
+      "productUrl": "https://mtgwolf.com/product-page/deflecting-swat",
+      "imageUrl": "https://cards.scryfall.io/normal/front/4/5/45e70109-0352-45fc-a2fd-892ca65cac2f.jpg?1783915492"
+    }
+  ]
+}

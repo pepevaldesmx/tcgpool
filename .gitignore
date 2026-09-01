@@ -1,0 +1,21 @@
+node_modules/
+.next/
+out/
+build/
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+.env
+.env*.local
+.vercel
+
+# Base de datos generada (se reconstruye con `npm run db:build`)
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/*.db-journal
+
+# Caché de búsquedas de Scryfall: pesa varios MB y sólo la usan los scripts que
+# generan datos de muestra. La caché de nombres (data/scryfall-cache.json) SÍ va
+# versionada: `npm run build` la necesita para resolver sin red.
+data/scryfall-search-cache.json

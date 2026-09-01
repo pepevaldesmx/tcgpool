@@ -1,0 +1,1327 @@
+{
+  "_sample": true,
+  "_nota": "Feed de MUESTRA con la forma exacta de /products.json de Shopify. Cartas, sets e imágenes son reales (Scryfall); precios, condiciones y stock son sintéticos. Reemplazar con `npm run sync -- --live`.",
+  "_generated_at": "2026-09-01T19:03:53.143Z",
+  "products": [
+    {
+      "id": 1000,
+      "title": "Sol Ring (Foil) [Marvel Super Heroes Commander]",
+      "handle": "sol-ring-msc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900000,
+          "title": "Near Mint",
+          "price": "31.00",
+          "available": true,
+          "sku": "mtg-mexico-msc-214-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/a/7/a739dd30-1fce-49db-99fb-15e346f4f2db.jpg?1783903212"
+        }
+      ]
+    },
+    {
+      "id": 1001,
+      "title": "Sol Ring [Teenage Mutant Ninja Turtles Eternal]",
+      "handle": "sol-ring-tmc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Teenage Mutant Ninja Turtles Eternal",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900001,
+          "title": "Near Mint",
+          "price": "48.00",
+          "available": true,
+          "sku": "mtg-mexico-tmc-59-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/1/4/14dbce79-1fcc-4cc9-bf38-7729e44a411e.jpg?1783904155"
+        }
+      ]
+    },
+    {
+      "id": 1002,
+      "title": "Lightning Bolt [Commander Legends: Battle for Baldur's Gate]",
+      "handle": "lightning-bolt-clb",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Commander Legends: Battle for Baldur's Gate",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900002,
+          "title": "Near Mint",
+          "price": "56.00",
+          "available": true,
+          "sku": "mtg-mexico-clb-187-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/a/e/ae5f9fb1-5a55-4db3-98a1-2628e3598c18.jpg?1783922736"
+        }
+      ]
+    },
+    {
+      "id": 1003,
+      "title": "Lightning Bolt [Ravnica: Clue Edition]",
+      "handle": "lightning-bolt-clu",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Ravnica: Clue Edition",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900003,
+          "title": "Lightly Played",
+          "price": "40.00",
+          "available": true,
+          "sku": "mtg-mexico-clu-141-LP"
+        },
+        {
+          "id": 900004,
+          "title": "Moderately Played",
+          "price": "38.00",
+          "available": false,
+          "sku": "mtg-mexico-clu-141-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/7/7/77c6fa74-5543-42ac-9ead-0e890b188e99.jpg?1783912538"
+        }
+      ]
+    },
+    {
+      "id": 1004,
+      "title": "Counterspell (Foil) [Dominaria Remastered]",
+      "handle": "counterspell-dmr",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Dominaria Remastered",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900005,
+          "title": "Near Mint",
+          "price": "70.00",
+          "available": true,
+          "sku": "mtg-mexico-dmr-45-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/0/2/02da8709-4228-4fed-9d2d-781e686661df.jpg?1783918498"
+        }
+      ]
+    },
+    {
+      "id": 1005,
+      "title": "Counterspell [Commander Legends]",
+      "handle": "counterspell-cmr",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Commander Legends",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900006,
+          "title": "Heavily Played",
+          "price": "35.00",
+          "available": true,
+          "sku": "mtg-mexico-cmr-395-HP"
+        },
+        {
+          "id": 900007,
+          "title": "Near Mint",
+          "price": "53.00",
+          "available": true,
+          "sku": "mtg-mexico-cmr-395-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/e/ce30f926-bc06-46ee-9f35-0cdf09a67043.jpg?1783928722"
+        }
+      ]
+    },
+    {
+      "id": 1006,
+      "title": "Counterspell [Duskmourn: House of Horror Commander]",
+      "handle": "counterspell-dsc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Duskmourn: House of Horror Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900008,
+          "title": "Near Mint",
+          "price": "71.00",
+          "available": true,
+          "sku": "mtg-mexico-dsc-114-NM"
+        },
+        {
+          "id": 900009,
+          "title": "Lightly Played",
+          "price": "58.00",
+          "available": true,
+          "sku": "mtg-mexico-dsc-114-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/4/f/4f616706-ec97-4923-bb1e-11a69fbaa1f8.jpg?1783909630"
+        }
+      ]
+    },
+    {
+      "id": 1007,
+      "title": "Swords to Plowshares [Marvel Super Heroes Commander]",
+      "handle": "swords-to-plowshares-msc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900010,
+          "title": "Moderately Played",
+          "price": "17.00",
+          "available": true,
+          "sku": "mtg-mexico-msc-143-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/b/4/b4e9c870-23c0-413a-ae39-265f09da16d1.jpg?1783903243"
+        }
+      ]
+    },
+    {
+      "id": 1008,
+      "title": "Swords to Plowshares [Secrets of Strixhaven Commander]",
+      "handle": "swords-to-plowshares-soc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Secrets of Strixhaven Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900011,
+          "title": "Near Mint",
+          "price": "31.00",
+          "available": true,
+          "sku": "mtg-mexico-soc-179-NM"
+        },
+        {
+          "id": 900012,
+          "title": "Lightly Played",
+          "price": "24.00",
+          "available": true,
+          "sku": "mtg-mexico-soc-179-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/6/8/68ec2aed-7662-48ae-ab25-04f74ece1e41.jpg?1783903796"
+        }
+      ]
+    },
+    {
+      "id": 1009,
+      "title": "Cyclonic Rift [Commander 2014]",
+      "handle": "cyclonic-rift-c14",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Commander 2014",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900013,
+          "title": "Near Mint",
+          "price": "798.00",
+          "available": true,
+          "sku": "mtg-mexico-c14-104-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/1/f/1fadf1e3-4f4f-4f58-b8a9-11e14bb550f8.jpg?1783938851"
+        }
+      ]
+    },
+    {
+      "id": 1010,
+      "title": "Arcane Signet [Marvel Super Heroes Commander]",
+      "handle": "arcane-signet-msc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900014,
+          "title": "Moderately Played",
+          "price": "6.00",
+          "available": true,
+          "sku": "mtg-mexico-msc-194-MP"
+        },
+        {
+          "id": 900015,
+          "title": "Moderately Played",
+          "price": "7.00",
+          "available": true,
+          "sku": "mtg-mexico-msc-194-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/e/c/ec924d56-d1d9-4226-9e73-cfcc5ab4f708.jpg?1783903223"
+        }
+      ]
+    },
+    {
+      "id": 1011,
+      "title": "Arcane Signet [Marvel Super Heroes Commander]",
+      "handle": "arcane-signet-msc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900016,
+          "title": "Near Mint",
+          "price": "9.00",
+          "available": true,
+          "sku": "mtg-mexico-msc-191-NM"
+        },
+        {
+          "id": 900017,
+          "title": "Near Mint",
+          "price": "12.00",
+          "available": true,
+          "sku": "mtg-mexico-msc-191-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/1/c/1cad1bd2-7c56-4ce0-99a6-b2a49c1288dd.jpg?1783903222"
+        }
+      ]
+    },
+    {
+      "id": 1012,
+      "title": "Rhystic Study [Wilds of Eldraine: Enchanting Tales]",
+      "handle": "rhystic-study-wot",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Wilds of Eldraine: Enchanting Tales",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900018,
+          "title": "Near Mint",
+          "price": "3811.00",
+          "available": true,
+          "sku": "mtg-mexico-wot-71-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/e/6/e6a06aad-6073-465b-89d0-8c4ae4307aff.jpg?1783914913"
+        }
+      ]
+    },
+    {
+      "id": 1013,
+      "title": "Rhystic Study (Foil) [Prophecy]",
+      "handle": "rhystic-study-pcy",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Prophecy",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900019,
+          "title": "Near Mint",
+          "price": "9930.00",
+          "available": true,
+          "sku": "mtg-mexico-pcy-45-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/3/3/3394cefd-a3c6-4917-8f46-234e441ecfb6.jpg?1783945789"
+        }
+      ]
+    },
+    {
+      "id": 1014,
+      "title": "Smothering Tithe [Wilds of Eldraine: Enchanting Tales]",
+      "handle": "smothering-tithe-wot",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Wilds of Eldraine: Enchanting Tales",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900020,
+          "title": "Near Mint",
+          "price": "4417.00",
+          "available": true,
+          "sku": "mtg-mexico-wot-67-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/5/8/58178dd4-c61e-4017-b2e6-2d8308ded4fd.jpg?1783914914"
+        }
+      ]
+    },
+    {
+      "id": 1015,
+      "title": "Path to Exile [Murders at Karlov Manor Commander]",
+      "handle": "path-to-exile-mkc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Murders at Karlov Manor Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900021,
+          "title": "Near Mint",
+          "price": "33.00",
+          "available": true,
+          "sku": "mtg-mexico-mkc-78-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/0/8/08c59dfa-361d-4ff1-a15d-6b0cb66571a3.jpg?1783913027"
+        }
+      ]
+    },
+    {
+      "id": 1016,
+      "title": "Thoughtseize [Theros]",
+      "handle": "thoughtseize-ths",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Theros",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900022,
+          "title": "Lightly Played",
+          "price": "140.00",
+          "available": true,
+          "sku": "mtg-mexico-ths-107-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/6/5/65b7275a-5305-42e6-b5c3-8b88568b4e28.jpg?1783939770"
+        }
+      ]
+    },
+    {
+      "id": 1017,
+      "title": "Fatal Push [Aether Revolt]",
+      "handle": "fatal-push-aer",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Aether Revolt",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900023,
+          "title": "Lightly Played",
+          "price": "14.00",
+          "available": true,
+          "sku": "mtg-mexico-aer-57-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/b/5/b5e81649-9954-424c-89d1-f87d73b66047.jpg?1783936764"
+        }
+      ]
+    },
+    {
+      "id": 1018,
+      "title": "Brainstorm [Double Masters]",
+      "handle": "brainstorm-2xm",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Double Masters",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900024,
+          "title": "Near Mint",
+          "price": "58.00",
+          "available": true,
+          "sku": "mtg-mexico-2xm-44-NM"
+        },
+        {
+          "id": 900025,
+          "title": "Lightly Played",
+          "price": "45.00",
+          "available": true,
+          "sku": "mtg-mexico-2xm-44-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/b/a/baeb0421-b7af-44cd-a7f6-7daaa3dcaa38.jpg?1783930204"
+        }
+      ]
+    },
+    {
+      "id": 1019,
+      "title": "Cultivate [Marvel Super Heroes Commander]",
+      "handle": "cultivate-msc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900026,
+          "title": "Near Mint",
+          "price": "7.00",
+          "available": true,
+          "sku": "mtg-mexico-msc-172-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/e/6/e60deb92-f7dd-4f4e-9036-e47dd586f985.jpg?1783903229"
+        }
+      ]
+    },
+    {
+      "id": 1020,
+      "title": "Beast Within [Edge of Eternities Commander]",
+      "handle": "beast-within-eoc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Edge of Eternities Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900027,
+          "title": "Moderately Played",
+          "price": "11.00",
+          "available": true,
+          "sku": "mtg-mexico-eoc-93-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/c/ccac70d4-6e04-4802-8bb8-021368a40e14.jpg?1783906036"
+        }
+      ]
+    },
+    {
+      "id": 1021,
+      "title": "Anguished Unmaking (Foil) [Shadows over Innistrad]",
+      "handle": "anguished-unmaking-soi",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Shadows over Innistrad",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900028,
+          "title": "Near Mint",
+          "price": "106.00",
+          "available": true,
+          "sku": "mtg-mexico-soi-242-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/9/0/90ced4fa-6509-4f7a-9da7-efc70de6f90c.jpg?1783937714"
+        }
+      ]
+    },
+    {
+      "id": 1022,
+      "title": "Teferi's Protection [Avatar: The Last Airbender Eternal]",
+      "handle": "teferi-s-protection-tle",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Avatar: The Last Airbender Eternal",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900029,
+          "title": "Near Mint",
+          "price": "833.00",
+          "available": false,
+          "sku": "mtg-mexico-tle-7-NM"
+        },
+        {
+          "id": 900030,
+          "title": "Lightly Played",
+          "price": "787.00",
+          "available": true,
+          "sku": "mtg-mexico-tle-7-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/a/a/aac6ecc6-e5d7-40a3-b689-f4ed2d5c78cf.jpg?1783904860"
+        }
+      ]
+    },
+    {
+      "id": 1023,
+      "title": "Mana Crypt (Foil) [Special Guests]",
+      "handle": "mana-crypt-spg",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Special Guests",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900031,
+          "title": "Near Mint",
+          "price": "1826.00",
+          "available": false,
+          "sku": "mtg-mexico-spg-17-NM"
+        },
+        {
+          "id": 900032,
+          "title": "Near Mint",
+          "price": "1800.00",
+          "available": true,
+          "sku": "mtg-mexico-spg-17-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/e/c/ecb293d5-b13b-400f-ac7b-162a1e127ec7.jpg?1783913618"
+        }
+      ]
+    },
+    {
+      "id": 1024,
+      "title": "Craterhoof Behemoth [Jumpstart]",
+      "handle": "craterhoof-behemoth-jmp",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Jumpstart",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900033,
+          "title": "Heavily Played",
+          "price": "242.00",
+          "available": true,
+          "sku": "mtg-mexico-jmp-385-HP"
+        },
+        {
+          "id": 900034,
+          "title": "Near Mint",
+          "price": "441.00",
+          "available": true,
+          "sku": "mtg-mexico-jmp-385-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/4/4/44afd414-cc69-4888-ba12-7ea87e60b1f7.jpg?1783930369"
+        }
+      ]
+    },
+    {
+      "id": 1025,
+      "title": "Heroic Intervention [Core Set 2021]",
+      "handle": "heroic-intervention-m21",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Core Set 2021",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900035,
+          "title": "Near Mint",
+          "price": "333.00",
+          "available": true,
+          "sku": "mtg-mexico-m21-188-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/4/3/43c037e3-7d1a-48ca-8ecc-276696592f62.jpg?1783930674"
+        }
+      ]
+    },
+    {
+      "id": 1026,
+      "title": "Blasphemous Act [Tarkir: Dragonstorm Commander]",
+      "handle": "blasphemous-act-tdc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Tarkir: Dragonstorm Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900036,
+          "title": "Lightly Played",
+          "price": "22.00",
+          "available": true,
+          "sku": "mtg-mexico-tdc-207-LP"
+        },
+        {
+          "id": 900037,
+          "title": "Near Mint",
+          "price": "23.00",
+          "available": true,
+          "sku": "mtg-mexico-tdc-207-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/2/c/2c971698-c0e4-4b68-808f-a3d1a73d80e4.jpg?1783907075"
+        }
+      ]
+    },
+    {
+      "id": 1027,
+      "title": "Toxic Deluge [Murders at Karlov Manor Commander]",
+      "handle": "toxic-deluge-mkc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Murders at Karlov Manor Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900038,
+          "title": "Near Mint",
+          "price": "122.00",
+          "available": false,
+          "sku": "mtg-mexico-mkc-142-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/6/4/64d3d8ad-927f-4c4e-96cf-03e98bec3987.jpg?1783913001"
+        }
+      ]
+    },
+    {
+      "id": 1028,
+      "title": "Solemn Simulacrum [Murders at Karlov Manor Commander]",
+      "handle": "solemn-simulacrum-mkc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Murders at Karlov Manor Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900039,
+          "title": "Near Mint",
+          "price": "6.00",
+          "available": true,
+          "sku": "mtg-mexico-mkc-238-NM"
+        },
+        {
+          "id": 900040,
+          "title": "Near Mint",
+          "price": "7.00",
+          "available": true,
+          "sku": "mtg-mexico-mkc-238-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/a/3/a3879b81-aa4c-4d35-bed2-78ebb4a50b59.jpg?1783912972"
+        }
+      ]
+    },
+    {
+      "id": 1029,
+      "title": "Esper Sentinel [The List]",
+      "handle": "esper-sentinel-plst",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "The List",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900041,
+          "title": "Near Mint",
+          "price": "1540.00",
+          "available": true,
+          "sku": "mtg-mexico-plst-MH2-12-NM"
+        },
+        {
+          "id": 900042,
+          "title": "Lightly Played",
+          "price": "1101.00",
+          "available": true,
+          "sku": "mtg-mexico-plst-MH2-12-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/9/4/9415defa-ea35-454e-993b-3afd5776b7db.jpg?1783913651"
+        }
+      ]
+    },
+    {
+      "id": 1030,
+      "title": "Wrath of God [Commander Masters]",
+      "handle": "wrath-of-god-cmm",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Commander Masters",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900043,
+          "title": "Lightly Played",
+          "price": "76.00",
+          "available": true,
+          "sku": "mtg-mexico-cmm-70-LP"
+        },
+        {
+          "id": 900044,
+          "title": "Moderately Played",
+          "price": "66.00",
+          "available": true,
+          "sku": "mtg-mexico-cmm-70-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/5/3/537d2b05-3f52-45d6-8fe3-26282085d0c6.jpg?1783915706"
+        }
+      ]
+    },
+    {
+      "id": 1031,
+      "title": "Ponder [Tarkir: Dragonstorm Commander]",
+      "handle": "ponder-tdc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Tarkir: Dragonstorm Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900045,
+          "title": "Moderately Played",
+          "price": "61.00",
+          "available": true,
+          "sku": "mtg-mexico-tdc-159-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/d/c/dc69f960-68ba-4315-8146-6a7a82047503.jpg?1783907102"
+        }
+      ]
+    },
+    {
+      "id": 1032,
+      "title": "Preordain [Commander 2015]",
+      "handle": "preordain-c15",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Commander 2015",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900046,
+          "title": "Lightly Played",
+          "price": "11.00",
+          "available": true,
+          "sku": "mtg-mexico-c15-101-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/7/8/78d22ece-0cb1-4faf-a871-995449c1a41f.jpg?1783938091"
+        }
+      ]
+    },
+    {
+      "id": 1033,
+      "title": "Chromatic Lantern [Marvel Super Heroes Commander]",
+      "handle": "chromatic-lantern-msc",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900047,
+          "title": "Near Mint",
+          "price": "22.00",
+          "available": true,
+          "sku": "mtg-mexico-msc-195-NM"
+        },
+        {
+          "id": 900048,
+          "title": "Near Mint",
+          "price": "26.00",
+          "available": true,
+          "sku": "mtg-mexico-msc-195-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/6/9/693da13a-49af-4f7e-b247-36b454fb31a0.jpg?1783903221"
+        }
+      ]
+    },
+    {
+      "id": 1034,
+      "title": "Sensei's Divining Top [Mystery Booster 2]",
+      "handle": "sensei-s-divining-top-mb2",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Mystery Booster 2",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900049,
+          "title": "Heavily Played",
+          "price": "422.00",
+          "available": true,
+          "sku": "mtg-mexico-mb2-231-HP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/f/4/f421a21a-763f-479b-bcc3-2abae29098d7.jpg?1783910550"
+        }
+      ]
+    },
+    {
+      "id": 1035,
+      "title": "Doubling Season [Ravnica: City of Guilds]",
+      "handle": "doubling-season-rav",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Ravnica: City of Guilds",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900050,
+          "title": "Near Mint",
+          "price": "974.00",
+          "available": true,
+          "sku": "mtg-mexico-rav-158-NM"
+        },
+        {
+          "id": 900051,
+          "title": "Near Mint",
+          "price": "884.00",
+          "available": true,
+          "sku": "mtg-mexico-rav-158-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/7/c7e71299-98f6-494e-b187-8d22ce5f50af.jpg?1783943641"
+        }
+      ]
+    },
+    {
+      "id": 1036,
+      "title": "Vampiric Tutor [Visions]",
+      "handle": "vampiric-tutor-vis",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Visions",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900052,
+          "title": "Moderately Played",
+          "price": "1032.00",
+          "available": true,
+          "sku": "mtg-mexico-vis-72-MP"
+        },
+        {
+          "id": 900053,
+          "title": "Moderately Played",
+          "price": "1039.00",
+          "available": true,
+          "sku": "mtg-mexico-vis-72-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/0/a/0a07cba3-2e8d-48ec-a6f8-4d2edfcd833d.jpg?1783946991"
+        }
+      ]
+    },
+    {
+      "id": 1037,
+      "title": "Demonic Tutor [Unlimited Edition]",
+      "handle": "demonic-tutor-2ed",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Unlimited Edition",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900054,
+          "title": "Near Mint",
+          "price": "3305.00",
+          "available": true,
+          "sku": "mtg-mexico-2ed-105-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/8/c8d5d6a5-6807-4a80-9460-7633dc430ee9.jpg?1783948567"
+        }
+      ]
+    },
+    {
+      "id": 1038,
+      "title": "Sylvan Library [Legends]",
+      "handle": "sylvan-library-leg",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Legends",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900055,
+          "title": "Near Mint",
+          "price": "4271.00",
+          "available": true,
+          "sku": "mtg-mexico-leg-207-NM"
+        },
+        {
+          "id": 900056,
+          "title": "Heavily Played",
+          "price": "2640.00",
+          "available": true,
+          "sku": "mtg-mexico-leg-207-HP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/f/4/f486df00-7c4a-4ff0-bb0b-c8b5432ac742.jpg?1783948043"
+        }
+      ]
+    },
+    {
+      "id": 1039,
+      "title": "Phyrexian Arena [Foundations]",
+      "handle": "phyrexian-arena-fdn",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Foundations",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900057,
+          "title": "Near Mint",
+          "price": "107.00",
+          "available": false,
+          "sku": "mtg-mexico-fdn-180-NM"
+        },
+        {
+          "id": 900058,
+          "title": "Heavily Played",
+          "price": "52.00",
+          "available": true,
+          "sku": "mtg-mexico-fdn-180-HP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/0/7/0784b6f0-9ebf-43d2-ba0f-a6bc93ba0c48.jpg?1783909072"
+        }
+      ]
+    },
+    {
+      "id": 1040,
+      "title": "Deflecting Swat [Avatar: The Last Airbender Eternal]",
+      "handle": "deflecting-swat-tle",
+      "vendor": "MTG México",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Avatar: The Last Airbender Eternal",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900059,
+          "title": "Moderately Played",
+          "price": "1148.00",
+          "available": true,
+          "sku": "mtg-mexico-tle-311-MP"
+        },
+        {
+          "id": 900060,
+          "title": "Moderately Played",
+          "price": "1265.00",
+          "available": true,
+          "sku": "mtg-mexico-tle-311-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/2/c2cb5a93-d2f9-4df6-9488-c57b6f18ae2b.jpg?1783904752"
+        }
+      ]
+    },
+    {
+      "id": 1041,
+      "title": "Foundations Play Booster Box",
+      "handle": "foundations-play-booster-box",
+      "vendor": "MTG México",
+      "product_type": "Sellado",
+      "tags": [
+        "Sellado"
+      ],
+      "variants": [
+        {
+          "id": 900061,
+          "title": "Default Title",
+          "price": "3432.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1042,
+      "title": "Bloomburrow Bundle",
+      "handle": "bloomburrow-bundle",
+      "vendor": "MTG México",
+      "product_type": "Sellado",
+      "tags": [
+        "Sellado"
+      ],
+      "variants": [
+        {
+          "id": 900062,
+          "title": "Default Title",
+          "price": "2861.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1043,
+      "title": "Micas Dragon Shield Matte Negro (100)",
+      "handle": "micas-dragon-shield-matte-negro-100-",
+      "vendor": "MTG México",
+      "product_type": "Accesorios",
+      "tags": [
+        "Accesorios"
+      ],
+      "variants": [
+        {
+          "id": 900063,
+          "title": "Default Title",
+          "price": "3624.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1044,
+      "title": "Playmat MTG México",
+      "handle": "playmat-mtg-m-xico",
+      "vendor": "MTG México",
+      "product_type": "Accesorios",
+      "tags": [
+        "Accesorios"
+      ],
+      "variants": [
+        {
+          "id": 900064,
+          "title": "Default Title",
+          "price": "893.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1045,
+      "title": "Deck Box Ultra Pro Satin Tower",
+      "handle": "deck-box-ultra-pro-satin-tower",
+      "vendor": "MTG México",
+      "product_type": "Accesorios",
+      "tags": [
+        "Accesorios"
+      ],
+      "variants": [
+        {
+          "id": 900065,
+          "title": "Default Title",
+          "price": "3889.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1046,
+      "title": "Commander Deck: Eldrazi Unbound",
+      "handle": "commander-deck-eldrazi-unbound",
+      "vendor": "MTG México",
+      "product_type": "Sellado",
+      "tags": [
+        "Sellado"
+      ],
+      "variants": [
+        {
+          "id": 900066,
+          "title": "Default Title",
+          "price": "1847.00",
+          "available": true
+        }
+      ],
+      "images": []
+    }
+  ]
+}

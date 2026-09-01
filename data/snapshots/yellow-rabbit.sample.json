@@ -1,0 +1,1334 @@
+{
+  "_sample": true,
+  "_nota": "Feed de MUESTRA con la forma exacta de /products.json de Shopify. Cartas, sets e imágenes son reales (Scryfall); precios, condiciones y stock son sintéticos. Reemplazar con `npm run sync -- --live`.",
+  "_generated_at": "2026-09-01T19:03:53.144Z",
+  "products": [
+    {
+      "id": 1000,
+      "title": "Sol Ring (Marvel Super Heroes Commander)",
+      "handle": "sol-ring-msc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900000,
+          "title": "NM - English",
+          "price": "39.00",
+          "available": true,
+          "sku": "yellow-rabbit-msc-214-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/a/7/a739dd30-1fce-49db-99fb-15e346f4f2db.jpg?1783903212"
+        }
+      ]
+    },
+    {
+      "id": 1001,
+      "title": "Lightning Bolt (Ravnica: Clue Edition)",
+      "handle": "lightning-bolt-clu",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Ravnica: Clue Edition",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900001,
+          "title": "MP - English",
+          "price": "34.00",
+          "available": true,
+          "sku": "yellow-rabbit-clu-141-MP"
+        },
+        {
+          "id": 900002,
+          "title": "NM - English",
+          "price": "59.00",
+          "available": true,
+          "sku": "yellow-rabbit-clu-141-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/7/7/77c6fa74-5543-42ac-9ead-0e890b188e99.jpg?1783912538"
+        }
+      ]
+    },
+    {
+      "id": 1002,
+      "title": "Lightning Bolt (Marvel Super Heroes Commander)",
+      "handle": "lightning-bolt-msc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900003,
+          "title": "NM - English Foil",
+          "price": "123.00",
+          "available": true,
+          "sku": "yellow-rabbit-msc-806-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/7/6/7673784e-db4b-43a1-8d55-1bb9fc1e284f.jpg?1783903008"
+        }
+      ]
+    },
+    {
+      "id": 1003,
+      "title": "Counterspell (Commander Legends)",
+      "handle": "counterspell-cmr",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Commander Legends",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900004,
+          "title": "MP - English",
+          "price": "40.00",
+          "available": false,
+          "sku": "yellow-rabbit-cmr-395-MP"
+        },
+        {
+          "id": 900005,
+          "title": "LP - English",
+          "price": "60.00",
+          "available": true,
+          "sku": "yellow-rabbit-cmr-395-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/e/ce30f926-bc06-46ee-9f35-0cdf09a67043.jpg?1783928722"
+        }
+      ]
+    },
+    {
+      "id": 1004,
+      "title": "Counterspell (Dominaria Remastered)",
+      "handle": "counterspell-dmr",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Dominaria Remastered",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900006,
+          "title": "LP - English",
+          "price": "81.00",
+          "available": true,
+          "sku": "yellow-rabbit-dmr-45-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/0/2/02da8709-4228-4fed-9d2d-781e686661df.jpg?1783918498"
+        }
+      ]
+    },
+    {
+      "id": 1005,
+      "title": "Counterspell (Commander Masters)",
+      "handle": "counterspell-cmm",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Commander Masters",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900007,
+          "title": "NM - English",
+          "price": "70.00",
+          "available": true,
+          "sku": "yellow-rabbit-cmm-81-NM"
+        },
+        {
+          "id": 900008,
+          "title": "NM - English",
+          "price": "66.00",
+          "available": true,
+          "sku": "yellow-rabbit-cmm-81-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/8/4/8493131c-0a7b-4be6-a8a2-0b425f4f67fb.jpg?1783915703"
+        }
+      ]
+    },
+    {
+      "id": 1006,
+      "title": "Swords to Plowshares (Marvel Super Heroes Commander)",
+      "handle": "swords-to-plowshares-msc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900009,
+          "title": "LP - English Foil",
+          "price": "26.00",
+          "available": true,
+          "sku": "yellow-rabbit-msc-143-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/b/4/b4e9c870-23c0-413a-ae39-265f09da16d1.jpg?1783903243"
+        }
+      ]
+    },
+    {
+      "id": 1007,
+      "title": "Swords to Plowshares (Secrets of Strixhaven Commander)",
+      "handle": "swords-to-plowshares-soc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Secrets of Strixhaven Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900010,
+          "title": "MP - English",
+          "price": "24.00",
+          "available": true,
+          "sku": "yellow-rabbit-soc-179-MP"
+        },
+        {
+          "id": 900011,
+          "title": "MP - English",
+          "price": "27.00",
+          "available": true,
+          "sku": "yellow-rabbit-soc-179-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/6/8/68ec2aed-7662-48ae-ab25-04f74ece1e41.jpg?1783903796"
+        }
+      ]
+    },
+    {
+      "id": 1008,
+      "title": "Swords to Plowshares (Duskmourn: House of Horror Commander)",
+      "handle": "swords-to-plowshares-dsc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Duskmourn: House of Horror Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900012,
+          "title": "MP - English",
+          "price": "21.00",
+          "available": true,
+          "sku": "yellow-rabbit-dsc-106-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/b/1/b16321b6-3e28-424b-ac72-038cc4ed6458.jpg?1783909630"
+        }
+      ]
+    },
+    {
+      "id": 1009,
+      "title": "Cyclonic Rift (Return to Ravnica)",
+      "handle": "cyclonic-rift-rtr",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Return to Ravnica",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900013,
+          "title": "LP - Español",
+          "price": "541.00",
+          "available": true,
+          "sku": "yellow-rabbit-rtr-35-LP"
+        },
+        {
+          "id": 900014,
+          "title": "NM - English",
+          "price": "756.00",
+          "available": true,
+          "sku": "yellow-rabbit-rtr-35-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/2/0/205c4689-8b02-4d40-9274-3c1fcafa8b82.jpg?1783940370"
+        }
+      ]
+    },
+    {
+      "id": 1010,
+      "title": "Cyclonic Rift (Double Masters)",
+      "handle": "cyclonic-rift-2xm",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Double Masters",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900015,
+          "title": "NM - Español",
+          "price": "590.00",
+          "available": true,
+          "sku": "yellow-rabbit-2xm-47-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/f/f/ff08e5ed-f47b-4d8e-8b8b-41675dccef8b.jpg?1783930200"
+        }
+      ]
+    },
+    {
+      "id": 1011,
+      "title": "Cyclonic Rift (Commander Masters)",
+      "handle": "cyclonic-rift-cmm",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Commander Masters",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900016,
+          "title": "LP - Español",
+          "price": "685.00",
+          "available": true,
+          "sku": "yellow-rabbit-cmm-84-LP"
+        },
+        {
+          "id": 900017,
+          "title": "NM - English",
+          "price": "892.00",
+          "available": true,
+          "sku": "yellow-rabbit-cmm-84-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/7/c77ebe57-ea56-4300-b293-6260c4c01a43.jpg?1783915703"
+        }
+      ]
+    },
+    {
+      "id": 1012,
+      "title": "Arcane Signet (Marvel Super Heroes Commander)",
+      "handle": "arcane-signet-msc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900018,
+          "title": "NM - English",
+          "price": "13.00",
+          "available": true,
+          "sku": "yellow-rabbit-msc-191-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/1/c/1cad1bd2-7c56-4ce0-99a6-b2a49c1288dd.jpg?1783903222"
+        }
+      ]
+    },
+    {
+      "id": 1013,
+      "title": "Arcane Signet (Marvel Super Heroes Commander)",
+      "handle": "arcane-signet-msc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900019,
+          "title": "NM - Español",
+          "price": "9.00",
+          "available": true,
+          "sku": "yellow-rabbit-msc-194-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/e/c/ec924d56-d1d9-4226-9e73-cfcc5ab4f708.jpg?1783903223"
+        }
+      ]
+    },
+    {
+      "id": 1014,
+      "title": "Arcane Signet (Marvel Super Heroes Commander)",
+      "handle": "arcane-signet-msc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900020,
+          "title": "MP - English",
+          "price": "7.00",
+          "available": true,
+          "sku": "yellow-rabbit-msc-192-MP"
+        },
+        {
+          "id": 900021,
+          "title": "LP - English",
+          "price": "9.00",
+          "available": true,
+          "sku": "yellow-rabbit-msc-192-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/1/b/1bbc3ce9-f3df-41b4-b238-37319546c595.jpg?1783903222"
+        }
+      ]
+    },
+    {
+      "id": 1015,
+      "title": "Rhystic Study (Jumpstart 2022)",
+      "handle": "rhystic-study-j22",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Jumpstart 2022",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900022,
+          "title": "NM - English",
+          "price": "2034.00",
+          "available": true,
+          "sku": "yellow-rabbit-j22-114-NM"
+        },
+        {
+          "id": 900023,
+          "title": "LP - English",
+          "price": "1362.00",
+          "available": true,
+          "sku": "yellow-rabbit-j22-114-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/9/f/9f37c5b6-a59c-45cd-9a99-e9357fe9ea1b.jpg?1783919146"
+        }
+      ]
+    },
+    {
+      "id": 1016,
+      "title": "Rhystic Study (Final Fantasy: Through the Ages)",
+      "handle": "rhystic-study-fca",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Final Fantasy: Through the Ages",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900024,
+          "title": "NM - English",
+          "price": "2291.00",
+          "available": true,
+          "sku": "yellow-rabbit-fca-31-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/d/cd212de7-25f6-4b3b-a35b-df7d87fe205b.jpg?1783906385"
+        }
+      ]
+    },
+    {
+      "id": 1017,
+      "title": "Rhystic Study (Prophecy)",
+      "handle": "rhystic-study-pcy",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Prophecy",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900025,
+          "title": "MP - English",
+          "price": "1072.00",
+          "available": true,
+          "sku": "yellow-rabbit-pcy-45-MP"
+        },
+        {
+          "id": 900026,
+          "title": "LP - English",
+          "price": "1229.00",
+          "available": true,
+          "sku": "yellow-rabbit-pcy-45-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/3/3/3394cefd-a3c6-4917-8f46-234e441ecfb6.jpg?1783945789"
+        }
+      ]
+    },
+    {
+      "id": 1018,
+      "title": "Smothering Tithe (Wilds of Eldraine: Enchanting Tales)",
+      "handle": "smothering-tithe-wot",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Wilds of Eldraine: Enchanting Tales",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900027,
+          "title": "MP - English",
+          "price": "977.00",
+          "available": true,
+          "sku": "yellow-rabbit-wot-13-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/f/6/f6c69c2f-729b-49ed-909d-57190a728e11.jpg?1783914931"
+        }
+      ]
+    },
+    {
+      "id": 1019,
+      "title": "Smothering Tithe (Commander Masters)",
+      "handle": "smothering-tithe-cmm",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Commander Masters",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900028,
+          "title": "MP - English",
+          "price": "883.00",
+          "available": true,
+          "sku": "yellow-rabbit-cmm-57-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/8/6/861b5889-0183-4bee-afeb-a4b2aa700a8e.jpg?1783915712"
+        }
+      ]
+    },
+    {
+      "id": 1020,
+      "title": "Smothering Tithe (Double Masters 2022)",
+      "handle": "smothering-tithe-2x2",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Double Masters 2022",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900029,
+          "title": "LP - Español Foil",
+          "price": "935.00",
+          "available": true,
+          "sku": "yellow-rabbit-2x2-31-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/f/2/f25a4bbe-2af0-4d4a-95d4-d52c5937c747.jpg?1783921927"
+        }
+      ]
+    },
+    {
+      "id": 1021,
+      "title": "Path to Exile (Marvel Super Heroes Commander)",
+      "handle": "path-to-exile-msc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Super Heroes Commander",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900030,
+          "title": "NM - English Foil",
+          "price": "37.00",
+          "available": false,
+          "sku": "yellow-rabbit-msc-141-NM"
+        },
+        {
+          "id": 900031,
+          "title": "HP - English Foil",
+          "price": "19.00",
+          "available": true,
+          "sku": "yellow-rabbit-msc-141-HP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/9/5/95ca89ea-1200-4bb4-ae4b-af35d3ccd35b.jpg?1783903242"
+        }
+      ]
+    },
+    {
+      "id": 1022,
+      "title": "Thoughtseize (Iconic Masters)",
+      "handle": "thoughtseize-ima",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Iconic Masters",
+        "Foil"
+      ],
+      "variants": [
+        {
+          "id": 900032,
+          "title": "NM - English Foil",
+          "price": "344.00",
+          "available": true,
+          "sku": "yellow-rabbit-ima-110-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/3/1/310a1c46-8331-4a09-9fcb-d942f8102364.jpg?1783935534"
+        }
+      ]
+    },
+    {
+      "id": 1023,
+      "title": "Fatal Push (Secret Lair Drop)",
+      "handle": "fatal-push-sld",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Secret Lair Drop",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900033,
+          "title": "MP - English",
+          "price": "57.00",
+          "available": false,
+          "sku": "yellow-rabbit-sld-7017-MP"
+        },
+        {
+          "id": 900034,
+          "title": "HP - English",
+          "price": "45.00",
+          "available": true,
+          "sku": "yellow-rabbit-sld-7017-HP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/3/a/3a51438f-d3fc-4e55-9866-fe2d19eadb54.jpg?1783905566"
+        }
+      ]
+    },
+    {
+      "id": 1024,
+      "title": "Brainstorm (Forgotten Realms Commander)",
+      "handle": "brainstorm-afc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Forgotten Realms Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900035,
+          "title": "MP - English",
+          "price": "35.00",
+          "available": true,
+          "sku": "yellow-rabbit-afc-79-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/4/8/48070245-1370-4cf1-be15-d4e8a8b92ba8.jpg?1783926225"
+        }
+      ]
+    },
+    {
+      "id": 1025,
+      "title": "Cultivate (Edge of Eternities Commander)",
+      "handle": "cultivate-eoc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Edge of Eternities Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900036,
+          "title": "LP - English",
+          "price": "8.00",
+          "available": true,
+          "sku": "yellow-rabbit-eoc-95-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/7/e/7ee610ee-7711-4a6b-b441-d6c73e6ef2b4.jpg?1783906035"
+        }
+      ]
+    },
+    {
+      "id": 1026,
+      "title": "Beast Within (Duskmourn: House of Horror Commander)",
+      "handle": "beast-within-dsc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Duskmourn: House of Horror Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900037,
+          "title": "LP - English",
+          "price": "14.00",
+          "available": true,
+          "sku": "yellow-rabbit-dsc-80-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/1/5/15d24a9b-05a0-4759-80eb-22743ed5c228.jpg?1783909639"
+        }
+      ]
+    },
+    {
+      "id": 1027,
+      "title": "Anguished Unmaking (Secret Lair Drop)",
+      "handle": "anguished-unmaking-sld",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Secret Lair Drop",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900038,
+          "title": "NM - English",
+          "price": "163.00",
+          "available": true,
+          "sku": "yellow-rabbit-sld-2298-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/3/8/387ccdf8-b3f4-4b38-af53-b979886b8ff1.jpg?1783905087"
+        }
+      ]
+    },
+    {
+      "id": 1028,
+      "title": "Mana Crypt (Special Guests)",
+      "handle": "mana-crypt-spg",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Special Guests",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900039,
+          "title": "HP - English",
+          "price": "674.00",
+          "available": true,
+          "sku": "yellow-rabbit-spg-17-HP"
+        },
+        {
+          "id": 900040,
+          "title": "LP - Español",
+          "price": "785.00",
+          "available": true,
+          "sku": "yellow-rabbit-spg-17-LP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/e/c/ecb293d5-b13b-400f-ac7b-162a1e127ec7.jpg?1783913618"
+        }
+      ]
+    },
+    {
+      "id": 1029,
+      "title": "Craterhoof Behemoth (Avacyn Restored)",
+      "handle": "craterhoof-behemoth-avr",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Avacyn Restored",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900041,
+          "title": "NM - English",
+          "price": "547.00",
+          "available": true,
+          "sku": "yellow-rabbit-avr-172-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/a/2/a249be17-73ed-4108-89c0-f7e87939beb8.jpg?1783940670"
+        }
+      ]
+    },
+    {
+      "id": 1030,
+      "title": "Heroic Intervention (Marvel Universe)",
+      "handle": "heroic-intervention-mar",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Marvel Universe",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900042,
+          "title": "NM - Español",
+          "price": "209.00",
+          "available": true,
+          "sku": "yellow-rabbit-mar-78-NM"
+        },
+        {
+          "id": 900043,
+          "title": "NM - Español",
+          "price": "194.00",
+          "available": true,
+          "sku": "yellow-rabbit-mar-78-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/1/2/12edbdcc-085f-48c8-9605-3c7e3fe63bc7.jpg?1783903312"
+        }
+      ]
+    },
+    {
+      "id": 1031,
+      "title": "Blasphemous Act (Edge of Eternities Commander)",
+      "handle": "blasphemous-act-eoc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Edge of Eternities Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900044,
+          "title": "NM - English",
+          "price": "21.00",
+          "available": false,
+          "sku": "yellow-rabbit-eoc-86-NM"
+        },
+        {
+          "id": 900045,
+          "title": "NM - Español",
+          "price": "17.00",
+          "available": true,
+          "sku": "yellow-rabbit-eoc-86-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/f/b/fbeeb7d0-cda8-414b-82d3-a83f1883bdd2.jpg?1783906038"
+        }
+      ]
+    },
+    {
+      "id": 1032,
+      "title": "Eternal Witness (Midnight Hunt Commander)",
+      "handle": "eternal-witness-mic",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Midnight Hunt Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900046,
+          "title": "NM - English",
+          "price": "63.00",
+          "available": true,
+          "sku": "yellow-rabbit-mic-138-NM"
+        },
+        {
+          "id": 900047,
+          "title": "NM - English",
+          "price": "53.00",
+          "available": true,
+          "sku": "yellow-rabbit-mic-138-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/d/9/d925cb2d-30d5-4bb5-907e-0f8fb65fcab4.jpg?1783925330"
+        }
+      ]
+    },
+    {
+      "id": 1033,
+      "title": "Solemn Simulacrum (Foundations)",
+      "handle": "solemn-simulacrum-fdn",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Foundations",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900048,
+          "title": "MP - Español",
+          "price": "6.00",
+          "available": true,
+          "sku": "yellow-rabbit-fdn-257-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/5/3/5383f45e-3da2-40fb-beee-801448bbb60f.jpg?1783909048"
+        }
+      ]
+    },
+    {
+      "id": 1034,
+      "title": "Ponder (Outlaws of Thunder Junction Commander)",
+      "handle": "ponder-otc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Outlaws of Thunder Junction Commander",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900049,
+          "title": "NM - English",
+          "price": "91.00",
+          "available": true,
+          "sku": "yellow-rabbit-otc-105-NM"
+        },
+        {
+          "id": 900050,
+          "title": "NM - English",
+          "price": "91.00",
+          "available": true,
+          "sku": "yellow-rabbit-otc-105-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/5/a/5af43ceb-56d2-47d4-ab43-853338ab293c.jpg?1783911940"
+        }
+      ]
+    },
+    {
+      "id": 1035,
+      "title": "Preordain (Commander 2015)",
+      "handle": "preordain-c15",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Commander 2015",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900051,
+          "title": "HP - English",
+          "price": "8.00",
+          "available": true,
+          "sku": "yellow-rabbit-c15-101-HP"
+        },
+        {
+          "id": 900052,
+          "title": "HP - Español",
+          "price": "7.00",
+          "available": true,
+          "sku": "yellow-rabbit-c15-101-HP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/7/8/78d22ece-0cb1-4faf-a871-995449c1a41f.jpg?1783938091"
+        }
+      ]
+    },
+    {
+      "id": 1036,
+      "title": "Sensei's Divining Top (Eternal Masters)",
+      "handle": "sensei-s-divining-top-ema",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Eternal Masters",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900053,
+          "title": "NM - English",
+          "price": "920.00",
+          "available": true,
+          "sku": "yellow-rabbit-ema-232-NM"
+        },
+        {
+          "id": 900054,
+          "title": "NM - English",
+          "price": "1167.00",
+          "available": true,
+          "sku": "yellow-rabbit-ema-232-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/8/3/83c01c91-ea01-46c7-b94c-97777b968459.jpg?1783937541"
+        }
+      ]
+    },
+    {
+      "id": 1037,
+      "title": "Doubling Season (Modern Masters)",
+      "handle": "doubling-season-mma",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Modern Masters",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900055,
+          "title": "MP - Español",
+          "price": "632.00",
+          "available": true,
+          "sku": "yellow-rabbit-mma-141-MP"
+        },
+        {
+          "id": 900056,
+          "title": "NM - English",
+          "price": "934.00",
+          "available": true,
+          "sku": "yellow-rabbit-mma-141-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/7/f/7f296a5a-9e6c-4432-bf9b-fafbcccb6e62.jpg?1783939976"
+        }
+      ]
+    },
+    {
+      "id": 1038,
+      "title": "Vampiric Tutor (Visions)",
+      "handle": "vampiric-tutor-vis",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Visions",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900057,
+          "title": "NM - English",
+          "price": "1909.00",
+          "available": true,
+          "sku": "yellow-rabbit-vis-72-NM"
+        },
+        {
+          "id": 900058,
+          "title": "MP - English",
+          "price": "1496.00",
+          "available": true,
+          "sku": "yellow-rabbit-vis-72-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/0/a/0a07cba3-2e8d-48ec-a6f8-4d2edfcd833d.jpg?1783946991"
+        }
+      ]
+    },
+    {
+      "id": 1039,
+      "title": "Demonic Tutor (Duel Decks: Divine vs. Demonic)",
+      "handle": "demonic-tutor-ddc",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Duel Decks: Divine vs. Demonic",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900059,
+          "title": "NM - English",
+          "price": "1983.00",
+          "available": true,
+          "sku": "yellow-rabbit-ddc-49-NM"
+        },
+        {
+          "id": 900060,
+          "title": "MP - English",
+          "price": "1083.00",
+          "available": true,
+          "sku": "yellow-rabbit-ddc-49-MP"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/c/1/c1e5fbc6-d129-4843-96a5-ee4406b2700f.jpg?1783942447"
+        }
+      ]
+    },
+    {
+      "id": 1040,
+      "title": "Sylvan Library (Dominaria Remastered)",
+      "handle": "sylvan-library-dmr",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Cartas Sueltas",
+      "tags": [
+        "Magic",
+        "Dominaria Remastered",
+        "Non-Foil"
+      ],
+      "variants": [
+        {
+          "id": 900061,
+          "title": "NM - English",
+          "price": "696.00",
+          "available": true,
+          "sku": "yellow-rabbit-dmr-179-NM"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://cards.scryfall.io/normal/front/6/a/6ada256f-2e55-4c1f-b4d3-d7b10b498956.jpg?1783918436"
+        }
+      ]
+    },
+    {
+      "id": 1041,
+      "title": "Foundations Play Booster Box",
+      "handle": "foundations-play-booster-box",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Sellado",
+      "tags": [
+        "Sellado"
+      ],
+      "variants": [
+        {
+          "id": 900062,
+          "title": "Default Title",
+          "price": "4293.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1042,
+      "title": "Bloomburrow Bundle",
+      "handle": "bloomburrow-bundle",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Sellado",
+      "tags": [
+        "Sellado"
+      ],
+      "variants": [
+        {
+          "id": 900063,
+          "title": "Default Title",
+          "price": "3815.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1043,
+      "title": "Micas Dragon Shield Matte Negro (100)",
+      "handle": "micas-dragon-shield-matte-negro-100-",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Accesorios",
+      "tags": [
+        "Accesorios"
+      ],
+      "variants": [
+        {
+          "id": 900064,
+          "title": "Default Title",
+          "price": "4220.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1044,
+      "title": "Playmat MTG México",
+      "handle": "playmat-mtg-m-xico",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Accesorios",
+      "tags": [
+        "Accesorios"
+      ],
+      "variants": [
+        {
+          "id": 900065,
+          "title": "Default Title",
+          "price": "2424.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1045,
+      "title": "Deck Box Ultra Pro Satin Tower",
+      "handle": "deck-box-ultra-pro-satin-tower",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Accesorios",
+      "tags": [
+        "Accesorios"
+      ],
+      "variants": [
+        {
+          "id": 900066,
+          "title": "Default Title",
+          "price": "1252.00",
+          "available": true
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": 1046,
+      "title": "Commander Deck: Eldrazi Unbound",
+      "handle": "commander-deck-eldrazi-unbound",
+      "vendor": "Yellow Rabbit",
+      "product_type": "Sellado",
+      "tags": [
+        "Sellado"
+      ],
+      "variants": [
+        {
+          "id": 900067,
+          "title": "Default Title",
+          "price": "3642.00",
+          "available": true
+        }
+      ],
+      "images": []
+    }
+  ]
+}
