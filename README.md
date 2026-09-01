@@ -54,6 +54,17 @@ Vercel reconstruye la base en cada deploy.
 > Verifícalos antes del primer `--live`. `mtgmexico.com` sí venía confirmado en
 > el brief.
 
+### Deploy
+
+El proyecto está enlazado a Vercel (equipo `PPVAPPS`, proyecto `tcgpool`): cada
+push genera un deployment — preview en ramas, producción en la rama de
+producción. No hay nada que configurar en el dashboard, porque `npm run build`
+reconstruye la base y `next.config.ts` incluye `data/tcgpool.db` en el trazado
+de archivos de las funciones serverless.
+
+En runtime la base es de **sólo lectura**: actualizar el catálogo es commitear
+snapshots nuevos y redesplegar, no escribir en SQLite desde la app.
+
 ### Sincronización periódica
 
 `.github/workflows/sync.yml` corre `--live` cada 6 horas y commitea los
