@@ -16,26 +16,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es">
       <body className="font-sans antialiased">
         <div className="flex min-h-screen flex-col">
-          <header className="border-b border-ink-800/80 backdrop-blur">
-            <div className="mx-auto flex w-full max-w-6xl items-center gap-6 px-4 py-4">
-              <Link href="/" className="group flex items-center gap-2.5">
-                <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-500 text-sm font-black text-ink-950">
+          <header className="border-b border-line bg-surface">
+            <div className="mx-auto flex w-full max-w-6xl items-center gap-6 px-4 py-3.5">
+              <Link href="/" className="flex items-center gap-2.5">
+                <span className="grid h-8 w-8 place-items-center rounded bg-accent text-[11px] font-black text-accent-ink">
                   TP
                 </span>
-                <span className="text-[15px] font-semibold tracking-tight">
-                  TCG<span className="text-brand-400">Pool</span>
+                <span className="font-serif text-[17px] font-bold tracking-tight">
+                  TCG Pool
                 </span>
               </Link>
               <nav className="ml-auto flex items-center gap-1 text-sm">
                 <Link
                   href="/buscar"
-                  className="rounded-lg px-3 py-1.5 text-ink-300 transition hover:bg-ink-800/70 hover:text-ink-100"
+                  className="rounded px-3 py-1.5 font-medium text-muted transition hover:bg-hover hover:text-ink"
                 >
                   Buscar
                 </Link>
                 <Link
                   href="/tiendas"
-                  className="rounded-lg px-3 py-1.5 text-ink-300 transition hover:bg-ink-800/70 hover:text-ink-100"
+                  className="rounded px-3 py-1.5 font-medium text-muted transition hover:bg-hover hover:text-ink"
                 >
                   Tiendas
                 </Link>
@@ -45,9 +45,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           <main className="flex-1">{children}</main>
 
-          <footer className="border-t border-ink-800/80">
-            <div className="mx-auto w-full max-w-6xl px-4 py-8 text-xs leading-relaxed text-ink-500">
-              <p>
+          <footer className="mt-8 border-t border-line">
+            <div className="mx-auto w-full max-w-6xl px-4 py-8 text-xs leading-relaxed text-muted">
+              <p className="max-w-3xl">
                 TCG Pool agrega el catálogo público de tiendas mexicanas para que
                 encuentres una carta sin ir tienda por tienda. Los precios y el
                 stock se toman del sitio de cada tienda y pueden cambiar; la

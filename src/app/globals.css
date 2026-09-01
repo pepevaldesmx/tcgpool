@@ -1,40 +1,63 @@
 @import "tailwindcss";
 
+/*
+ * Paleta "Tinta marina": papel gris azulado, tinta azul marino, turquesa
+ * profundo como único acento. El turquesa va por debajo del texto en
+ * luminosidad a propósito — así lee como tinta y no como neón.
+ *
+ * Los nombres son semánticos (paper/surface/line/ink/accent), no literales:
+ * cambiar de piel es reescribir este bloque, no las pantallas.
+ */
 @theme {
-  --color-ink-950: #0b0d12;
-  --color-ink-900: #11141c;
-  --color-ink-850: #161a24;
-  --color-ink-800: #1c2130;
-  --color-ink-700: #2a3145;
-  --color-ink-500: #6b7590;
-  --color-ink-300: #a9b2c7;
-  --color-ink-100: #e6eaf3;
+  --color-paper: #f4f8fa;
+  --color-surface: #ffffff;
+  --color-surface-2: #e6eef3;
+  --color-hover: #f7fbfc;
+  --color-thead: #edf4f7;
 
-  --color-brand-400: #5eead4;
-  --color-brand-500: #2dd4bf;
-  --color-brand-600: #14b8a6;
+  --color-line: #d5e2ea;
+  --color-line-soft: #e7eff4;
+  --color-line-strong: #c2d3dd;
 
-  --color-accent-400: #fbbf24;
-  --color-accent-500: #f59e0b;
+  --color-ink: #11242f;
+  --color-muted: #5c7180;
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+  --color-accent: #0f7c88;
+  --color-accent-ink: #f1fbfc;
+  --color-accent-soft: #e6f3f5;
+
+  --color-ok: #2e6b45;
+  --color-ok-bg: #e3f1e9;
+  --color-ok-line: #c4dfd0;
+
+  --color-warn: #7a5b1e;
+  --color-warn-bg: #fbf3e3;
+  --color-warn-line: #e7d6b0;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
+  /* Titulares con serif: es lo que le da el aire de catálogo impreso. */
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+    "Times New Roman", serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  background:
-    radial-gradient(1100px 520px at 15% -10%, rgba(45, 212, 191, 0.13), transparent 60%),
-    radial-gradient(900px 480px at 90% 0%, rgba(99, 102, 241, 0.12), transparent 55%),
-    var(--color-ink-950);
-  color: var(--color-ink-100);
+  background: var(--color-paper);
+  color: var(--color-ink);
   min-height: 100vh;
 }
 
-/* Tabla de listings: scroll propio en móvil, nunca scroll horizontal del body. */
+/* Precios: cifras de ancho fijo para que las columnas alineen. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tablas anchas: scroll propio, nunca scroll horizontal del body. */
 .table-scroll {
   overflow-x: auto;
 }

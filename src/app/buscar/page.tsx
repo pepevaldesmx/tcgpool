@@ -22,31 +22,28 @@ export default async function SearchPage({ searchParams }: Props) {
   const results = q ? searchCards(q, { limit: 60, onlyInStock }) : [];
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10">
+    <div className="mx-auto w-full max-w-6xl px-4 py-8">
       <div className="max-w-2xl">
         <SearchBox initialQuery={q} autoFocus={!q} size="lg" />
       </div>
 
       {q && (
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-lg font-semibold">
+        <div className="mt-7 flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
+          <h1 className="font-serif text-lg font-semibold">
             {results.length > 0 ? (
               <>
-                {results.length} {results.length === 1 ? "carta" : "cartas"} para{" "}
-                <span className="text-brand-400">“{q}”</span>
+                {results.length} {results.length === 1 ? "carta" : "cartas"} para “{q}”
               </>
             ) : (
-              <>
-                Sin resultados para <span className="text-brand-400">“{q}”</span>
-              </>
+              <>Sin resultados para “{q}”</>
             )}
           </h1>
           <Link
             href={`/buscar?q=${encodeURIComponent(q)}${onlyInStock ? "" : "&stock=1"}`}
-            className={`rounded-lg border px-3 py-1.5 text-xs transition ${
+            className={`rounded-sm border px-3 py-1 text-xs transition ${
               onlyInStock
-                ? "border-brand-600 bg-brand-600/15 text-brand-400"
-                : "border-ink-700 text-ink-300 hover:border-ink-500"
+                ? "border-ink bg-ink text-paper"
+                : "border-line bg-surface text-muted hover:border-accent hover:text-accent"
             }`}
           >
             Sólo con stock
@@ -55,13 +52,13 @@ export default async function SearchPage({ searchParams }: Props) {
       )}
 
       {q && results.length === 0 && (
-        <div className="mt-6 rounded-2xl border border-ink-800 bg-ink-900/50 p-6 text-sm text-ink-300">
+        <div className="mt-6 rounded border border-line bg-surface p-6 text-sm text-ink">
           <p>
             No encontramos esa carta en el catálogo que tenemos indexado. Puede
             que ninguna de las tiendas conectadas la tenga, o que esté escrita
             distinto en su sitio.
           </p>
-          <p className="mt-2 text-ink-500">
+          <p className="mt-2 text-muted">
             Tip: busca por el nombre en inglés — así la titulan casi todas las
             tiendas mexicanas.
           </p>
@@ -77,7 +74,7 @@ export default async function SearchPage({ searchParams }: Props) {
       )}
 
       {!q && (
-        <p className="mt-8 text-sm text-ink-500">
+        <p className="mt-8 text-sm text-muted">
           Escribe el nombre de una carta para ver qué tiendas la tienen.
         </p>
       )}

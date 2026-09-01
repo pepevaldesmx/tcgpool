@@ -86,49 +86,50 @@ export default function SearchBox({
   }
 
   const big = size === "lg";
+  const height = big ? "h-12" : "h-10";
 
   return (
     <div ref={boxRef} className="relative w-full">
-      <div className="relative">
-        <svg
-          aria-hidden
-          viewBox="0 0 24 24"
-          className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 ${big ? "h-5 w-5" : "h-4 w-4"}`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-3.2-3.2" strokeLinecap="round" />
-        </svg>
-        <input
-          value={query}
-          autoFocus={autoFocus}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-          onKeyDown={onKeyDown}
-          placeholder="Busca una carta… ej. Sol Ring"
-          aria-label="Buscar carta"
-          className={`w-full rounded-2xl border border-ink-700 bg-ink-900/80 pl-12 pr-28 text-ink-100 shadow-lg shadow-black/30 outline-none transition placeholder:text-ink-500 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/25 ${
-            big ? "h-14 text-base" : "h-11 text-sm"
-          }`}
-        />
+      <div className="flex">
+        <div className="relative flex-1">
+          <svg
+            aria-hidden
+            viewBox="0 0 24 24"
+            className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.2-3.2" strokeLinecap="round" />
+          </svg>
+          <input
+            value={query}
+            autoFocus={autoFocus}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
+            onKeyDown={onKeyDown}
+            placeholder="Busca una carta… ej. Sol Ring"
+            aria-label="Buscar carta"
+            className={`${height} w-full rounded-l border border-r-0 border-line-strong bg-surface pl-10 pr-3 text-ink outline-none transition placeholder:text-muted focus:border-accent ${
+              big ? "text-[15px]" : "text-sm"
+            }`}
+          />
+        </div>
         <button
           type="button"
           onClick={() => submit()}
-          className={`absolute right-2 top-1/2 -translate-y-1/2 rounded-xl bg-brand-500 px-4 font-semibold text-ink-950 transition hover:bg-brand-400 ${
-            big ? "h-10 text-sm" : "h-8 text-xs"
-          }`}
+          className={`${height} shrink-0 rounded-r bg-accent px-6 text-sm font-semibold text-accent-ink transition hover:brightness-110`}
         >
           Buscar
         </button>
       </div>
 
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-ink-700 bg-ink-900 shadow-2xl shadow-black/50">
+        <ul className="absolute z-30 mt-1.5 w-full overflow-hidden rounded border border-line bg-surface shadow-lg shadow-ink/5">
           {suggestions.map((s, i) => (
             <li key={s.slug}>
               <button
@@ -136,18 +137,18 @@ export default function SearchBox({
                 onMouseEnter={() => setHighlight(i)}
                 onClick={() => submit(s)}
                 className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition ${
-                  i === highlight ? "bg-ink-800" : "hover:bg-ink-850"
+                  i === highlight ? "bg-surface-2" : "hover:bg-hover"
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={s.imageUrl ?? ""}
                   alt=""
-                  className="h-11 w-8 shrink-0 rounded object-cover ring-1 ring-ink-700"
+                  className="h-11 w-8 shrink-0 rounded-sm bg-surface-2 object-cover ring-1 ring-line"
                 />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">{s.name}</span>
-                  <span className="block text-xs text-ink-500">
+                  <span className="block truncate text-sm font-semibold">{s.name}</span>
+                  <span className="block text-xs text-muted">
                     {s.inStockCount > 0
                       ? `${s.storeCount} ${s.storeCount === 1 ? "tienda" : "tiendas"} · desde ${money(s.minPriceCents)}`
                       : "sin stock ahora"}

@@ -20,50 +20,52 @@ export default function StoresPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10">
-      <h1 className="text-3xl font-bold tracking-tight">Tiendas conectadas</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-300">
+      <h1 className="font-serif text-3xl font-semibold tracking-tight">
+        Tiendas conectadas
+      </h1>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
         Cada tienda se ingiere con su propio adaptador. Las que corren en Shopify
-        exponen un catálogo público (<code className="text-ink-100">/products.json</code>)
-        que leemos directo; las demás necesitan un adaptador propio. Sumar una
-        tienda nueva es una entrada más en{" "}
-        <code className="text-ink-100">data/stores.json</code>.
+        exponen un catálogo público (
+        <code className="font-mono text-ink">/products.json</code>) que leemos
+        directo; las demás necesitan un adaptador propio. Sumar una tienda nueva es
+        una entrada más en <code className="font-mono text-ink">data/stores.json</code>.
       </p>
 
-      <div className="table-scroll mt-8 rounded-2xl border border-ink-800">
+      <div className="table-scroll mt-7 rounded border border-line bg-surface">
         <table className="w-full min-w-[720px] border-collapse text-sm">
           <thead>
-            <tr className="border-b border-ink-800 text-left text-xs uppercase tracking-wide text-ink-500">
-              <th className="px-4 py-3 font-medium">Tienda</th>
-              <th className="px-4 py-3 font-medium">Fuente</th>
-              <th className="px-4 py-3 text-right font-medium">Cartas</th>
-              <th className="px-4 py-3 text-right font-medium">Listados</th>
-              <th className="px-4 py-3 text-right font-medium">Con stock</th>
-              <th className="px-4 py-3 font-medium">Sincronizada</th>
+            <tr className="border-b border-line bg-thead text-left text-[11px] uppercase tracking-[0.07em] text-muted">
+              <th className="px-4 py-2.5 font-semibold">Tienda</th>
+              <th className="px-4 py-2.5 font-semibold">Fuente</th>
+              <th className="px-4 py-2.5 text-right font-semibold">Cartas</th>
+              <th className="px-4 py-2.5 text-right font-semibold">Listados</th>
+              <th className="px-4 py-2.5 text-right font-semibold">Con stock</th>
+              <th className="px-4 py-2.5 font-semibold">Sincronizada</th>
             </tr>
           </thead>
           <tbody>
             {stores.map((store) => (
-              <tr key={store.id} className="border-b border-ink-800/70 last:border-0">
+              <tr key={store.id} className="border-b border-line-soft last:border-0 hover:bg-hover">
                 <td className="px-4 py-3">
                   <a
                     href={store.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-medium hover:text-brand-400"
+                    className="font-semibold hover:text-accent"
                   >
                     {store.name}
                   </a>
-                  <div className="text-xs text-ink-500">{store.city ?? "México"}</div>
+                  <div className="text-xs text-muted">{store.city ?? "México"}</div>
                 </td>
-                <td className="px-4 py-3 text-xs text-ink-300">
+                <td className="px-4 py-3 text-xs text-muted">
                   {SOURCE_LABELS[store.sourceType] ?? store.sourceType}
                 </td>
-                <td className="px-4 py-3 text-right">{store.cardCount}</td>
-                <td className="px-4 py-3 text-right">{store.listingCount}</td>
-                <td className="px-4 py-3 text-right font-semibold text-brand-400">
+                <td className="px-4 py-3 text-right font-mono tnum">{store.cardCount}</td>
+                <td className="px-4 py-3 text-right font-mono tnum">{store.listingCount}</td>
+                <td className="px-4 py-3 text-right font-mono font-bold text-accent tnum">
                   {store.inStockCount}
                 </td>
-                <td className="px-4 py-3 text-xs text-ink-500">
+                <td className="px-4 py-3 text-xs text-muted">
                   {timeAgo(store.lastSyncedAt)}
                 </td>
               </tr>
@@ -72,9 +74,9 @@ export default function StoresPage() {
         </table>
       </div>
 
-      <section className="mt-10 rounded-2xl border border-ink-800 bg-ink-900/40 p-6">
-        <h2 className="text-lg font-semibold">¿Tienes una tienda?</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-300">
+      <section className="mt-8 rounded border border-line bg-surface p-6">
+        <h2 className="font-serif text-lg font-semibold">¿Tienes una tienda?</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
           No necesitamos que cambies nada de tu sitio: si corres en Shopify ya
           publicas el catálogo que leemos. Cada listado manda el tráfico a tu
           página de producto — el cierre de la venta sigue siendo tuyo.

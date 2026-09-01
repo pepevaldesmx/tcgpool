@@ -53,10 +53,10 @@ function Chip({
   return (
     <Link
       href={href}
-      className={`rounded-lg border px-2.5 py-1 text-xs transition ${
+      className={`rounded-sm border px-2.5 py-1 text-xs transition ${
         active
-          ? "border-brand-600 bg-brand-600/15 text-brand-400"
-          : "border-ink-700 text-ink-300 hover:border-ink-500 hover:text-ink-100"
+          ? "border-ink bg-ink font-semibold text-paper"
+          : "border-line bg-surface text-muted hover:border-accent hover:text-accent"
       }`}
     >
       {children}
@@ -65,16 +65,15 @@ function Chip({
 }
 
 function ConditionBadge({ condition }: { condition: string }) {
-  const tone =
-    condition === "NM"
-      ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30"
-      : condition === "LP"
-        ? "bg-sky-500/15 text-sky-300 ring-sky-500/30"
-        : condition === "UNKNOWN"
-          ? "bg-ink-700/40 text-ink-300 ring-ink-600/40"
-          : "bg-amber-500/15 text-amber-300 ring-amber-500/30";
+  const nm = condition === "NM";
   return (
-    <span className={`rounded-md px-2 py-0.5 text-[11px] font-medium ring-1 ${tone}`}>
+    <span
+      className={`inline-block whitespace-nowrap rounded-sm border px-2 py-0.5 text-[11px] font-medium ${
+        nm
+          ? "border-ok-line bg-ok-bg text-ok"
+          : "border-line bg-surface-2 text-muted"
+      }`}
+    >
       {conditionLabel(condition)}
     </span>
   );
@@ -119,21 +118,21 @@ export default async function CardPage({ params, searchParams }: Props) {
         <SearchBox size="sm" />
       </div>
 
-      <nav className="mt-6 text-xs text-ink-500">
-        <Link href="/" className="hover:text-ink-300">
+      <nav className="mt-5 text-xs text-muted">
+        <Link href="/" className="hover:text-accent">
           Inicio
         </Link>
         <span className="px-1.5">/</span>
-        <Link href="/buscar" className="hover:text-ink-300">
+        <Link href="/buscar" className="hover:text-accent">
           Buscar
         </Link>
         <span className="px-1.5">/</span>
-        <span className="text-ink-300">{card.name}</span>
+        <span className="text-ink">{card.name}</span>
       </nav>
 
-      <div className="mt-4 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
+      <div className="mt-4 grid gap-9 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-6 lg:self-start">
-          <div className="aspect-[63/88] overflow-hidden rounded-2xl border border-ink-800 bg-ink-850">
+          <div className="aspect-[63/88] overflow-hidden rounded border border-line bg-surface-2 shadow-sm shadow-ink/10">
             {card.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -142,36 +141,36 @@ export default async function CardPage({ params, searchParams }: Props) {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="grid h-full place-items-center px-4 text-center text-sm text-ink-500">
+              <div className="grid h-full place-items-center px-4 text-center text-sm text-muted">
                 {card.name}
               </div>
             )}
           </div>
 
-          <h1 className="mt-4 text-2xl font-bold leading-tight tracking-tight">
+          <h1 className="mt-4 font-serif text-3xl font-semibold leading-tight tracking-tight">
             {card.name}
           </h1>
-          {card.typeLine && <p className="text-sm text-ink-500">{card.typeLine}</p>}
+          {card.typeLine && <p className="text-sm text-muted">{card.typeLine}</p>}
 
-          <dl className="mt-4 space-y-2 rounded-2xl border border-ink-800 bg-ink-900/50 p-4 text-sm">
-            <div className="flex items-baseline justify-between">
-              <dt className="text-ink-500">Más barata</dt>
-              <dd className="text-xl font-bold text-brand-400">
+          <dl className="mt-4 rounded border border-line bg-surface px-4 py-2">
+            <div className="flex items-baseline justify-between border-b border-line-soft py-2">
+              <dt className="text-sm text-muted">Más barata</dt>
+              <dd className="font-mono text-2xl font-bold tnum">
                 {money(card.minPriceCents)}
               </dd>
             </div>
-            <div className="flex items-baseline justify-between">
-              <dt className="text-ink-500">Tiendas</dt>
-              <dd className="font-semibold">{card.storeCount}</dd>
+            <div className="flex items-baseline justify-between border-b border-line-soft py-2">
+              <dt className="text-sm text-muted">Tiendas</dt>
+              <dd className="font-mono font-semibold tnum">{card.storeCount}</dd>
             </div>
-            <div className="flex items-baseline justify-between">
-              <dt className="text-ink-500">Listados con stock</dt>
-              <dd className="font-semibold">{card.inStockCount}</dd>
+            <div className="flex items-baseline justify-between border-b border-line-soft py-2">
+              <dt className="text-sm text-muted">Listados con stock</dt>
+              <dd className="font-mono font-semibold tnum">{card.inStockCount}</dd>
             </div>
             {spread != null && spread > 0 && (
-              <div className="flex items-baseline justify-between">
-                <dt className="text-ink-500">Diferencia máx.</dt>
-                <dd className="font-semibold text-accent-400">+{spread}%</dd>
+              <div className="flex items-baseline justify-between py-2">
+                <dt className="text-sm text-muted">Diferencia máx.</dt>
+                <dd className="font-mono font-semibold text-accent tnum">+{spread}%</dd>
               </div>
             )}
           </dl>
@@ -181,7 +180,7 @@ export default async function CardPage({ params, searchParams }: Props) {
               href={cheapest.productUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 flex items-center justify-center rounded-xl bg-brand-500 px-4 py-3 text-sm font-semibold text-ink-950 transition hover:bg-brand-400"
+              className="mt-3 flex items-center justify-center rounded bg-accent px-4 py-3 text-sm font-semibold text-accent-ink transition hover:brightness-110"
             >
               Ver la más barata en {cheapest.storeName}
             </a>
@@ -195,7 +194,7 @@ export default async function CardPage({ params, searchParams }: Props) {
             </div>
           )}
 
-          <div className="space-y-3 rounded-2xl border border-ink-800 bg-ink-900/40 p-4">
+          <div className="space-y-2.5 rounded border border-line bg-surface px-4 py-3.5">
             <FilterRow label="Orden">
               {(
                 [
@@ -291,20 +290,20 @@ export default async function CardPage({ params, searchParams }: Props) {
             </FilterRow>
           </div>
 
-          <p className="mt-5 text-sm text-ink-500">
+          <p className="mt-5 text-sm text-muted">
             {listings.length} {listings.length === 1 ? "listado" : "listados"}
           </p>
 
-          <div className="table-scroll mt-2 rounded-2xl border border-ink-800">
+          <div className="table-scroll mt-2 rounded border border-line bg-surface">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-ink-800 text-left text-xs uppercase tracking-wide text-ink-500">
-                  <th className="px-4 py-3 font-medium">Tienda</th>
-                  <th className="px-4 py-3 font-medium">Versión</th>
-                  <th className="px-4 py-3 font-medium">Condición</th>
-                  <th className="px-4 py-3 font-medium">Stock</th>
-                  <th className="px-4 py-3 text-right font-medium">Precio MXN</th>
-                  <th className="px-4 py-3" />
+                <tr className="border-b border-line bg-thead text-left text-[11px] uppercase tracking-[0.07em] text-muted">
+                  <th className="px-4 py-2.5 font-semibold">Tienda</th>
+                  <th className="px-4 py-2.5 font-semibold">Versión</th>
+                  <th className="px-4 py-2.5 font-semibold">Condición</th>
+                  <th className="px-4 py-2.5 font-semibold">Stock</th>
+                  <th className="px-4 py-2.5 text-right font-semibold">Precio MXN</th>
+                  <th className="px-4 py-2.5" />
                 </tr>
               </thead>
               <tbody>
@@ -317,7 +316,7 @@ export default async function CardPage({ params, searchParams }: Props) {
                 ))}
                 {listings.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-ink-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-muted">
                       Ningún listado con esos filtros.
                     </td>
                   </tr>
@@ -333,8 +332,10 @@ export default async function CardPage({ params, searchParams }: Props) {
 
 function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="w-20 shrink-0 text-xs text-ink-500">{label}</span>
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className="w-[74px] shrink-0 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">
+        {label}
+      </span>
       {children}
     </div>
   );
@@ -343,13 +344,13 @@ function FilterRow({ label, children }: { label: string; children: React.ReactNo
 function ListingRowView({ listing, cheapest }: { listing: ListingRow; cheapest: boolean }) {
   return (
     <tr
-      className={`border-b border-ink-800/70 last:border-0 transition hover:bg-ink-850/60 ${
+      className={`border-b border-line-soft transition last:border-0 hover:bg-hover ${
         listing.inStock ? "" : "opacity-45"
       }`}
     >
       <td className="px-4 py-3">
-        <div className="font-medium">{listing.storeName}</div>
-        <div className="text-xs text-ink-500">
+        <div className="font-semibold">{listing.storeName}</div>
+        <div className="text-xs text-muted">
           {listing.storeCity ?? "México"}
           {listing.sellerType === "affiliate" && ` · afiliado ${listing.sellerName}`}
         </div>
@@ -358,7 +359,7 @@ function ListingRowView({ listing, cheapest }: { listing: ListingRow; cheapest: 
         <div className="max-w-[260px] truncate" title={listing.setName ?? ""}>
           {listing.setName ?? "Set no especificado"}
         </div>
-        <div className="text-xs text-ink-500">
+        <div className="text-xs text-muted">
           {languageLabel(listing.language)} · {finishLabel(listing.finish)}
           {listing.collectorNumber ? ` · #${listing.collectorNumber}` : ""}
         </div>
@@ -366,18 +367,20 @@ function ListingRowView({ listing, cheapest }: { listing: ListingRow; cheapest: 
       <td className="px-4 py-3">
         <ConditionBadge condition={listing.condition} />
       </td>
-      <td className="px-4 py-3 text-xs">
+      <td className="whitespace-nowrap px-4 py-3 text-xs">
         {listing.inStock ? (
-          <span className="text-emerald-400">Disponible</span>
+          <span className="text-ok">Disponible</span>
         ) : (
-          <span className="text-ink-500">Agotada</span>
+          <span className="text-muted">Agotada</span>
         )}
-        <div className="text-ink-500">{timeAgo(listing.updatedAt)}</div>
+        <div className="text-muted">{timeAgo(listing.updatedAt)}</div>
       </td>
-      <td className="px-4 py-3 text-right">
-        <span className="text-base font-bold">{money(listing.priceCents)}</span>
+      <td className="whitespace-nowrap px-4 py-3 text-right">
+        <span className="font-mono text-base font-bold tnum">
+          {money(listing.priceCents)}
+        </span>
         {cheapest && (
-          <span className="ml-2 rounded-md bg-brand-600/20 px-1.5 py-0.5 text-[10px] font-semibold text-brand-400">
+          <span className="ml-2 rounded-sm bg-accent px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-accent-ink">
             más barata
           </span>
         )}
@@ -387,7 +390,7 @@ function ListingRowView({ listing, cheapest }: { listing: ListingRow; cheapest: 
           href={listing.productUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-lg border border-ink-700 px-3 py-1.5 text-xs text-ink-100 transition hover:border-brand-600 hover:text-brand-400"
+          className="rounded-sm border border-line bg-surface px-3 py-1.5 text-xs font-semibold transition hover:border-accent hover:text-accent"
         >
           Ver
         </a>

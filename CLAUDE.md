@@ -62,6 +62,11 @@ app móvil nativa. Web responsive es suficiente.
 - **Nunca presentes datos de muestra como reales.** Mientras no haya un
   `sync_run` con `source='live'`, la UI muestra el banner de demostración
   (`isSampleData()`).
+- **El look vive en tokens semánticos** (`paper`, `surface`, `line`, `ink`,
+  `accent`, …) definidos en el bloque `@theme` de `src/app/globals.css`. Las
+  pantallas nunca usan colores literales: cambiar de piel es reescribir ese
+  bloque. Paleta actual: papel gris azulado, tinta azul marino, turquesa
+  profundo como único acento, titulares con serif.
 - La UI está en español mexicano; los nombres de carta se quedan en inglés
   porque así los titulan las tiendas.
 

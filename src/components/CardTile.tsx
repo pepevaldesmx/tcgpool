@@ -8,38 +8,38 @@ export default function CardTile({ card }: { card: CardSummary }) {
   return (
     <Link
       href={`/carta/${card.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-ink-800 bg-ink-900/60 transition hover:-translate-y-0.5 hover:border-brand-600/70 hover:bg-ink-850"
+      className="group flex flex-col overflow-hidden rounded border border-line bg-surface transition hover:border-accent"
     >
-      <div className="relative aspect-[63/88] overflow-hidden bg-ink-850">
+      <div className="relative aspect-[63/88] overflow-hidden bg-surface-2">
         {card.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={card.imageUrl}
             alt={card.name}
             loading="lazy"
-            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+            className="h-full w-full object-cover"
           />
         ) : (
-          <div className="grid h-full place-items-center px-3 text-center text-xs text-ink-500">
+          <div className="grid h-full place-items-center px-3 text-center text-xs text-muted">
             {card.name}
           </div>
         )}
         {card.storeCount > 1 && (
-          <span className="absolute left-2 top-2 rounded-full bg-ink-950/85 px-2 py-1 text-[11px] font-semibold text-brand-400 ring-1 ring-brand-600/40">
+          <span className="absolute left-2 top-2 rounded-sm bg-accent px-2 py-0.5 text-[11px] font-semibold text-accent-ink">
             {card.storeCount} tiendas
           </span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 p-3">
-        <h3 className="truncate text-sm font-semibold" title={card.name}>
+      <div className="flex flex-1 flex-col gap-0.5 border-t border-line-soft p-3">
+        <h3 className="truncate font-serif text-[15px] font-semibold" title={card.name}>
           {card.name}
         </h3>
-        <p className="mt-auto text-xs text-ink-500">
+        <p className="mt-auto pt-1 text-xs text-muted">
           {available ? (
             <>
               desde{" "}
-              <span className="text-base font-bold text-brand-400">
+              <span className="font-mono text-base font-bold text-ink tnum">
                 {money(card.minPriceCents)}
               </span>
             </>
@@ -47,7 +47,7 @@ export default function CardTile({ card }: { card: CardSummary }) {
             "sin stock ahora"
           )}
         </p>
-        <p className="text-[11px] text-ink-500">
+        <p className="text-[11px] text-muted">
           {card.listingCount} {card.listingCount === 1 ? "listado" : "listados"}
         </p>
       </div>
