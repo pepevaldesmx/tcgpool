@@ -3,7 +3,14 @@ import SearchBox from "@/components/SearchBox";
 import DeckPasteBox from "@/components/DeckPasteBox";
 import StoreList from "@/components/StoreList";
 import SampleDataNotice from "@/components/SampleDataNotice";
-import { isSampleData, listGames, listStoresPublic } from "@/lib/db/queries";
+import CardTile from "@/components/CardTile";
+import GameMark from "@/components/GameMark";
+import {
+  getTrendingCards,
+  isSampleData,
+  listGames,
+  listStoresPublic,
+} from "@/lib/db/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +19,7 @@ const SUGGESTED = ["Sol Ring", "Lightning Bolt", "Rhystic Study", "Cyclonic Rift
 export default function HomePage() {
   const stores = listStoresPublic();
   const games = listGames();
+  const trending = getTrendingCards(5);
   const sample = isSampleData();
 
   return (
@@ -61,37 +69,52 @@ export default function HomePage() {
         )}
       </section>
 
+      {trending.cards.length > 0 && (
+        <section className="border-b border-line py-9">
+          <h2 className="font-serif text-xl font-semibold tracking-tight">
+            Cartas de moda
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            {trending.source === "demand"
+              ? "Las más buscadas que están disponibles ahora."
+              : "Todavía no medimos búsquedas: por ahora, las que más tiendas tienen en stock."}
+          </p>
+          <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {trending.cards.map((card) => (
+              <CardTile key={card.id} card={card} />
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="border-b border-line py-9">
         <h2 className="font-serif text-xl font-semibold tracking-tight">Juegos</h2>
-        <ul className="mt-4 grid gap-3 sm:grid-cols-3">
+        <ul className="mt-5 grid gap-3 sm:grid-cols-3">
           {games.map((game) => {
             const live = game.inStockCount > 0;
             return (
               <li
                 key={game.id}
-                className={`rounded border border-line bg-surface px-4 py-3 ${
-                  live ? "" : "opacity-60"
+                className={`flex items-center gap-3.5 rounded border border-line bg-surface px-4 py-3.5 ${
+                  live ? "" : "opacity-55"
                 }`}
               >
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="font-serif text-[15px] font-semibold">
+                <GameMark gameId={game.id} />
+                <div className="min-w-0 flex-1">
+                  <p className="font-serif text-[15px] font-semibold leading-tight">
                     {game.name}
-                  </span>
-                  {live ? (
-                    <span className="font-mono text-sm font-bold text-accent tnum">
-                      {game.inStockCount.toLocaleString("es-MX")}
-                    </span>
-                  ) : (
-                    <span className="text-[11px] uppercase tracking-wide text-muted">
-                      próximamente
-                    </span>
-                  )}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted">
+                    {live
+                      ? `${game.cardCount.toLocaleString("es-MX")} cartas · ${game.inStockCount.toLocaleString("es-MX")} listados con stock`
+                      : "sin tiendas conectadas todavía"}
+                  </p>
                 </div>
-                <p className="mt-0.5 text-xs text-muted">
-                  {live
-                    ? `${game.cardCount.toLocaleString("es-MX")} cartas · listados con stock`
-                    : "sin tiendas conectadas todavía"}
-                </p>
+                {!live && (
+                  <span className="shrink-0 text-[10px] uppercase tracking-wide text-muted">
+                    pronto
+                  </span>
+                )}
               </li>
             );
           })}

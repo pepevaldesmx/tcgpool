@@ -533,18 +533,62 @@ export function getStats(): Stats {
   return row;
 }
 
-/** Cartas con oferta repartida entre varias tiendas: el "aha" de la demo. */
-export function getMultiStoreCards(limit = 8): CardSummary[] {
+/** De dónde salió el ranking de "cartas de moda". */
+export type TrendingSource = "demand" | "supply";
+
+export interface Trending {
+  cards: CardSummary[];
+  source: TrendingSource;
+}
+
+/**
+ * "Cartas de moda" = las más buscadas que además están disponibles.
+ *
+ * La demanda vive en `card_events`, que se llena en runtime. Como hoy la base
+ * es de sólo lectura, esa tabla está vacía y caemos a la única señal honesta
+ * que tenemos: en cuántas tiendas está la carta. Devolvemos `source` para que
+ * la UI diga cuál de las dos está mostrando en vez de fingir popularidad.
+ *
+ * Un clic de salida a la tienda pesa más que una búsqueda: es la intención de
+ * compra más cercana que podemos observar (la venta ocurre en la tienda y no la
+ * vemos).
+ */
+export function getTrendingCards(limit = 5, windowDays = 14): Trending {
   const db = getDb();
-  return db
+  const since = new Date(Date.now() - windowDays * 86400000)
+    .toISOString()
+    .slice(0, 10);
+
+  const byDemand = db
+    .prepare(
+      `${CARD_SUMMARY_SELECT}
+       JOIN (
+         SELECT card_id,
+                SUM(CASE WHEN kind = 'clickout' THEN count * 3 ELSE count END) AS score
+         FROM card_events
+         WHERE day >= ?
+         GROUP BY card_id
+       ) d ON d.card_id = c.id
+       GROUP BY c.id
+       HAVING inStockCount > 0
+       ORDER BY d.score DESC, c.name ASC
+       LIMIT ?`,
+    )
+    .all(since, limit) as CardSummary[];
+
+  if (byDemand.length) return { cards: byDemand, source: "demand" };
+
+  const bySupply = db
     .prepare(
       `${CARD_SUMMARY_SELECT}
        GROUP BY c.id
-       HAVING storeCount > 1 AND inStockCount > 0
+       HAVING inStockCount > 0
        ORDER BY storeCount DESC, listingCount DESC, c.name ASC
        LIMIT ?`,
     )
     .all(limit) as CardSummary[];
+
+  return { cards: bySupply, source: "supply" };
 }
 
 /**
