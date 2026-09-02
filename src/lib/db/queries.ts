@@ -533,52 +533,10 @@ export function getStats(): Stats {
   return row;
 }
 
-/** De dónde salió el ranking de "cartas de moda". */
-export type TrendingSource = "demand" | "supply";
-
-export interface Trending {
-  cards: CardSummary[];
-  source: TrendingSource;
-}
-
-/**
- * "Cartas de moda" = las más buscadas que además están disponibles.
- *
- * La demanda vive en `card_events`, que se llena en runtime. Como hoy la base
- * es de sólo lectura, esa tabla está vacía y caemos a la única señal honesta
- * que tenemos: en cuántas tiendas está la carta. Devolvemos `source` para que
- * la UI diga cuál de las dos está mostrando en vez de fingir popularidad.
- *
- * Un clic de salida a la tienda pesa más que una búsqueda: es la intención de
- * compra más cercana que podemos observar (la venta ocurre en la tienda y no la
- * vemos).
- */
-export function getTrendingCards(limit = 5, windowDays = 14): Trending {
+/** Ranking de respaldo: en cuántas tiendas está la carta. Siempre disponible. */
+export function getTopCardsBySupply(limit = 5): CardSummary[] {
   const db = getDb();
-  const since = new Date(Date.now() - windowDays * 86400000)
-    .toISOString()
-    .slice(0, 10);
-
-  const byDemand = db
-    .prepare(
-      `${CARD_SUMMARY_SELECT}
-       JOIN (
-         SELECT card_id,
-                SUM(CASE WHEN kind = 'clickout' THEN count * 3 ELSE count END) AS score
-         FROM card_events
-         WHERE day >= ?
-         GROUP BY card_id
-       ) d ON d.card_id = c.id
-       GROUP BY c.id
-       HAVING inStockCount > 0
-       ORDER BY d.score DESC, c.name ASC
-       LIMIT ?`,
-    )
-    .all(since, limit) as CardSummary[];
-
-  if (byDemand.length) return { cards: byDemand, source: "demand" };
-
-  const bySupply = db
+  return db
     .prepare(
       `${CARD_SUMMARY_SELECT}
        GROUP BY c.id
@@ -587,8 +545,34 @@ export function getTrendingCards(limit = 5, windowDays = 14): Trending {
        LIMIT ?`,
     )
     .all(limit) as CardSummary[];
+}
 
-  return { cards: bySupply, source: "supply" };
+/**
+ * Hidrata cartas por slug conservando el orden pedido y descartando las que se
+ * quedaron sin stock. Los slugs vienen del almacén de eventos, que no sabe nada
+ * del catálogo.
+ */
+export function getCardsBySlugs(slugs: string[]): CardSummary[] {
+  if (!slugs.length) return [];
+  const db = getDb();
+  const placeholders = slugs.map(() => "?").join(",");
+  const rows = db
+    .prepare(
+      `${CARD_SUMMARY_SELECT}
+       WHERE c.slug IN (${placeholders})
+       GROUP BY c.id
+       HAVING inStockCount > 0`,
+    )
+    .all(...slugs) as CardSummary[];
+
+  const bySlug = new Map(rows.map((r) => [r.slug, r]));
+  return slugs.map((slug) => bySlug.get(slug)).filter((c): c is CardSummary => !!c);
+}
+
+/** ¿Existe esa carta? Guarda de la API de eventos, para no aceptar slugs sueltos. */
+export function cardExists(slug: string): boolean {
+  const db = getDb();
+  return !!db.prepare(`SELECT 1 FROM cards WHERE slug = ?`).get(slug);
 }
 
 /**

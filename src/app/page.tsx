@@ -5,21 +5,17 @@ import StoreList from "@/components/StoreList";
 import SampleDataNotice from "@/components/SampleDataNotice";
 import CardTile from "@/components/CardTile";
 import GameMark from "@/components/GameMark";
-import {
-  getTrendingCards,
-  isSampleData,
-  listGames,
-  listStoresPublic,
-} from "@/lib/db/queries";
+import { isSampleData, listGames, listStoresPublic } from "@/lib/db/queries";
+import { getTrending } from "@/lib/trending";
 
 export const dynamic = "force-dynamic";
 
 const SUGGESTED = ["Sol Ring", "Lightning Bolt", "Rhystic Study", "Cyclonic Rift"];
 
-export default function HomePage() {
+export default async function HomePage() {
   const stores = listStoresPublic();
   const games = listGames();
-  const trending = getTrendingCards(5);
+  const trending = await getTrending(5);
   const sample = isSampleData();
 
   return (

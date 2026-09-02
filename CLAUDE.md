@@ -45,8 +45,15 @@ app móvil nativa. Web responsive es suficiente.
 - **`card → printing → listing` son tres niveles distintos.** Una carta tiene
   muchas impresiones (set + número + idioma + foil); cada impresión, muchos
   listings de tiendas distintas. No los colapses.
-- **Todo el SQL vive en `src/lib/db/queries.ts`.** La app no habla con SQLite
-  directo. Migrar a Postgres debe ser reescribir ese archivo, no la app.
+- **Todo el SQL del CATÁLOGO vive en `src/lib/db/queries.ts`.** La app no habla
+  con SQLite directo. Migrar a Postgres debe ser reescribir ese archivo, no la
+  app. La única excepción es `src/lib/events/store.ts`, que es otro almacén
+  (Postgres) con otro ciclo de vida: se escribe en runtime.
+- **Las señales de demanda no caben en SQLite.** El catálogo se reconstruye en
+  cada build y en runtime es de sólo lectura; los contadores de búsquedas y
+  clics de salida se escriben en runtime, así que viven en Postgres y se
+  llavean por SLUG (los ids de SQLite se regeneran en cada `db:build`). Sin
+  `DATABASE_URL` todo sigue funcionando y el home cae al ranking de oferta.
 - **`src/lib/db/index.ts` no toca `fs`.** Next traza los accesos a disco para
   empaquetar las funciones serverless; el acceso a archivos vive en
   `src/lib/db/migrate.ts`, que sólo usan los scripts.
@@ -83,7 +90,9 @@ npm run sync                                # ingerir desde data/snapshots/
 npm run sync -- --live [--store=<slug>]     # ingerir feeds reales
 npm run snapshot -- --store=<slug>          # capturar un feed sin ingerirlo
 npm run make-samples                        # regenerar datos de muestra (usa Scryfall)
+npm run events:migrate                      # crea card_events en Postgres
 npm run typecheck
+npm test
 ```
 
 ## Stack

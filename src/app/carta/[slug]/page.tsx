@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import SearchBox from "@/components/SearchBox";
 import SampleDataNotice from "@/components/SampleDataNotice";
+import TrackCardView from "@/components/TrackCardView";
+import StoreLink from "@/components/StoreLink";
 import {
   getCardBySlug,
   getListingsForCard,
@@ -114,6 +116,7 @@ export default async function CardPage({ params, searchParams }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
+      <TrackCardView slug={slug} />
       <div className="max-w-2xl">
         <SearchBox size="sm" />
       </div>
@@ -176,14 +179,13 @@ export default async function CardPage({ params, searchParams }: Props) {
           </dl>
 
           {cheapest && (
-            <a
+            <StoreLink
               href={cheapest.productUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              slug={slug}
               className="mt-3 flex items-center justify-center rounded bg-accent px-4 py-3 text-sm font-semibold text-accent-ink transition hover:brightness-110"
             >
               Ver la más barata en {cheapest.storeName}
-            </a>
+            </StoreLink>
           )}
         </aside>
 
@@ -311,6 +313,7 @@ export default async function CardPage({ params, searchParams }: Props) {
                   <ListingRowView
                     key={listing.id}
                     listing={listing}
+                    cardSlug={slug}
                     cheapest={index === 0 && listing.inStock === 1 && filters.sort !== "store"}
                   />
                 ))}
@@ -341,7 +344,15 @@ function FilterRow({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function ListingRowView({ listing, cheapest }: { listing: ListingRow; cheapest: boolean }) {
+function ListingRowView({
+  listing,
+  cardSlug,
+  cheapest,
+}: {
+  listing: ListingRow;
+  cardSlug: string;
+  cheapest: boolean;
+}) {
   return (
     <tr
       className={`border-b border-line-soft transition last:border-0 hover:bg-hover ${
@@ -386,14 +397,13 @@ function ListingRowView({ listing, cheapest }: { listing: ListingRow; cheapest: 
         )}
       </td>
       <td className="px-4 py-3 text-right">
-        <a
+        <StoreLink
           href={listing.productUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+          slug={cardSlug}
           className="rounded-sm border border-line bg-surface px-3 py-1.5 text-xs font-semibold transition hover:border-accent hover:text-accent"
         >
           Ver
-        </a>
+        </StoreLink>
       </td>
     </tr>
   );

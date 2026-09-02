@@ -54,6 +54,29 @@ Vercel reconstruye la base en cada deploy.
 > Verifícalos antes del primer `--live`. `mtgmexico.com` sí venía confirmado en
 > el brief.
 
+### Señales de demanda (cartas de moda)
+
+El home muestra "cartas de moda" = **las más buscadas que además están
+disponibles**. Esa señal se escribe en runtime, y el catálogo SQLite es de sólo
+lectura, así que vive en un Postgres aparte:
+
+```bash
+# 1. crea la base en Neon o Vercel Postgres y expón la variable
+export DATABASE_URL=postgres://...
+# 2. crea la tabla (una sola vez)
+npm run events:migrate
+```
+
+En Vercel basta con que el proyecto tenga `DATABASE_URL` (o `POSTGRES_URL`, que
+la integración pone sola). **Sin esa variable la app funciona igual**: el home
+cae al ranking de oferta y lo dice —"Todavía no medimos búsquedas: por ahora,
+las que más tiendas tienen en stock"— en lugar de fingir popularidad.
+
+Qué se mide y qué no: se registran vistas de carta y **clics de salida** hacia
+la tienda; el clic pesa el triple porque es la intención de compra más cercana
+que podemos observar. La venta NO se puede medir — en fase 1 el checkout ocurre
+en la tienda y nunca la vemos.
+
 ### Deploy
 
 El proyecto está enlazado a Vercel (equipo `PPVAPPS`, proyecto `tcgpool`): cada
@@ -95,6 +118,8 @@ src/
       adapters/manual.ts   tiendas sin feed (MTG Wolf corre en Wix)
       normalize.ts         título de tienda -> carta + set + idioma + foil + condición
   decklist.ts            parser de listas pegadas (Moxfield, Archidekt, a mano)
+  trending.ts            "cartas de moda": demanda real, con respaldo por oferta
+  events/store.ts        contadores de demanda en Postgres (escritura en runtime)
       run.ts               orquesta: fetch -> normaliza -> resuelve -> upsert
     cards/scryfall.ts      nombre canónico + imagen
 scripts/

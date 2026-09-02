@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["better-sqlite3"],
+  serverExternalPackages: ["better-sqlite3", "pg"],
   // La base SQLite se genera en build (`npm run db:build`) y se lee en runtime.
   // Hay que incluirla explícitamente en el bundle de las funciones serverless.
   outputFileTracingIncludes: {

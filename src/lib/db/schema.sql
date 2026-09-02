@@ -121,27 +121,6 @@ CREATE TABLE IF NOT EXISTS sync_runs (
 
 CREATE INDEX IF NOT EXISTS idx_sync_runs_store ON sync_runs(store_id, started_at DESC);
 
--- ---------------------------------------------------------------------------
--- Señales de demanda: qué se busca y qué se clickea hacia la tienda.
---
--- "De moda" de verdad son las más buscadas. Eso se llena en RUNTIME, y hoy la
--- base es de sólo lectura (filesystem inmutable de la función serverless), así
--- que esta tabla se queda vacía hasta que exista un almacén escribible. Mientras
--- tanto `getTrendingCards` cae al ranking de oferta y la UI lo dice.
---
--- La compra no la podemos medir: en fase 1 el checkout ocurre en la tienda y
--- nunca vemos la venta. El proxy medible es el clic de salida ('clickout').
--- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS card_events (
-  card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
-  day     TEXT NOT NULL,                -- YYYY-MM-DD
-  kind    TEXT NOT NULL,                -- 'search' | 'clickout'
-  count   INTEGER NOT NULL DEFAULT 0,
-  PRIMARY KEY (card_id, day, kind)
-);
-
-CREATE INDEX IF NOT EXISTS idx_card_events_day ON card_events(day);
-
 -- Búsqueda por nombre. FTS5 con prefijos para autocomplete.
 CREATE VIRTUAL TABLE IF NOT EXISTS cards_fts USING fts5(
   name,
