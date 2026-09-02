@@ -20,48 +20,42 @@ export default function HomePage() {
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
           Buscador de singles TCG en México
         </p>
-        <h1 className="mt-3 max-w-4xl font-serif text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">
+        <h1 className="mt-3 max-w-3xl font-serif text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">
           Encuentra tu carta en tiendas mexicanas y afiliados.
         </h1>
 
-        {/* Dos motores de búsqueda: carta suelta y lista completa. */}
-        <div className="mt-9 grid gap-6 lg:grid-cols-2">
-          <div className="flex flex-col rounded border border-line bg-surface p-5">
-            <h2 className="font-serif text-lg font-semibold">Carta por carta</h2>
-            <p className="mt-1 text-sm text-muted">
-              Escribe el nombre y mira quién la tiene, en qué versión y a qué precio.
-            </p>
-            <div className="mt-4">
-              <SearchBox size="lg" />
-            </div>
-            <div className="mt-auto flex flex-wrap items-center gap-2 pt-4 text-xs text-muted">
-              <span>Prueba:</span>
-              {SUGGESTED.map((name) => (
-                <Link
-                  key={name}
-                  href={`/buscar?q=${encodeURIComponent(name)}`}
-                  className="rounded-sm border border-line px-2.5 py-1 text-ink transition hover:border-accent hover:text-accent"
-                >
-                  {name}
-                </Link>
-              ))}
-            </div>
+        {/* Los dos motores, uno debajo del otro: primero la carta suelta,
+            que es el caso común; la lista completa queda a un scroll corto. */}
+        <div className="mt-8 max-w-3xl">
+          <SearchBox size="lg" />
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
+            <span>Prueba:</span>
+            {SUGGESTED.map((name) => (
+              <Link
+                key={name}
+                href={`/buscar?q=${encodeURIComponent(name)}`}
+                className="rounded-sm border border-line bg-surface px-2.5 py-1 text-ink transition hover:border-accent hover:text-accent"
+              >
+                {name}
+              </Link>
+            ))}
           </div>
 
-          <div className="flex flex-col rounded border border-line bg-surface p-5">
-            <h2 className="font-serif text-lg font-semibold">Pega tu lista</h2>
+          <div className="mt-7 rounded border border-line bg-surface p-5">
+            <h2 className="font-serif text-base font-semibold">
+              ¿Traes la lista completa?
+            </h2>
             <p className="mt-1 text-sm text-muted">
-              Tu decklist completa de un jalón: te decimos qué tienda cubre más y
-              cuánto costaría.
+              Pégala entera y te decimos qué tienda cubre más y cuánto costaría.
             </p>
-            <div className="mt-4">
-              <DeckPasteBox rows={6} />
+            <div className="mt-3.5">
+              <DeckPasteBox rows={5} />
             </div>
           </div>
         </div>
 
         {sample && (
-          <div className="mt-6 max-w-3xl">
+          <div className="mt-7 max-w-3xl">
             <SampleDataNotice />
           </div>
         )}

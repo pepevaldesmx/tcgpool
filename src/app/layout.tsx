@@ -16,33 +16,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es">
       <body className="font-sans antialiased">
         <div className="flex min-h-screen flex-col">
-          <header className="border-b border-line bg-surface">
-            <div className="mx-auto flex w-full max-w-6xl items-center gap-6 px-4 py-3.5">
-              <Link href="/" className="flex items-center gap-2.5">
-                <span className="grid h-8 w-8 place-items-center rounded bg-accent text-[11px] font-black text-accent-ink">
-                  TP
-                </span>
-                <span className="font-serif text-[17px] font-bold tracking-tight">
-                  TCG Pool
-                </span>
+          {/* Barra deliberadamente callada: la marca no compite con el
+              buscador, que es a lo que viene la gente. */}
+          <header>
+            <div className="mx-auto flex w-full max-w-6xl items-center gap-6 px-4 py-3">
+              <Link
+                href="/"
+                className="font-serif text-[15px] font-semibold tracking-tight text-ink"
+              >
+                TCG Pool
               </Link>
-              <nav className="ml-auto flex items-center gap-1 text-sm">
-                <Link
-                  href="/buscar"
-                  className="rounded px-3 py-1.5 font-medium text-muted transition hover:bg-hover hover:text-ink"
-                >
+              <nav className="ml-auto flex items-center gap-4 text-[13px]">
+                <Link href="/buscar" className="text-muted transition hover:text-accent">
                   Buscar
                 </Link>
-                <Link
-                  href="/lista"
-                  className="rounded px-3 py-1.5 font-medium text-muted transition hover:bg-hover hover:text-ink"
-                >
+                <Link href="/lista" className="text-muted transition hover:text-accent">
                   Listas
                 </Link>
-                <Link
-                  href="/tiendas"
-                  className="rounded px-3 py-1.5 font-medium text-muted transition hover:bg-hover hover:text-ink"
-                >
+                <Link href="/tiendas" className="text-muted transition hover:text-accent">
                   Tiendas
                 </Link>
               </nav>
