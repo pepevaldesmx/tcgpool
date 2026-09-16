@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getProvenance } from "@/lib/db/queries";
+import { isConfigured } from "@/lib/db";
+import { getProvenance, type Provenance } from "@/lib/db/queries";
+import NotConfigured from "@/components/NotConfigured";
 import { getUserLocation } from "@/lib/location-server";
 import LocationPicker from "@/components/LocationPicker";
 import "./globals.css";
@@ -15,8 +17,29 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const provenance = getProvenance();
+  // Sin base no hay catálogo que mostrar. Se dice de frente, en un solo lugar,
+  // en vez de dejar que cada página truene con un 500.
+  if (!isConfigured()) {
+    return (
+      <html lang="es">
+        <body className="font-sans antialiased">
+          <NotConfigured />
+        </body>
+      </html>
+    );
+  }
+
   const location = await getUserLocation();
+
+  // El aviso de procedencia es decoración, no contenido: si la base no responde
+  // —o si es un build sin DATABASE_URL, donde Next prerenderiza el 404— la barra
+  // y el pie se pintan igual. Las páginas con datos sí fallan ruidosamente.
+  let provenance: Provenance = { live: 0, sample: 0, sampleNames: [] };
+  try {
+    provenance = await getProvenance();
+  } catch (err) {
+    console.error("[layout] no se pudo leer la procedencia:", err);
+  }
 
   return (
     <html lang="es">
@@ -63,7 +86,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 MVP ·{" "}
                 {provenance.sample > 0
                   ? `${provenance.live} de ${provenance.live + provenance.sample} tiendas con catálogo real`
-                  : "catálogo real de todas las tiendas"}{" "}
+                  : provenance.live > 0
+                    ? "catálogo real de todas las tiendas"
+                    : "comparador de singles"}{" "}
                 · hecho en México
               </p>
             </div>

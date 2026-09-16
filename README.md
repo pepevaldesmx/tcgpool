@@ -15,15 +15,18 @@ dispersa en un solo lugar buscable.
 
 ## Arrancar
 
+El catálogo vive en Postgres. Hacen falta una base y dos comandos:
+
 ```bash
 npm install
-npm run db:build     # construye data/tcgpool.db desde los snapshots versionados
-npm run dev          # http://localhost:3000
+export DATABASE_URL=postgres://...   # Vercel Postgres, Neon, o uno local
+npm run db:migrate                   # aplica el esquema (idempotente)
+npm run sync                         # carga el catálogo desde data/snapshots/
+npm run dev                          # http://localhost:3000
 ```
 
-`npm run build` ya corre `db:build`, así que en Vercel no hay nada extra que
-configurar: cada deploy reconstruye la base a partir de lo que esté commiteado
-en `data/snapshots/`.
+`npm run build` **no** toca la base: sólo compila. Sin `DATABASE_URL` la app no
+truena — muestra una pantalla que explica qué falta.
 
 ## Datos
 
@@ -43,10 +46,10 @@ npm run sync -- --live --store=mtg-mexico   # una sola
 npm run snapshot -- --store=mtg-mexico      # sólo capturar el feed, sin ingerir
 ```
 
-`--live` pega a `https://<tienda>/products.json`, guarda el feed crudo en
-`data/snapshots/<slug>.live.json` (que tiene prioridad sobre el `.sample.json`)
-y lo ingiere. Los `.live.json` **se commitean**: son la fuente desde la que
-Vercel reconstruye la base en cada deploy.
+`--live` pega a `https://<tienda>/products.json`, escribe el catálogo en
+Postgres y deja el feed normalizado en `data/snapshots/<slug>.live.json` como
+evidencia de la corrida. Ese archivo **no se commitea**: la base es la fuente de
+verdad, y commitearlo inflaba el repo 11 MB cada 6 horas.
 
 > ⚠️ Los dominios de `data/stores.json` marcados con `"domainVerified": false`
 > se tomaron del brief o se dedujeron y **no se pudieron confirmar** desde el
@@ -94,9 +97,9 @@ redesplegar, nunca escribir en SQLite desde la app.
 
 ### Sincronización periódica
 
-`.github/workflows/sync.yml` corre `--live` cada 6 horas y commitea los
-snapshots; el push dispara el redeploy en Vercel. Para el MVP no hace falta
-tiempo real ni colas de trabajos.
+`.github/workflows/sync.yml` corre `--live` cada 6 horas y escribe directo a
+Postgres, con `DATABASE_URL` como secreto del repositorio. No commitea nada y no
+dispara deploys: la app lee la base en cada request.
 
 ## Cómo está armado
 

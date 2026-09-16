@@ -19,7 +19,7 @@ export interface Trending {
  */
 export async function getTrending(limit = 5): Promise<Trending> {
   const slugs = await getTopCardSlugs(limit);
-  const byDemand = getCardsBySlugs(slugs);
+  const byDemand = await getCardsBySlugs(slugs);
   if (byDemand.length) return { cards: byDemand, source: "demand" };
-  return { cards: getTopCardsBySupply(limit), source: "supply" };
+  return { cards: await getTopCardsBySupply(limit), source: "supply" };
 }

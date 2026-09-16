@@ -45,27 +45,36 @@ app móvil nativa. Web responsive es suficiente.
 - **`card → printing → listing` son tres niveles distintos.** Una carta tiene
   muchas impresiones (set + número + idioma + foil); cada impresión, muchos
   listings de tiendas distintas. No los colapses.
-- **Todo el SQL del CATÁLOGO vive en `src/lib/db/queries.ts`.** La app no habla
-  con SQLite directo. Migrar a Postgres debe ser reescribir ese archivo, no la
-  app. La única excepción es `src/lib/events/store.ts`, que es otro almacén
-  (Postgres) con otro ciclo de vida: se escribe en runtime.
-- **Las señales de demanda no caben en SQLite.** El catálogo se reconstruye en
-  cada build y en runtime es de sólo lectura; los contadores de búsquedas y
-  clics de salida se escriben en runtime, así que viven en Postgres y se
-  llavean por SLUG (los ids de SQLite se regeneran en cada `db:build`). Sin
-  `DATABASE_URL` todo sigue funcionando y el home cae al ranking de oferta.
-- **`src/lib/db/index.ts` no toca `fs`.** Next traza los accesos a disco para
-  empaquetar las funciones serverless; el acceso a archivos vive en
-  `src/lib/db/migrate.ts`, que sólo usan los scripts.
-- **En runtime la base se abre en SÓLO LECTURA y nunca en WAL.** El filesystem
-  de la función serverless es inmutable: abrirla en modo escritura o fijar
-  `journal_mode = WAL` tira "attempt to write a readonly database" en cada
-  request. `openForWrite` deja el archivo en `journal_mode=delete` y `db:build`
-  falla si sale en WAL.
+- **Todo el SQL del catálogo vive en `src/lib/db/queries.ts`.** Las pantallas no
+  hablan con Postgres directo.
+- **El catálogo vive en Postgres, no en un archivo.** Fue SQLite reconstruido en
+  cada build hasta que las tiendas empezaron a administrar su inventario,
+  sincronizarse solas y manejar afiliados: todo eso son escrituras en runtime, y
+  el filesystem de la función serverless es inmutable. Consecuencias que no hay
+  que deshacer: el build ya no toca la base (`npm run build` es sólo
+  `next build`), el cron escribe directo a Postgres y ya no commitea snapshots,
+  y `data/snapshots/*.live.json` es evidencia de una corrida, no fuente de
+  verdad.
+- **Sin `DATABASE_URL` la app no inventa datos: lo dice.** El layout corta con
+  `NotConfigured` en vez de dejar que cada página truene con un 500.
+- **La ingesta escribe POR LOTES** (`upsertCards`, `upsertPrintings`,
+  `upsertListings`). Una tienda real trae decenas de miles de listados: fila por
+  fila serían cien mil viajes de red contra una base remota. Con SQLite local no
+  importaba; aquí es la diferencia entre 19 segundos y media hora.
+- **`listings.origin` separa lo que vino del feed de lo capturado a mano.** La
+  sincronización sólo marca sin stock lo que tiene `origin = 'feed'`: si barriera
+  todo, cada corrida borraría lo que la tienda capturó en su panel o lo que subió
+  un afiliado.
+- **La búsqueda es `tsvector` con prefijo por palabra, y trigramas de respaldo.**
+  `to_tsquery('simple', 'sol:* & ring:*')` reproduce lo que hacía FTS5; cuando no
+  hay coincidencia, `pg_trgm` tolera errores de dedo ("counterspel" encuentra
+  Counterspell). `match_key` se normaliza en JS para no depender de `unaccent`,
+  que no todos los Postgres administrados traen.
 - **Una fuente de datos = un adaptador** en `src/lib/ingest/adapters/`, que
   devuelve `RawListing[]`. Sumar una tienda Shopify no debe requerir código.
-- **`npm run build` tiene que funcionar sin red.** `db:build` resuelve nombres
-  contra la caché versionada `data/scryfall-cache.json`.
+- **`npm run build` tiene que funcionar sin red y sin base.** El build no
+  consulta Postgres; la ingesta resuelve nombres contra la caché versionada
+  `data/scryfall-cache.json`.
 - **Nunca presentes datos de muestra como reales, ni al revés.** La procedencia
   es POR TIENDA (`stores.data_source`, que la ingesta escribe con el origen real
   del feed, no con el modo del script). `getProvenance()` devuelve los números y
@@ -125,20 +134,19 @@ app móvil nativa. Web responsive es suficiente.
 
 ```bash
 npm run dev                                 # servidor de desarrollo
-npm run db:build                            # reconstruir data/tcgpool.db
+npm run db:migrate                          # aplica el esquema (idempotente)
 npm run sync                                # ingerir desde data/snapshots/
 npm run sync -- --live [--store=<slug>]     # ingerir feeds reales
 npm run snapshot -- --store=<slug>          # capturar un feed sin ingerirlo
 npm run make-samples                        # regenerar datos de muestra (usa Scryfall)
-npm run events:migrate                      # crea card_events en Postgres
+npm run snapshots:normalize                 # reescribir snapshots en forma estable
 npm run typecheck
 npm test
 ```
 
 ## Stack
 
-Next.js (App Router) + SQLite (better-sqlite3) + Tailwind. Deploy pensado para
-Vercel: la base es de sólo lectura en runtime y se reconstruye en cada build
-desde los snapshots commiteados. Si el catálogo crece a cientos de miles de
-listings o hace falta escribir en runtime (fase 2), toca migrar a Postgres —
-por eso todo el SQL está aislado.
+Next.js (App Router) + PostgreSQL (`pg`) + Tailwind, desplegado en Vercel.
+Una sola base para catálogo y señales de demanda, con `DATABASE_URL` como única
+configuración. El build no la toca: sólo compila. La ingesta corre aparte (cron
+de GitHub Actions) y escribe directo a la base.

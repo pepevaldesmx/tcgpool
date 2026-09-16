@@ -1,4 +1,3 @@
-import type { Database } from "better-sqlite3";
 import type { AdapterResult, GameId } from "@/lib/types";
 import {
   fetchShopifyFeed,
@@ -8,19 +7,22 @@ import {
   type ShopifyConfig,
 } from "@/lib/ingest/adapters/shopify";
 import { readManualFeed, type ManualConfig } from "@/lib/ingest/adapters/manual";
-import { normalizeListing } from "@/lib/ingest/normalize";
+import { normalizeListing, normalizeText } from "@/lib/ingest/normalize";
 import type { StoreDefinition } from "@/lib/ingest/registry";
 import { cardImage, lookupCardByName, saveCache } from "@/lib/cards/scryfall";
 import {
   finishSyncRun,
   markMissingAsOutOfStock,
+  printingMatchKey,
   startSyncRun,
   touchStoreSync,
-  upsertCard,
-  upsertListing,
-  upsertPrinting,
+  upsertCards,
+  upsertListings,
+  upsertPrintings,
   upsertStore,
   upsertStoreSeller,
+  type ListingInput,
+  type PrintingInput,
 } from "@/lib/db/queries";
 
 export type SyncMode = "live" | "snapshot";
@@ -44,6 +46,7 @@ export interface SyncResult {
   upserted: number;
   skipped: number;
   outOfStock: number;
+  perGame: Record<string, number>;
   error?: string;
 }
 
@@ -54,15 +57,15 @@ async function runAdapter(def: StoreDefinition, opts: SyncOptions): Promise<Adap
       const feed = await fetchShopifyFeed(config, {
         onPage: (page, count) => opts.log?.(`  página ${page}: ${count} productos`),
       });
-      // Guardamos el feed crudo: permite re-normalizar sin volver a pegarle a
+      // Guardamos el feed normalizado: permite re-ingerir sin volver a pegarle a
       // la tienda y deja evidencia de qué se ingirió.
       writeSnapshot(def.slug, "live", feed);
       return shopifyFeedToListings(feed, config, "live");
     }
-    const feed = readSnapshot(def.slug, "live") ?? readSnapshot(def.slug, "sample");
+    const live = readSnapshot(def.slug, "live");
+    const feed = live ?? readSnapshot(def.slug, "sample");
     if (!feed) return { listings: [], productsSeen: 0, source: "sample" };
-    const kind = readSnapshot(def.slug, "live") ? "live" : "sample";
-    return shopifyFeedToListings(feed, config, kind);
+    return shopifyFeedToListings(feed, config, live ? "live" : "sample");
   }
 
   if (def.sourceType === "manual" || def.sourceType === "wix") {
@@ -73,14 +76,13 @@ async function runAdapter(def: StoreDefinition, opts: SyncOptions): Promise<Adap
 }
 
 export async function syncStore(
-  db: Database,
   def: StoreDefinition,
   opts: SyncOptions,
 ): Promise<SyncResult> {
   const defaultGame = def.defaultGame ?? opts.gameId ?? "magic";
   const log = opts.log ?? (() => {});
 
-  const storeId = upsertStore(db, {
+  const storeId = await upsertStore({
     slug: def.slug,
     name: def.name,
     url: def.url,
@@ -89,32 +91,28 @@ export async function syncStore(
     lng: def.lng,
     sourceType: def.sourceType,
     sourceConfig: def.sourceConfig,
+    defaultGame,
     active: def.active,
   });
-  const sellerId = upsertStoreSeller(db, storeId, def.name, `store-${def.slug}`);
-
-  const runId = startSyncRun(db, storeId, opts.mode);
-  const now = new Date().toISOString();
+  const sellerId = await upsertStoreSeller(storeId, def.name, `store-${def.slug}`);
+  const runId = await startSyncRun(storeId, opts.mode);
 
   try {
     const result = await runAdapter(def, opts);
     log(`  ${result.listings.length} variantes crudas (${result.productsSeen} productos)`);
 
-    let upserted = 0;
-    let skipped = 0;
+    // 1) Normalizar y resolver contra Scryfall. Aquí está el I/O de red, así
+    //    que se hace antes de tocar la base.
+    interface Pending {
+      cardKey: string;
+      printing: Omit<PrintingInput, "cardId">;
+      listing: Omit<ListingInput, "printingId" | "sellerId" | "storeId">;
+    }
+    const pending: Pending[] = [];
+    const cards = new Map<string, Parameters<typeof upsertCards>[0][number]>();
+    const perGame: Record<string, number> = {};
     const seen: string[] = [];
-
-    // Resolvemos contra Scryfall fuera de la transacción (hay I/O de red) y
-    // después escribimos todo de un jalón.
-    const prepared: Array<{
-      printing: Parameters<typeof upsertPrinting>[1];
-      card: Parameters<typeof upsertCard>[1];
-      listing: Omit<Parameters<typeof upsertListing>[1], "printingId">;
-    }> = [];
-
-    // Cuántos listings entraron por juego: sin esto, una tienda que vende
-    // varios juegos mete su Yu-Gi-Oh al catálogo de Magic sin que nadie lo note.
-    const perGame = new Map<string, number>();
+    let skipped = 0;
 
     for (const raw of result.listings) {
       const n = normalizeListing(raw, defaultGame);
@@ -143,12 +141,22 @@ export async function syncStore(
         }
       }
 
+      const cardKey = `${n.game}|${normalizeText(canonicalName)}`;
+      if (!cards.has(cardKey)) {
+        cards.set(cardKey, {
+          gameId: n.game,
+          name: canonicalName,
+          oracleId,
+          imageUrl: cardImageUrl,
+          typeLine,
+        });
+      }
+
       seen.push(n.externalId);
-      perGame.set(n.game, (perGame.get(n.game) ?? 0) + 1);
-      prepared.push({
-        card: { gameId: n.game, name: canonicalName, oracleId, imageUrl: cardImageUrl, typeLine },
+      perGame[n.game] = (perGame[n.game] ?? 0) + 1;
+      pending.push({
+        cardKey,
         printing: {
-          cardId: 0, // se rellena al escribir
           setCode,
           setName: n.setName ?? null,
           language: n.language,
@@ -156,8 +164,6 @@ export async function syncStore(
           imageUrl: n.imageUrl ?? null,
         },
         listing: {
-          sellerId,
-          storeId,
           priceCents: n.priceCents,
           condition: n.condition,
           stock: n.stock,
@@ -165,33 +171,46 @@ export async function syncStore(
           productUrl: n.productUrl,
           rawTitle: n.rawTitle,
           externalId: n.externalId,
-          now,
+          origin: "feed",
         },
       });
     }
 
-    const write = db.transaction(() => {
-      for (const p of prepared) {
-        const cardId = upsertCard(db, p.card);
-        const printingId = upsertPrinting(db, { ...p.printing, cardId });
-        upsertListing(db, { ...p.listing, printingId });
-        upserted++;
-      }
-    });
-    write();
+    // 2) Escribir en tres lotes: cartas, impresiones y listados.
+    const cardIds = await upsertCards([...cards.values()]);
 
-    if (perGame.size > 1) {
+    const printings = new Map<string, PrintingInput>();
+    for (const p of pending) {
+      const cardId = cardIds.get(p.cardKey);
+      if (cardId == null) continue;
+      const input: PrintingInput = { ...p.printing, cardId };
+      printings.set(`${cardId}|${printingMatchKey(input)}`, input);
+    }
+    const printingIds = await upsertPrintings([...printings.values()]);
+
+    const listings: ListingInput[] = [];
+    for (const p of pending) {
+      const cardId = cardIds.get(p.cardKey);
+      if (cardId == null) continue;
+      const key = `${cardId}|${printingMatchKey({ ...p.printing, cardId })}`;
+      const printingId = printingIds.get(key);
+      if (printingId == null) continue;
+      listings.push({ ...p.listing, printingId, sellerId, storeId });
+    }
+    const upserted = await upsertListings(listings);
+
+    if (Object.keys(perGame).length > 1) {
       log(
-        `  juegos: ${[...perGame.entries()]
+        `  juegos: ${Object.entries(perGame)
           .sort((a, b) => b[1] - a[1])
           .map(([g, n]) => `${g} ${n}`)
           .join(" · ")}`,
       );
     }
 
-    const outOfStock = markMissingAsOutOfStock(db, storeId, seen, now);
-    touchStoreSync(db, storeId, result.source);
-    finishSyncRun(db, runId, {
+    const outOfStock = await markMissingAsOutOfStock(storeId, seen);
+    await touchStoreSync(storeId, result.source);
+    await finishSyncRun(runId, {
       status: "ok",
       productsSeen: result.productsSeen,
       upserted,
@@ -206,10 +225,11 @@ export async function syncStore(
       upserted,
       skipped,
       outOfStock,
+      perGame,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    finishSyncRun(db, runId, { status: "error", error: message });
+    await finishSyncRun(runId, { status: "error", error: message });
     return {
       store: def.slug,
       source: opts.mode === "live" ? "live" : "sample",
@@ -217,6 +237,7 @@ export async function syncStore(
       upserted: 0,
       skipped: 0,
       outOfStock: 0,
+      perGame: {},
       error: message,
     };
   }

@@ -19,7 +19,7 @@ export default async function SearchPage({ searchParams }: Props) {
   const params = await searchParams;
   const q = params.q?.trim() ?? "";
   const onlyInStock = params.stock === "1";
-  const results = q ? searchCards(q, { limit: 60, onlyInStock }) : [];
+  const results = q ? await searchCards(q, { limit: 60, onlyInStock }) : [];
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">

@@ -1,7 +1,6 @@
-import type { Database } from "better-sqlite3";
-import { getDb } from "@/lib/db";
+import { one, query, transaction } from "@/lib/db";
 import { normalizeText, slugify } from "@/lib/ingest/normalize";
-import type { Condition, Finish } from "@/lib/types";
+import type { Condition, Finish, GameId } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
 // Tipos de lectura (lo que consume la UI)
@@ -27,10 +26,11 @@ export interface ListingRow {
   currency: string;
   condition: Condition;
   stock: number;
-  inStock: number;
+  inStock: boolean;
   productUrl: string;
   rawTitle: string;
   updatedAt: string;
+  origin: string;
   setName: string | null;
   setCode: string | null;
   collectorNumber: string | null;
@@ -56,124 +56,110 @@ export interface StoreRow {
   url: string;
   city: string | null;
   sourceType: string;
-  sourceConfig: string;
-  active: number;
+  sourceConfig: unknown;
+  active: boolean;
   lastSyncedAt: string | null;
 }
 
 // ---------------------------------------------------------------------------
-// Escritura (ingesta)
+// Escritura (ingesta y panel de tienda)
 // ---------------------------------------------------------------------------
 
-export function upsertGame(db: Database, id: string, name: string) {
-  db.prepare(
-    `INSERT INTO games (id, name) VALUES (?, ?)
-     ON CONFLICT(id) DO UPDATE SET name = excluded.name`,
-  ).run(id, name);
+export async function upsertGame(id: string, name: string): Promise<void> {
+  await query(
+    `INSERT INTO games (id, name) VALUES ($1, $2)
+     ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name`,
+    [id, name],
+  );
 }
 
-export function upsertStore(
-  db: Database,
-  s: {
-    slug: string;
-    name: string;
-    url: string;
-    city?: string;
-    lat?: number;
-    lng?: number;
-    sourceType: string;
-    sourceConfig: Record<string, unknown>;
-    shipsNationwide?: boolean;
-    active?: boolean;
-  },
-): number {
-  db.prepare(
-    `INSERT INTO stores (slug, name, url, city, lat, lng, source_type, source_config, ships_nationwide, active)
-     VALUES (@slug, @name, @url, @city, @lat, @lng, @sourceType, @sourceConfig, @ships, @active)
-     ON CONFLICT(slug) DO UPDATE SET
-       name = excluded.name, url = excluded.url, city = excluded.city,
-       lat = excluded.lat, lng = excluded.lng,
-       source_type = excluded.source_type, source_config = excluded.source_config,
-       ships_nationwide = excluded.ships_nationwide, active = excluded.active`,
-  ).run({
-    slug: s.slug,
-    name: s.name,
-    url: s.url,
-    city: s.city ?? null,
-    lat: s.lat ?? null,
-    lng: s.lng ?? null,
-    sourceType: s.sourceType,
-    sourceConfig: JSON.stringify(s.sourceConfig ?? {}),
-    ships: s.shipsNationwide === false ? 0 : 1,
-    active: s.active === false ? 0 : 1,
-  });
-  const row = db.prepare(`SELECT id FROM stores WHERE slug = ?`).get(s.slug) as { id: number };
-  return row.id;
+export async function upsertStore(s: {
+  slug: string;
+  name: string;
+  url: string;
+  city?: string;
+  lat?: number;
+  lng?: number;
+  sourceType: string;
+  sourceConfig: Record<string, unknown>;
+  defaultGame?: GameId;
+  shipsNationwide?: boolean;
+  active?: boolean;
+}): Promise<number> {
+  const row = await one<{ id: number }>(
+    `INSERT INTO stores (slug, name, url, city, lat, lng, source_type, source_config,
+                         default_game, ships_nationwide, active)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11)
+     ON CONFLICT (slug) DO UPDATE SET
+       name = EXCLUDED.name, url = EXCLUDED.url, city = EXCLUDED.city,
+       lat = EXCLUDED.lat, lng = EXCLUDED.lng,
+       source_type = EXCLUDED.source_type, source_config = EXCLUDED.source_config,
+       default_game = EXCLUDED.default_game,
+       ships_nationwide = EXCLUDED.ships_nationwide, active = EXCLUDED.active
+     RETURNING id`,
+    [
+      s.slug, s.name, s.url, s.city ?? null, s.lat ?? null, s.lng ?? null,
+      s.sourceType, JSON.stringify(s.sourceConfig ?? {}), s.defaultGame ?? null,
+      s.shipsNationwide !== false, s.active !== false,
+    ],
+  );
+  return row!.id;
 }
 
 /**
- * Cada tienda tiene un seller espejo de tipo 'store'. En fase 2 se agregan
- * sellers de tipo 'affiliate' colgados de la misma tienda sin tocar el esquema.
+ * Cada tienda tiene un seller espejo de tipo 'store'. Los afiliados se agregan
+ * como sellers de tipo 'affiliate' colgados de la misma tienda.
  */
-export function upsertStoreSeller(db: Database, storeId: number, name: string, slug: string): number {
-  db.prepare(
+export async function upsertStoreSeller(
+  storeId: number,
+  name: string,
+  slug: string,
+): Promise<number> {
+  const row = await one<{ id: number }>(
     `INSERT INTO sellers (slug, name, type, store_id, active)
-     VALUES (?, ?, 'store', ?, 1)
-     ON CONFLICT(slug) DO UPDATE SET name = excluded.name, store_id = excluded.store_id`,
-  ).run(slug, name, storeId);
-  const row = db.prepare(`SELECT id FROM sellers WHERE slug = ?`).get(slug) as { id: number };
-  return row.id;
+     VALUES ($1, $2, 'store', $3, TRUE)
+     ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, store_id = EXCLUDED.store_id
+     RETURNING id`,
+    [slug, name, storeId],
+  );
+  return row!.id;
 }
 
-export function upsertCard(
-  db: Database,
-  c: {
-    gameId: string;
-    name: string;
-    oracleId?: string | null;
-    imageUrl?: string | null;
-    typeLine?: string | null;
-  },
-): number {
-  const matchKey = normalizeText(c.name);
-  const slug = slugify(c.name);
-  db.prepare(
+export async function upsertCard(c: {
+  gameId: string;
+  name: string;
+  oracleId?: string | null;
+  imageUrl?: string | null;
+  typeLine?: string | null;
+}): Promise<number> {
+  const row = await one<{ id: number }>(
     `INSERT INTO cards (game_id, name, slug, match_key, oracle_id, image_url, type_line)
-     VALUES (@gameId, @name, @slug, @matchKey, @oracleId, @imageUrl, @typeLine)
-     ON CONFLICT(game_id, match_key) DO UPDATE SET
-       name = excluded.name,
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     ON CONFLICT (game_id, match_key) DO UPDATE SET
+       name = EXCLUDED.name,
        -- no pisamos con NULL: el primer sync que traiga imagen la conserva
-       image_url = COALESCE(excluded.image_url, cards.image_url),
-       oracle_id = COALESCE(excluded.oracle_id, cards.oracle_id),
-       type_line = COALESCE(excluded.type_line, cards.type_line)`,
-  ).run({
-    gameId: c.gameId,
-    name: c.name,
-    slug,
-    matchKey,
-    oracleId: c.oracleId ?? null,
-    imageUrl: c.imageUrl ?? null,
-    typeLine: c.typeLine ?? null,
-  });
-  const row = db
-    .prepare(`SELECT id FROM cards WHERE game_id = ? AND match_key = ?`)
-    .get(c.gameId, matchKey) as { id: number };
-  return row.id;
+       image_url = COALESCE(EXCLUDED.image_url, cards.image_url),
+       oracle_id = COALESCE(EXCLUDED.oracle_id, cards.oracle_id),
+       type_line = COALESCE(EXCLUDED.type_line, cards.type_line)
+     RETURNING id`,
+    [
+      c.gameId, c.name, slugify(c.name), normalizeText(c.name),
+      c.oracleId ?? null, c.imageUrl ?? null, c.typeLine ?? null,
+    ],
+  );
+  return row!.id;
 }
 
-export function upsertPrinting(
-  db: Database,
-  p: {
-    cardId: number;
-    setCode?: string | null;
-    setName?: string | null;
-    collectorNumber?: string | null;
-    language: string;
-    finish: Finish;
-    scryfallId?: string | null;
-    imageUrl?: string | null;
-  },
-): number {
+export async function upsertPrinting(p: {
+  cardId: number;
+  setCode?: string | null;
+  setName?: string | null;
+  collectorNumber?: string | null;
+  language: string;
+  finish: Finish;
+  scryfallId?: string | null;
+  imageUrl?: string | null;
+}): Promise<number> {
   const matchKey = [
     normalizeText(p.setName ?? p.setCode ?? "sin-set"),
     p.collectorNumber ?? "",
@@ -181,98 +167,212 @@ export function upsertPrinting(
     p.finish,
   ].join("|");
 
-  db.prepare(
-    `INSERT INTO printings (card_id, set_code, set_name, collector_number, language, finish, scryfall_id, image_url, match_key)
-     VALUES (@cardId, @setCode, @setName, @collectorNumber, @language, @finish, @scryfallId, @imageUrl, @matchKey)
-     ON CONFLICT(card_id, match_key) DO UPDATE SET
-       set_code = COALESCE(excluded.set_code, printings.set_code),
-       set_name = COALESCE(excluded.set_name, printings.set_name),
-       image_url = COALESCE(excluded.image_url, printings.image_url),
-       scryfall_id = COALESCE(excluded.scryfall_id, printings.scryfall_id)`,
-  ).run({
-    cardId: p.cardId,
-    setCode: p.setCode ?? null,
-    setName: p.setName ?? null,
-    collectorNumber: p.collectorNumber ?? null,
-    language: p.language,
-    finish: p.finish,
-    scryfallId: p.scryfallId ?? null,
-    imageUrl: p.imageUrl ?? null,
-    matchKey,
-  });
-
-  const row = db
-    .prepare(`SELECT id FROM printings WHERE card_id = ? AND match_key = ?`)
-    .get(p.cardId, matchKey) as { id: number };
-  return row.id;
-}
-
-export function upsertListing(
-  db: Database,
-  l: {
-    printingId: number;
-    sellerId: number;
-    storeId: number;
-    priceCents: number;
-    condition: Condition;
-    stock: number;
-    inStock: boolean;
-    productUrl: string;
-    rawTitle: string;
-    externalId: string;
-    now: string;
-  },
-) {
-  db.prepare(
-    `INSERT INTO listings (printing_id, seller_id, store_id, price_cents, currency, condition,
-                           stock, in_stock, product_url, raw_title, external_id, first_seen_at, updated_at)
-     VALUES (@printingId, @sellerId, @storeId, @priceCents, 'MXN', @condition,
-             @stock, @inStock, @productUrl, @rawTitle, @externalId, @now, @now)
-     ON CONFLICT(store_id, external_id) DO UPDATE SET
-       printing_id = excluded.printing_id,
-       price_cents = excluded.price_cents,
-       condition   = excluded.condition,
-       stock       = excluded.stock,
-       in_stock    = excluded.in_stock,
-       product_url = excluded.product_url,
-       raw_title   = excluded.raw_title,
-       updated_at  = excluded.updated_at`,
-  ).run({ ...l, inStock: l.inStock ? 1 : 0 });
+  const row = await one<{ id: number }>(
+    `INSERT INTO printings (card_id, set_code, set_name, collector_number, language,
+                            finish, scryfall_id, image_url, match_key)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+     ON CONFLICT (card_id, match_key) DO UPDATE SET
+       set_code = COALESCE(EXCLUDED.set_code, printings.set_code),
+       set_name = COALESCE(EXCLUDED.set_name, printings.set_name),
+       image_url = COALESCE(EXCLUDED.image_url, printings.image_url),
+       scryfall_id = COALESCE(EXCLUDED.scryfall_id, printings.scryfall_id)
+     RETURNING id`,
+    [
+      p.cardId, p.setCode ?? null, p.setName ?? null, p.collectorNumber ?? null,
+      p.language, p.finish, p.scryfallId ?? null, p.imageUrl ?? null, matchKey,
+    ],
+  );
+  return row!.id;
 }
 
 /**
- * Lo que ya no vino en el feed dejó de estar a la venta. No lo borramos (nos
- * sirve el histórico de precio) — lo marcamos sin stock.
+ * Upsert de cartas en lote. Devuelve el id de cada una por su llave
+ * `gameId|matchKey`.
+ *
+ * En lote y no una por una porque una tienda real trae decenas de miles de
+ * listados: fila por fila serían cien mil viajes de red contra Postgres, que es
+ * remoto. Con SQLite local no importaba; aquí es la diferencia entre segundos y
+ * media hora.
  */
-export function markMissingAsOutOfStock(
-  db: Database,
+export async function upsertCards(
+  rows: Array<{
+    gameId: string;
+    name: string;
+    oracleId?: string | null;
+    imageUrl?: string | null;
+    typeLine?: string | null;
+  }>,
+): Promise<Map<string, number>> {
+  const ids = new Map<string, number>();
+  if (!rows.length) return ids;
+
+  const CHUNK = 500;
+  for (let i = 0; i < rows.length; i += CHUNK) {
+    const chunk = rows.slice(i, i + CHUNK);
+    const values: unknown[] = [];
+    const tuples = chunk.map((c, j) => {
+      const b = j * 7;
+      values.push(
+        c.gameId, c.name, slugify(c.name), normalizeText(c.name),
+        c.oracleId ?? null, c.imageUrl ?? null, c.typeLine ?? null,
+      );
+      return `($${b + 1},$${b + 2},$${b + 3},$${b + 4},$${b + 5},$${b + 6},$${b + 7})`;
+    });
+    const out = await query<{ id: number; game_id: string; match_key: string }>(
+      `INSERT INTO cards (game_id, name, slug, match_key, oracle_id, image_url, type_line)
+       VALUES ${tuples.join(",")}
+       ON CONFLICT (game_id, match_key) DO UPDATE SET
+         name = EXCLUDED.name,
+         image_url = COALESCE(EXCLUDED.image_url, cards.image_url),
+         oracle_id = COALESCE(EXCLUDED.oracle_id, cards.oracle_id),
+         type_line = COALESCE(EXCLUDED.type_line, cards.type_line)
+       RETURNING id, game_id, match_key`,
+      values,
+    );
+    for (const r of out) ids.set(`${r.game_id}|${r.match_key}`, r.id);
+  }
+  return ids;
+}
+
+export interface PrintingInput {
+  cardId: number;
+  setCode?: string | null;
+  setName?: string | null;
+  collectorNumber?: string | null;
+  language: string;
+  finish: Finish;
+  scryfallId?: string | null;
+  imageUrl?: string | null;
+}
+
+export function printingMatchKey(p: PrintingInput): string {
+  return [
+    normalizeText(p.setName ?? p.setCode ?? "sin-set"),
+    p.collectorNumber ?? "",
+    p.language,
+    p.finish,
+  ].join("|");
+}
+
+/** Upsert de impresiones en lote. Llave: `cardId|matchKey`. */
+export async function upsertPrintings(rows: PrintingInput[]): Promise<Map<string, number>> {
+  const ids = new Map<string, number>();
+  if (!rows.length) return ids;
+
+  const CHUNK = 500;
+  for (let i = 0; i < rows.length; i += CHUNK) {
+    const chunk = rows.slice(i, i + CHUNK);
+    const values: unknown[] = [];
+    const tuples = chunk.map((p, j) => {
+      const b = j * 9;
+      values.push(
+        p.cardId, p.setCode ?? null, p.setName ?? null, p.collectorNumber ?? null,
+        p.language, p.finish, p.scryfallId ?? null, p.imageUrl ?? null,
+        printingMatchKey(p),
+      );
+      return `($${b + 1},$${b + 2},$${b + 3},$${b + 4},$${b + 5},$${b + 6},$${b + 7},$${b + 8},$${b + 9})`;
+    });
+    const out = await query<{ id: number; card_id: number; match_key: string }>(
+      `INSERT INTO printings (card_id, set_code, set_name, collector_number, language,
+                              finish, scryfall_id, image_url, match_key)
+       VALUES ${tuples.join(",")}
+       ON CONFLICT (card_id, match_key) DO UPDATE SET
+         set_code = COALESCE(EXCLUDED.set_code, printings.set_code),
+         set_name = COALESCE(EXCLUDED.set_name, printings.set_name),
+         image_url = COALESCE(EXCLUDED.image_url, printings.image_url),
+         scryfall_id = COALESCE(EXCLUDED.scryfall_id, printings.scryfall_id)
+       RETURNING id, card_id, match_key`,
+      values,
+    );
+    for (const r of out) ids.set(`${r.card_id}|${r.match_key}`, r.id);
+  }
+  return ids;
+}
+
+export interface ListingInput {
+  printingId: number;
+  sellerId: number;
+  storeId: number;
+  priceCents: number;
+  condition: Condition;
+  stock: number;
+  inStock: boolean;
+  productUrl: string;
+  rawTitle: string;
+  externalId: string;
+  origin?: "feed" | "manual";
+}
+
+/** Inserta o actualiza listings en lote, dentro de una transacción. */
+export async function upsertListings(rows: ListingInput[]): Promise<number> {
+  if (!rows.length) return 0;
+  return transaction(async (run) => {
+    let n = 0;
+    // Lotes: un INSERT por fila serían decenas de miles de viajes de red.
+    const CHUNK = 500;
+    for (let i = 0; i < rows.length; i += CHUNK) {
+      const chunk = rows.slice(i, i + CHUNK);
+      const values: unknown[] = [];
+      const tuples = chunk.map((r, j) => {
+        const b = j * 11;
+        values.push(
+          r.printingId, r.sellerId, r.storeId, r.priceCents, r.condition,
+          r.stock, r.inStock, r.productUrl, r.rawTitle, r.externalId,
+          r.origin ?? "feed",
+        );
+        return `($${b + 1},$${b + 2},$${b + 3},$${b + 4},$${b + 5},$${b + 6},$${b + 7},$${b + 8},$${b + 9},$${b + 10},$${b + 11})`;
+      });
+      await run(
+        `INSERT INTO listings (printing_id, seller_id, store_id, price_cents, condition,
+                               stock, in_stock, product_url, raw_title, external_id, origin)
+         VALUES ${tuples.join(",")}
+         ON CONFLICT (store_id, external_id) DO UPDATE SET
+           printing_id = EXCLUDED.printing_id,
+           price_cents = EXCLUDED.price_cents,
+           condition   = EXCLUDED.condition,
+           stock       = EXCLUDED.stock,
+           in_stock    = EXCLUDED.in_stock,
+           product_url = EXCLUDED.product_url,
+           raw_title   = EXCLUDED.raw_title,
+           updated_at  = now()`,
+        values,
+      );
+      n += chunk.length;
+    }
+    return n;
+  });
+}
+
+/**
+ * Lo que ya no vino en el feed dejó de estar a la venta.
+ *
+ * Sólo toca `origin = 'feed'`: lo que la tienda capturó a mano en su panel, o lo
+ * que subió un afiliado, no está en el feed de Shopify y barrerlo lo borraría en
+ * cada sincronización.
+ */
+export async function markMissingAsOutOfStock(
   storeId: number,
   seenExternalIds: string[],
-  now: string,
-): number {
-  const seen = new Set(seenExternalIds);
-  const rows = db
-    .prepare(`SELECT id, external_id FROM listings WHERE store_id = ? AND in_stock = 1`)
-    .all(storeId) as Array<{ id: number; external_id: string }>;
-  const stale = rows.filter((r) => !seen.has(r.external_id));
-  const stmt = db.prepare(
-    `UPDATE listings SET in_stock = 0, stock = 0, updated_at = ? WHERE id = ?`,
+): Promise<number> {
+  const rows = await query<{ id: number }>(
+    `UPDATE listings SET in_stock = FALSE, stock = 0, updated_at = now()
+     WHERE store_id = $1 AND in_stock AND origin = 'feed'
+       AND NOT (external_id = ANY($2::text[]))
+     RETURNING id`,
+    [storeId, seenExternalIds],
   );
-  for (const row of stale) stmt.run(now, row.id);
-  return stale.length;
+  return rows.length;
 }
 
-export function startSyncRun(db: Database, storeId: number, source: string): number {
-  const info = db
-    .prepare(
-      `INSERT INTO sync_runs (store_id, source, started_at, status) VALUES (?, ?, ?, 'running')`,
-    )
-    .run(storeId, source, new Date().toISOString());
-  return Number(info.lastInsertRowid);
+export async function startSyncRun(storeId: number, source: string): Promise<number> {
+  const row = await one<{ id: number }>(
+    `INSERT INTO sync_runs (store_id, source, status) VALUES ($1, $2, 'running') RETURNING id`,
+    [storeId, source],
+  );
+  return row!.id;
 }
 
-export function finishSyncRun(
-  db: Database,
+export async function finishSyncRun(
   id: number,
   data: {
     status: "ok" | "error";
@@ -281,47 +381,35 @@ export function finishSyncRun(
     skipped?: number;
     error?: string;
   },
-) {
-  db.prepare(
-    `UPDATE sync_runs SET finished_at = ?, status = ?, products_seen = ?,
-       listings_upserted = ?, listings_skipped = ?, error = ? WHERE id = ?`,
-  ).run(
-    new Date().toISOString(),
-    data.status,
-    data.productsSeen ?? 0,
-    data.upserted ?? 0,
-    data.skipped ?? 0,
-    data.error ?? null,
-    id,
+): Promise<void> {
+  await query(
+    `UPDATE sync_runs SET finished_at = now(), status = $2, products_seen = $3,
+       listings_upserted = $4, listings_skipped = $5, error = $6 WHERE id = $1`,
+    [id, data.status, data.productsSeen ?? 0, data.upserted ?? 0, data.skipped ?? 0, data.error ?? null],
   );
 }
 
 /**
- * Marca la tienda como sincronizada y deja registrado de dónde salieron sus
- * datos. `source` es la procedencia REAL (leímos el feed de la tienda o un
- * snapshot de muestra), no el modo con el que se corrió el script: es lo único
- * que permite que la UI no presente datos sintéticos como reales.
+ * Marca la tienda como sincronizada con la procedencia REAL de los datos, no
+ * con el modo del script: es lo único que permite que la UI no presente datos
+ * sintéticos como reales.
  */
-export function touchStoreSync(
-  db: Database,
+export async function touchStoreSync(
   storeId: number,
   source: "live" | "sample",
-) {
-  db.prepare(`UPDATE stores SET last_synced_at = ?, data_source = ? WHERE id = ?`).run(
-    new Date().toISOString(),
-    source,
+): Promise<void> {
+  await query(`UPDATE stores SET last_synced_at = now(), data_source = $2 WHERE id = $1`, [
     storeId,
-  );
+    source,
+  ]);
 }
 
-export function listStoreRows(db: Database): StoreRow[] {
-  return db
-    .prepare(
-      `SELECT id, slug, name, url, city, source_type AS sourceType,
-              source_config AS sourceConfig, active, last_synced_at AS lastSyncedAt
-       FROM stores ORDER BY name`,
-    )
-    .all() as StoreRow[];
+export async function listStoreRows(): Promise<StoreRow[]> {
+  return query<StoreRow>(
+    `SELECT id, slug, name, url, city, source_type AS "sourceType",
+            source_config AS "sourceConfig", active, last_synced_at AS "lastSyncedAt"
+     FROM stores ORDER BY name`,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -329,68 +417,58 @@ export function listStoreRows(db: Database): StoreRow[] {
 // ---------------------------------------------------------------------------
 
 const CARD_SUMMARY_SELECT = `
-  SELECT c.id, c.name, c.slug, c.game_id AS gameId, c.image_url AS imageUrl,
-         c.type_line AS typeLine,
-         COUNT(l.id) AS listingCount,
-         COUNT(DISTINCT l.store_id) AS storeCount,
-         MIN(CASE WHEN l.in_stock = 1 THEN l.price_cents END) AS minPriceCents,
-         MAX(CASE WHEN l.in_stock = 1 THEN l.price_cents END) AS maxPriceCents,
-         SUM(CASE WHEN l.in_stock = 1 THEN 1 ELSE 0 END) AS inStockCount
+  SELECT c.id, c.name, c.slug, c.game_id AS "gameId", c.image_url AS "imageUrl",
+         c.type_line AS "typeLine",
+         COUNT(l.id)::int AS "listingCount",
+         COUNT(DISTINCT l.store_id)::int AS "storeCount",
+         MIN(CASE WHEN l.in_stock THEN l.price_cents END)::int AS "minPriceCents",
+         MAX(CASE WHEN l.in_stock THEN l.price_cents END)::int AS "maxPriceCents",
+         COUNT(*) FILTER (WHERE l.in_stock)::int AS "inStockCount"
   FROM cards c
   LEFT JOIN printings p ON p.card_id = c.id
   LEFT JOIN listings l ON l.printing_id = p.id
 `;
 
-/** Convierte "sol ring" en la consulta FTS `sol* AND ring*` (autocomplete). */
-function toFtsQuery(q: string): string | null {
+/** "sol ring" -> 'sol:* & ring:*', que es el prefijo por palabra de FTS5. */
+function toTsQuery(q: string): string | null {
   const tokens = normalizeText(q).split(/\s+/).filter(Boolean);
   if (!tokens.length) return null;
-  return tokens.map((t) => `"${t}"*`).join(" AND ");
+  return tokens.map((t) => `${t}:*`).join(" & ");
 }
 
-export function searchCards(
+export async function searchCards(
   q: string,
   { limit = 40, onlyInStock = false }: { limit?: number; onlyInStock?: boolean } = {},
-): CardSummary[] {
-  const db = getDb();
-  const fts = toFtsQuery(q);
-  if (!fts) return [];
+): Promise<CardSummary[]> {
+  const ts = toTsQuery(q);
+  if (!ts) return [];
+  const having = onlyInStock ? `HAVING COUNT(*) FILTER (WHERE l.in_stock) > 0` : "";
 
-  const having = onlyInStock ? "HAVING inStockCount > 0" : "";
-  try {
-    return db
-      .prepare(
-        `${CARD_SUMMARY_SELECT}
-         JOIN cards_fts f ON f.rowid = c.id
-         WHERE cards_fts MATCH ?
-         GROUP BY c.id
-         ${having}
-         ORDER BY inStockCount > 0 DESC, bm25(cards_fts) ASC, c.name ASC
-         LIMIT ?`,
-      )
-      .all(fts, limit) as CardSummary[];
-  } catch {
-    // FTS puede reventar con sintaxis rara; caemos a LIKE.
-    const like = `%${normalizeText(q)}%`;
-    return db
-      .prepare(
-        `${CARD_SUMMARY_SELECT}
-         WHERE c.match_key LIKE ?
-         GROUP BY c.id
-         ${having}
-         ORDER BY inStockCount > 0 DESC, LENGTH(c.name) ASC
-         LIMIT ?`,
-      )
-      .all(like, limit) as CardSummary[];
-  }
+  const byPrefix = await query<CardSummary>(
+    `${CARD_SUMMARY_SELECT}
+     WHERE c.name_ts @@ to_tsquery('simple', $1)
+     GROUP BY c.id
+     ${having}
+     ORDER BY (COUNT(*) FILTER (WHERE l.in_stock) > 0) DESC, length(c.name), c.name
+     LIMIT $2`,
+    [ts, limit],
+  );
+  if (byPrefix.length) return byPrefix;
+
+  // Sin coincidencia por prefijo, toleramos errores de dedo con trigramas.
+  return query<CardSummary>(
+    `${CARD_SUMMARY_SELECT}
+     WHERE c.match_key % $1
+     GROUP BY c.id, c.match_key
+     ${having}
+     ORDER BY similarity(c.match_key, $1) DESC, c.name
+     LIMIT $2`,
+    [normalizeText(q), limit],
+  );
 }
 
-export function getCardBySlug(slug: string): CardSummary | null {
-  const db = getDb();
-  const row = db
-    .prepare(`${CARD_SUMMARY_SELECT} WHERE c.slug = ? GROUP BY c.id`)
-    .get(slug) as CardSummary | undefined;
-  return row ?? null;
+export async function getCardBySlug(slug: string): Promise<CardSummary | null> {
+  return one<CardSummary>(`${CARD_SUMMARY_SELECT} WHERE c.slug = $1 GROUP BY c.id`, [slug]);
 }
 
 export interface ListingFilters {
@@ -402,32 +480,22 @@ export interface ListingFilters {
   sort?: "price_asc" | "price_desc" | "store" | "cercania";
 }
 
-export function getListingsForCard(cardId: number, filters: ListingFilters = {}): ListingRow[] {
-  const db = getDb();
-  const where: string[] = ["p.card_id = ?"];
+export async function getListingsForCard(
+  cardId: number,
+  filters: ListingFilters = {},
+): Promise<ListingRow[]> {
+  const where: string[] = ["p.card_id = $1"];
   const params: unknown[] = [cardId];
+  const add = (v: unknown) => `$${params.push(v)}`;
 
-  if (filters.onlyInStock) where.push("l.in_stock = 1");
-  if (filters.storeSlugs?.length) {
-    where.push(`s.slug IN (${filters.storeSlugs.map(() => "?").join(",")})`);
-    params.push(...filters.storeSlugs);
-  }
-  if (filters.conditions?.length) {
-    where.push(`l.condition IN (${filters.conditions.map(() => "?").join(",")})`);
-    params.push(...filters.conditions);
-  }
-  if (filters.finish && filters.finish !== "all") {
-    where.push("p.finish = ?");
-    params.push(filters.finish);
-  }
-  if (filters.language && filters.language !== "all") {
-    where.push("p.language = ?");
-    params.push(filters.language);
-  }
+  if (filters.onlyInStock) where.push("l.in_stock");
+  if (filters.storeSlugs?.length) where.push(`s.slug = ANY(${add(filters.storeSlugs)}::text[])`);
+  if (filters.conditions?.length) where.push(`l.condition = ANY(${add(filters.conditions)}::text[])`);
+  if (filters.finish && filters.finish !== "all") where.push(`p.finish = ${add(filters.finish)}`);
+  if (filters.language && filters.language !== "all") where.push(`p.language = ${add(filters.language)}`);
 
   // 'cercania' no se ordena en SQL: el criterio (misma ciudad antes que
-  // kilómetros) vive en src/lib/location.ts y se aplica arriba, donde se conoce
-  // la ubicación del usuario.
+  // kilómetros) vive en src/lib/location.ts y se aplica donde se conoce al usuario.
   const order =
     filters.sort === "price_desc"
       ? "l.in_stock DESC, l.price_cents DESC"
@@ -435,27 +503,26 @@ export function getListingsForCard(cardId: number, filters: ListingFilters = {})
         ? "l.in_stock DESC, l.price_cents ASC"
         : "l.in_stock DESC, s.name ASC, l.price_cents ASC";
 
-  return db
-    .prepare(
-      `SELECT l.id, l.price_cents AS priceCents, l.currency, l.condition, l.stock,
-              l.in_stock AS inStock, l.product_url AS productUrl, l.raw_title AS rawTitle,
-              l.updated_at AS updatedAt,
-              p.set_name AS setName, p.set_code AS setCode,
-              p.collector_number AS collectorNumber, p.language, p.finish,
-              p.image_url AS printingImage,
-              s.id AS storeId, s.name AS storeName, s.slug AS storeSlug,
-              s.url AS storeUrl, s.city AS storeCity,
-              s.lat AS storeLat, s.lng AS storeLng,
-              s.data_source AS storeDataSource,
-              se.name AS sellerName, se.type AS sellerType
-       FROM listings l
-       JOIN printings p ON p.id = l.printing_id
-       JOIN stores s ON s.id = l.store_id
-       JOIN sellers se ON se.id = l.seller_id
-       WHERE ${where.join(" AND ")}
-       ORDER BY ${order}`,
-    )
-    .all(...params) as ListingRow[];
+  return query<ListingRow>(
+    `SELECT l.id, l.price_cents AS "priceCents", l.currency, l.condition, l.stock,
+            l.in_stock AS "inStock", l.product_url AS "productUrl",
+            l.raw_title AS "rawTitle", l.updated_at AS "updatedAt", l.origin,
+            p.set_name AS "setName", p.set_code AS "setCode",
+            p.collector_number AS "collectorNumber", p.language, p.finish,
+            p.image_url AS "printingImage",
+            s.id AS "storeId", s.name AS "storeName", s.slug AS "storeSlug",
+            s.url AS "storeUrl", s.city AS "storeCity",
+            s.lat AS "storeLat", s.lng AS "storeLng",
+            s.data_source AS "storeDataSource",
+            se.name AS "sellerName", se.type AS "sellerType"
+     FROM listings l
+     JOIN printings p ON p.id = l.printing_id
+     JOIN stores s ON s.id = l.store_id
+     JOIN sellers se ON se.id = l.seller_id
+     WHERE ${where.join(" AND ")}
+     ORDER BY ${order}`,
+    params,
+  );
 }
 
 export interface StorePublic {
@@ -467,45 +534,31 @@ export interface StorePublic {
   lat: number | null;
   lng: number | null;
   sourceType: string;
-  /** 'live' = catálogo real de la tienda; 'sample' = datos sintéticos. */
   dataSource: "live" | "sample";
   lastSyncedAt: string | null;
   listingCount: number;
   inStockCount: number;
   cardCount: number;
-  /** Vendedores afiliados avalados por esta tienda (fase 2; hoy siempre 0). */
   affiliateCount: number;
 }
 
-/**
- * Tiendas con su inventario. `inStockCount` suma TODOS los listings que despacha
- * la tienda, así que cuando existan afiliados (fase 2) entran solos en el total
- * sin tocar esta consulta.
- *
- * Orden por defecto: inventario disponible, de mayor a menor. El orden por
- * cercanía se hace en el cliente, que es quien conoce la ubicación.
- */
-export function listStoresPublic(): StorePublic[] {
-  const db = getDb();
-  return db
-    .prepare(
-      `SELECT s.id, s.slug, s.name, s.url, s.city, s.lat, s.lng,
-              s.source_type AS sourceType, s.data_source AS dataSource,
-              s.last_synced_at AS lastSyncedAt,
-              COUNT(l.id) AS listingCount,
-              SUM(CASE WHEN l.in_stock = 1 THEN 1 ELSE 0 END) AS inStockCount,
-              COUNT(DISTINCT p.card_id) AS cardCount,
-              (SELECT COUNT(*) FROM sellers se
-                WHERE se.store_id = s.id AND se.type = 'affiliate' AND se.active = 1
-              ) AS affiliateCount
-       FROM stores s
-       LEFT JOIN listings l ON l.store_id = s.id
-       LEFT JOIN printings p ON p.id = l.printing_id
-       WHERE s.active = 1
-       GROUP BY s.id
-       ORDER BY inStockCount DESC, s.name`,
-    )
-    .all() as StorePublic[];
+export async function listStoresPublic(): Promise<StorePublic[]> {
+  return query<StorePublic>(
+    `SELECT s.id, s.slug, s.name, s.url, s.city, s.lat, s.lng,
+            s.source_type AS "sourceType", s.data_source AS "dataSource",
+            s.last_synced_at AS "lastSyncedAt",
+            COUNT(l.id)::int AS "listingCount",
+            COUNT(*) FILTER (WHERE l.in_stock)::int AS "inStockCount",
+            COUNT(DISTINCT p.card_id)::int AS "cardCount",
+            (SELECT COUNT(*)::int FROM sellers se
+              WHERE se.store_id = s.id AND se.type = 'affiliate' AND se.active) AS "affiliateCount"
+     FROM stores s
+     LEFT JOIN listings l ON l.store_id = s.id
+     LEFT JOIN printings p ON p.id = l.printing_id
+     WHERE s.active
+     GROUP BY s.id
+     ORDER BY "inStockCount" DESC, s.name`,
+  );
 }
 
 export interface GamePublic {
@@ -515,22 +568,18 @@ export interface GamePublic {
   inStockCount: number;
 }
 
-/** Los TCG del catálogo. Los que aún no tienen fuente salen con 0. */
-export function listGames(): GamePublic[] {
-  const db = getDb();
-  return db
-    .prepare(
-      `SELECT g.id, g.name,
-              COUNT(DISTINCT c.id) AS cardCount,
-              SUM(CASE WHEN l.in_stock = 1 THEN 1 ELSE 0 END) AS inStockCount
-       FROM games g
-       LEFT JOIN cards c ON c.game_id = g.id
-       LEFT JOIN printings p ON p.card_id = c.id
-       LEFT JOIN listings l ON l.printing_id = p.id
-       GROUP BY g.id
-       ORDER BY inStockCount DESC, g.name`,
-    )
-    .all() as GamePublic[];
+export async function listGames(): Promise<GamePublic[]> {
+  return query<GamePublic>(
+    `SELECT g.id, g.name,
+            COUNT(DISTINCT c.id)::int AS "cardCount",
+            COUNT(*) FILTER (WHERE l.in_stock)::int AS "inStockCount"
+     FROM games g
+     LEFT JOIN cards c ON c.game_id = g.id
+     LEFT JOIN printings p ON p.card_id = c.id
+     LEFT JOIN listings l ON l.printing_id = p.id
+     GROUP BY g.id
+     ORDER BY "inStockCount" DESC, g.name`,
+  );
 }
 
 export interface Stats {
@@ -541,112 +590,81 @@ export interface Stats {
   lastSyncedAt: string | null;
 }
 
-export function getStats(): Stats {
-  const db = getDb();
-  const row = db
-    .prepare(
-      `SELECT (SELECT COUNT(*) FROM stores WHERE active = 1) AS stores,
-              (SELECT COUNT(*) FROM cards) AS cards,
-              (SELECT COUNT(*) FROM listings) AS listings,
-              (SELECT COUNT(*) FROM listings WHERE in_stock = 1) AS inStock,
-              (SELECT MAX(last_synced_at) FROM stores) AS lastSyncedAt`,
-    )
-    .get() as Stats;
-  return row;
+export async function getStats(): Promise<Stats> {
+  const row = await one<Stats>(
+    `SELECT (SELECT COUNT(*)::int FROM stores WHERE active) AS stores,
+            (SELECT COUNT(*)::int FROM cards) AS cards,
+            (SELECT COUNT(*)::int FROM listings) AS listings,
+            (SELECT COUNT(*)::int FROM listings WHERE in_stock) AS "inStock",
+            (SELECT MAX(last_synced_at) FROM stores) AS "lastSyncedAt"`,
+  );
+  return row!;
 }
 
-/** Ranking de respaldo: en cuántas tiendas está la carta. Siempre disponible. */
-export function getTopCardsBySupply(limit = 5): CardSummary[] {
-  const db = getDb();
-  return db
-    .prepare(
-      `${CARD_SUMMARY_SELECT}
-       GROUP BY c.id
-       HAVING inStockCount > 0
-       ORDER BY storeCount DESC, listingCount DESC, c.name ASC
-       LIMIT ?`,
-    )
-    .all(limit) as CardSummary[];
+/** Ranking de respaldo: en cuántas tiendas está la carta. */
+export async function getTopCardsBySupply(limit = 5): Promise<CardSummary[]> {
+  return query<CardSummary>(
+    `${CARD_SUMMARY_SELECT}
+     GROUP BY c.id
+     HAVING COUNT(*) FILTER (WHERE l.in_stock) > 0
+     ORDER BY COUNT(DISTINCT l.store_id) DESC, COUNT(l.id) DESC, c.name
+     LIMIT $1`,
+    [limit],
+  );
 }
 
-/**
- * Hidrata cartas por slug conservando el orden pedido y descartando las que se
- * quedaron sin stock. Los slugs vienen del almacén de eventos, que no sabe nada
- * del catálogo.
- */
-export function getCardsBySlugs(slugs: string[]): CardSummary[] {
+/** Hidrata cartas por slug conservando el orden pedido y descartando sin stock. */
+export async function getCardsBySlugs(slugs: string[]): Promise<CardSummary[]> {
   if (!slugs.length) return [];
-  const db = getDb();
-  const placeholders = slugs.map(() => "?").join(",");
-  const rows = db
-    .prepare(
-      `${CARD_SUMMARY_SELECT}
-       WHERE c.slug IN (${placeholders})
-       GROUP BY c.id
-       HAVING inStockCount > 0`,
-    )
-    .all(...slugs) as CardSummary[];
-
+  const rows = await query<CardSummary>(
+    `${CARD_SUMMARY_SELECT}
+     WHERE c.slug = ANY($1::text[])
+     GROUP BY c.id
+     HAVING COUNT(*) FILTER (WHERE l.in_stock) > 0`,
+    [slugs],
+  );
   const bySlug = new Map(rows.map((r) => [r.slug, r]));
-  return slugs.map((slug) => bySlug.get(slug)).filter((c): c is CardSummary => !!c);
+  return slugs.map((s) => bySlug.get(s)).filter((c): c is CardSummary => !!c);
 }
 
-/** ¿Existe esa carta? Guarda de la API de eventos, para no aceptar slugs sueltos. */
-export function cardExists(slug: string): boolean {
-  const db = getDb();
-  return !!db.prepare(`SELECT 1 FROM cards WHERE slug = ?`).get(slug);
+/** Guarda de la API de eventos: no aceptamos slugs que no existen. */
+export async function cardExists(slug: string): Promise<boolean> {
+  return (await one(`SELECT 1 FROM cards WHERE slug = $1`, [slug])) !== null;
 }
 
 export interface Provenance {
-  /** Tiendas cuyo catálogo salió de su feed real. */
   live: number;
-  /** Tiendas que todavía muestran datos sintéticos. */
   sample: number;
-  /** Nombres de las que siguen en muestra, para poder decirlo sin rodeos. */
   sampleNames: string[];
 }
 
 /**
- * De dónde salen los datos que se están mostrando, tienda por tienda.
- *
- * Antes esto era un booleano global y mentía en los dos sentidos: con una sola
- * tienda real marcaba todo el catálogo como demo, y con una sola tienda de
- * muestra lo habría marcado todo como real. La UI necesita los números.
+ * De dónde salen los datos que se muestran, tienda por tienda. Un booleano
+ * global mentía en los dos sentidos.
  */
-export function getProvenance(): Provenance {
-  const db = getDb();
-  const rows = db
-    .prepare(
-      `SELECT data_source AS dataSource, name FROM stores WHERE active = 1 ORDER BY name`,
-    )
-    .all() as Array<{ dataSource: string; name: string }>;
+export async function getProvenance(): Promise<Provenance> {
+  const rows = await query<{ dataSource: string; name: string }>(
+    `SELECT data_source AS "dataSource", name FROM stores WHERE active ORDER BY name`,
+  );
   const sampleNames = rows.filter((r) => r.dataSource !== "live").map((r) => r.name);
-  return {
-    live: rows.length - sampleNames.length,
-    sample: sampleNames.length,
-    sampleNames,
-  };
+  return { live: rows.length - sampleNames.length, sample: sampleNames.length, sampleNames };
 }
 
 // ---------------------------------------------------------------------------
 // Búsqueda por lista (decklist)
 // ---------------------------------------------------------------------------
 
-/**
- * Resuelve un nombre suelto a una carta del catálogo: primero exacto, luego la
- * mejor coincidencia de FTS. Devuelve null si no hay nada razonable.
- */
-export function findCardByName(name: string): CardSummary | null {
-  const db = getDb();
+export async function findCardByName(name: string): Promise<CardSummary | null> {
   const matchKey = normalizeText(name);
   if (!matchKey) return null;
 
-  const exact = db
-    .prepare(`${CARD_SUMMARY_SELECT} WHERE c.match_key = ? GROUP BY c.id`)
-    .get(matchKey) as CardSummary | undefined;
+  const exact = await one<CardSummary>(
+    `${CARD_SUMMARY_SELECT} WHERE c.match_key = $1 GROUP BY c.id`,
+    [matchKey],
+  );
   if (exact) return exact;
 
-  return searchCards(name, { limit: 1 })[0] ?? null;
+  return (await searchCards(name, { limit: 1 }))[0] ?? null;
 }
 
 export interface CardStorePrice {
@@ -661,21 +679,20 @@ export interface CardStorePrice {
 }
 
 /** Precio más barato con stock de cada carta en cada tienda. */
-export function getCheapestByCardAndStore(cardIds: number[]): CardStorePrice[] {
+export async function getCheapestByCardAndStore(
+  cardIds: number[],
+): Promise<CardStorePrice[]> {
   if (!cardIds.length) return [];
-  const db = getDb();
-  const placeholders = cardIds.map(() => "?").join(",");
-  return db
-    .prepare(
-      `SELECT p.card_id AS cardId, s.id AS storeId, s.slug AS storeSlug,
-              s.name AS storeName, s.city AS storeCity,
-              s.lat AS storeLat, s.lng AS storeLng,
-              MIN(l.price_cents) AS priceCents
-       FROM listings l
-       JOIN printings p ON p.id = l.printing_id
-       JOIN stores s ON s.id = l.store_id
-       WHERE l.in_stock = 1 AND p.card_id IN (${placeholders})
-       GROUP BY p.card_id, s.id`,
-    )
-    .all(...cardIds) as CardStorePrice[];
+  return query<CardStorePrice>(
+    `SELECT p.card_id AS "cardId", s.id AS "storeId", s.slug AS "storeSlug",
+            s.name AS "storeName", s.city AS "storeCity",
+            s.lat AS "storeLat", s.lng AS "storeLng",
+            MIN(l.price_cents)::int AS "priceCents"
+     FROM listings l
+     JOIN printings p ON p.id = l.printing_id
+     JOIN stores s ON s.id = l.store_id
+     WHERE l.in_stock AND p.card_id = ANY($1::int[])
+     GROUP BY p.card_id, s.id`,
+    [cardIds],
+  );
 }

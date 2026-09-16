@@ -47,14 +47,16 @@ export default async function DeckPage({ searchParams }: Props) {
   const raw = (await searchParams).lista?.trim() ?? "";
   const lines = raw ? parseDecklist(raw) : [];
 
-  const results: LineResult[] = lines.map((line) => ({
-    line,
-    card: findCardByName(line.name),
-    prices: [],
-  }));
+  const results: LineResult[] = await Promise.all(
+    lines.map(async (line) => ({
+      line,
+      card: await findCardByName(line.name),
+      prices: [] as CardStorePrice[],
+    })),
+  );
 
   const cardIds = results.map((r) => r.card?.id).filter((id): id is number => id != null);
-  const prices = getCheapestByCardAndStore(cardIds);
+  const prices = await getCheapestByCardAndStore(cardIds);
   for (const r of results) {
     if (r.card) r.prices = prices.filter((p) => p.cardId === r.card!.id);
   }

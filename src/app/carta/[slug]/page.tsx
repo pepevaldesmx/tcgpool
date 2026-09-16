@@ -27,7 +27,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const card = getCardBySlug(slug);
+  const card = await getCardBySlug(slug);
   if (!card) return { title: "Carta no encontrada" };
   return {
     title: card.name,
@@ -87,7 +87,7 @@ export default async function CardPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const query = await searchParams;
 
-  const card = getCardBySlug(slug);
+  const card = await getCardBySlug(slug);
   if (!card) notFound();
 
   const hasLocation = (await getUserLocation()) != null;
@@ -102,13 +102,16 @@ export default async function CardPage({ params, searchParams }: Props) {
     sort: (query.orden as ListingFilters["sort"]) ?? (hasLocation ? "cercania" : "store"),
   };
 
-  const provenance = getProvenance();
-  const location = await getUserLocation();
+  const [provenance, location] = await Promise.all([getProvenance(), getUserLocation()]);
 
-  const listings = sortListings(getListingsForCard(card.id, filters), filters.sort, location);
+  const listings = sortListings(
+    await getListingsForCard(card.id, filters),
+    filters.sort,
+    location,
+  );
   // Las facetas se calculan sobre TODO el inventario de la carta, no sobre el
   // resultado filtrado: si no, al filtrar desaparecerían las demás opciones.
-  const all = getListingsForCard(card.id, { onlyInStock: false });
+  const all = await getListingsForCard(card.id, { onlyInStock: false });
   const facets = {
     stores: dedupe(all.map((l) => [l.storeSlug, l.storeName] as const)),
     conditions: dedupe(all.map((l) => [l.condition, conditionLabel(l.condition)] as const)),
@@ -118,7 +121,7 @@ export default async function CardPage({ params, searchParams }: Props) {
 
   // Un listado cualquiera con stock, para el botón. NO el más barato: no
   // queremos coronar a una tienda ni empujar a las demás a bajar precio.
-  const available = listings.find((l) => l.inStock === 1);
+  const available = listings.find((l) => l.inStock);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
@@ -361,7 +364,7 @@ function sortListings(
   if (sort !== "cercania" || !location) return listings;
   return [...listings].sort(
     (a, b) =>
-      b.inStock - a.inStock ||
+      Number(b.inStock) - Number(a.inStock) ||
       proximityRank(location, { city: a.storeCity, lat: a.storeLat, lng: a.storeLng }) -
         proximityRank(location, { city: b.storeCity, lat: b.storeLat, lng: b.storeLng }) ||
       a.priceCents - b.priceCents,

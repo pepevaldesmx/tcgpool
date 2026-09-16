@@ -1,12 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["better-sqlite3", "pg"],
-  // La base SQLite se genera en build (`npm run db:build`) y se lee en runtime.
-  // Hay que incluirla explícitamente en el bundle de las funciones serverless.
-  outputFileTracingIncludes: {
-    "/**": ["./data/tcgpool.db"],
-  },
+  // `pg` abre sockets y carga módulos nativos opcionales: tiene que quedar
+  // fuera del bundle para que Next no intente empaquetarlo.
+  serverExternalPackages: ["pg"],
   images: {
     remotePatterns: [{ protocol: "https", hostname: "cards.scryfall.io" }],
   },

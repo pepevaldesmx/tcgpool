@@ -15,8 +15,8 @@ const SOURCE_LABELS: Record<string, string> = {
   wix: "Wix · scraper",
 };
 
-export default function StoresPage() {
-  const stores = listStoresPublic();
+export default async function StoresPage() {
+  const stores = await listStoresPublic();
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10">

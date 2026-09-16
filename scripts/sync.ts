@@ -1,33 +1,36 @@
 /**
- * Job de sincronización. Para el MVP se corre a mano o por cron cada varias
- * horas; no hace falta cola de trabajos todavía.
+ * Job de sincronización: ingiere los catálogos de las tiendas a Postgres.
  *
- *   npm run sync                      # ingiere de data/snapshots/ (offline)
- *   npm run sync -- --live            # pega a los feeds reales de las tiendas
+ *   npm run sync                      # desde data/snapshots/ (offline)
+ *   npm run sync -- --live            # pega a los feeds reales
  *   npm run sync -- --store=mtg-mexico --live
  *   npm run sync -- --no-enrich       # sin resolver nombres contra Scryfall
  */
-import { migrate, openForWrite } from "../src/lib/db/migrate";
+import { closePool, connectionString } from "../src/lib/db";
+import { migrate } from "../src/lib/db/migrate";
+import { upsertGame, getStats } from "../src/lib/db/queries";
+import { GAMES } from "../src/lib/games";
 import { loadStoreDefinitions } from "../src/lib/ingest/registry";
 import { syncStore } from "../src/lib/ingest/run";
-import { upsertGame } from "../src/lib/db/queries";
-import { GAMES } from "../src/lib/games";
 
 function arg(name: string): string | undefined {
-  const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
-  return hit?.split("=").slice(1).join("=");
+  return process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=").slice(1).join("=");
 }
 const flag = (name: string) => process.argv.includes(`--${name}`);
 
 async function main() {
+  if (!connectionString()) {
+    console.error("Falta DATABASE_URL (o POSTGRES_URL).");
+    process.exit(1);
+  }
+
   const live = flag("live");
   const only = arg("store");
   const enrich = !flag("no-enrich");
   const offline = flag("offline");
 
-  const db = openForWrite();
-  migrate(db);
-  for (const game of GAMES) upsertGame(db, game.id, game.name);
+  await migrate();
+  for (const game of GAMES) await upsertGame(game.id, game.name);
 
   const defs = loadStoreDefinitions().filter((d) => !only || d.slug === only);
   if (!defs.length) {
@@ -44,12 +47,10 @@ async function main() {
   for (const def of defs) {
     console.log(`▸ ${def.name} (${def.sourceType})`);
     if (live && def.domainVerified === false) {
-      console.log(
-        `  ⚠ dominio sin verificar (${JSON.stringify(def.sourceConfig)}). ` +
-          `Confirma la URL en data/stores.json si falla.`,
-      );
+      console.log(`  ⚠ dominio sin verificar. Confirma la URL en data/stores.json si falla.`);
     }
-    const result = await syncStore(db, def, {
+    const started = Date.now();
+    const result = await syncStore(def, {
       mode: live ? "live" : "snapshot",
       enrich,
       offline,
@@ -62,18 +63,23 @@ async function main() {
     }
     console.log(
       `  ✓ ${result.upserted} listings (${result.source}) · ` +
-        `${result.skipped} descartados (sellado/accesorios) · ` +
-        `${result.outOfStock} marcados sin stock\n`,
+        `${result.skipped} descartados · ${result.outOfStock} marcados sin stock · ` +
+        `${((Date.now() - started) / 1000).toFixed(1)}s\n`,
     );
   }
 
-  if (failures) {
-    console.error(`${failures} tienda(s) fallaron.`);
-    process.exit(1);
-  }
+  const stats = await getStats();
+  console.log(
+    `${stats.stores} tiendas · ${stats.cards} cartas · ${stats.listings} listings ` +
+      `(${stats.inStock} con stock)`,
+  );
+
+  await closePool();
+  if (failures) process.exit(1);
 }
 
-main().catch((err) => {
+main().catch(async (err) => {
   console.error(err);
+  await closePool();
   process.exit(1);
 });

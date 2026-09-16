@@ -1,80 +1,26 @@
-import { Pool } from "pg";
+import { isConfigured, query } from "@/lib/db";
 
 /**
- * Señales de demanda (qué se ve y qué se clickea hacia la tienda).
+ * Señales de demanda: qué se ve y qué se clickea hacia la tienda.
  *
- * Vive en Postgres, no en SQLite, y por una razón dura: SQLite es el CATÁLOGO,
- * se reconstruye en cada build y en runtime se abre en sólo lectura. Los
- * contadores se escriben en runtime, así que necesitan un almacén aparte.
+ * Viven en la misma base que el catálogo, pero con otro ciclo de vida: se
+ * escriben en cada request. Se llavean por SLUG de carta y no por id para
+ * sobrevivir a una recarga completa del catálogo.
  *
- * Todo aquí degrada con gracia: sin `DATABASE_URL` la app funciona igual y el
- * home cae al ranking de oferta. Nunca tiramos una request por un contador.
- *
- * Se llavea por SLUG y no por id: los ids de SQLite se regeneran en cada
- * `db:build`, el slug es estable.
- *
- * Driver `pg` en vez del serverless de Neon: sirve con cualquier Postgres
- * (Neon, Vercel, Supabase) y se puede probar contra uno local. En serverless usa
- * la cadena de conexión *pooled* que da el proveedor.
+ * Nada aquí tumba una página: un contador perdido no le importa a nadie.
  */
 
 export type EventKind = "view" | "clickout";
 
-function connectionString(): string | null {
-  return (
-    process.env.DATABASE_URL ??
-    process.env.POSTGRES_URL ??
-    process.env.POSTGRES_URL_NON_POOLING ??
-    null
-  );
-}
-
 export function isEventsStoreEnabled(): boolean {
-  return connectionString() !== null;
+  return isConfigured();
 }
 
-let pool: Pool | null = null;
-
-function getPool(): Pool | null {
-  const url = connectionString();
-  if (!url) return null;
-  pool ??= new Pool({
-    connectionString: url,
-    // Una función serverless atiende una request a la vez: más conexiones sólo
-    // gastarían el cupo del proveedor.
-    max: 1,
-    idleTimeoutMillis: 10_000,
-    connectionTimeoutMillis: 5_000,
-    // Los Postgres administrados (Neon, Vercel, Supabase) exigen TLS y usan
-    // certificados que el runtime no siempre trae en su almacén.
-    ssl: url.includes("localhost") || url.includes("127.0.0.1")
-      ? undefined
-      : { rejectUnauthorized: false },
-  });
-  return pool;
-}
-
-export async function migrateEventsStore(): Promise<void> {
-  const db = getPool();
-  if (!db) throw new Error("Falta DATABASE_URL / POSTGRES_URL.");
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS card_events (
-      card_slug TEXT    NOT NULL,
-      day       DATE    NOT NULL,
-      kind      TEXT    NOT NULL,
-      count     INTEGER NOT NULL DEFAULT 0,
-      PRIMARY KEY (card_slug, day, kind)
-    )
-  `);
-  await db.query(`CREATE INDEX IF NOT EXISTS idx_card_events_day ON card_events (day)`);
-}
-
-/** Suma uno al contador del día. Nunca lanza: un contador no rompe una página. */
+/** Suma uno al contador del día. */
 export async function recordEvent(slug: string, kind: EventKind): Promise<void> {
-  const db = getPool();
-  if (!db) return;
+  if (!isConfigured()) return;
   try {
-    await db.query(
+    await query(
       `INSERT INTO card_events (card_slug, day, kind, count)
        VALUES ($1, CURRENT_DATE, $2, 1)
        ON CONFLICT (card_slug, day, kind)
@@ -94,10 +40,9 @@ export async function recordEvent(slug: string, kind: EventKind): Promise<void> 
  * podemos observar.
  */
 export async function getTopCardSlugs(limit = 5, windowDays = 14): Promise<string[]> {
-  const db = getPool();
-  if (!db) return [];
+  if (!isConfigured()) return [];
   try {
-    const { rows } = await db.query<{ card_slug: string }>(
+    const rows = await query<{ card_slug: string }>(
       `SELECT card_slug,
               SUM(CASE WHEN kind = 'clickout' THEN count * 3 ELSE count END) AS score
        FROM card_events

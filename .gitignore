@@ -9,11 +9,12 @@ next-env.d.ts
 .env*.local
 .vercel
 
-# Base de datos generada (se reconstruye con `npm run db:build`)
-data/*.db
-data/*.db-wal
-data/*.db-shm
-data/*.db-journal
+# El catálogo vive en Postgres; ya no se genera ninguna base local.
+
+# Snapshots del feed real: son evidencia de una corrida, no fuente de verdad.
+# Commitearlos inflaba el repo 11 MB cada 6 horas. Los .sample.json versionados
+# se quedan: son los que dan datos para desarrollar sin base compartida.
+data/snapshots/*.live.json
 
 # Caché de búsquedas de Scryfall: pesa varios MB y sólo la usan los scripts que
 # generan datos de muestra. La caché de nombres (data/scryfall-cache.json) SÍ va

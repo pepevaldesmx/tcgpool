@@ -14,11 +14,13 @@ export const dynamic = "force-dynamic";
 const SUGGESTED = ["Sol Ring", "Lightning Bolt", "Rhystic Study", "Cyclonic Rift"];
 
 export default async function HomePage() {
-  const stores = listStoresPublic();
-  const games = listGames();
+  const [stores, games, provenance] = await Promise.all([
+    listStoresPublic(),
+    listGames(),
+    getProvenance(),
+  ]);
   const trending = await getTrending(5);
   const location = await getUserLocation();
-  const provenance = getProvenance();
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4">

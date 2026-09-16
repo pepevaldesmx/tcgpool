@@ -1,8 +1,8 @@
 name: Sincronizar catálogo de tiendas
 
-# Refresca los feeds de las tiendas y commitea los snapshots. Vercel reconstruye
-# la base en cada deploy (`npm run build` corre `npm run db:build`), así que un
-# commit de snapshots = catálogo actualizado en producción.
+# Ingiere los feeds reales directo a Postgres. Ya no commitea snapshots: la base
+# es la fuente de verdad, así que el repo dejó de crecer 11 MB por corrida y el
+# deploy dejó de depender del sync.
 on:
   schedule:
     # Cada 6 horas. Para el MVP no hace falta tiempo real.
@@ -12,8 +12,6 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,13 +19,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Capturar feeds reales
+      - name: Ingerir feeds reales
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Los scripts sí pueden abrir varias conexiones; el runtime no.
+          PGPOOL_MAX: "4"
         run: npm run sync -- --live
-        continue-on-error: true
-      - name: Commitear snapshots actualizados
-        run: |
-          git config user.name "tcgpool-bot"
-          git config user.email "bot@users.noreply.github.com"
-          git add -A data/snapshots data/scryfall-cache.json
-          git diff --staged --quiet || git commit -m "chore: sincronizar catálogo de tiendas"
-          git push

@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   const slug = typeof body.slug === "string" ? body.slug.slice(0, 120) : "";
   const kind = body.kind as EventKind;
 
-  if (!slug || !KINDS.includes(kind) || !cardExists(slug)) {
+  if (!slug || !KINDS.includes(kind) || !(await cardExists(slug))) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 

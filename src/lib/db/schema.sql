@@ -1,83 +1,88 @@
 -- ---------------------------------------------------------------------------
--- TCG Comparador MX — esquema
+-- TCG Pool — esquema (PostgreSQL)
 --
 -- Jerarquía de datos (importante, no colapsar niveles):
 --   card      -> la carta "abstracta" ("Lightning Bolt")
 --   printing  -> una impresión concreta (set + número + idioma + foil)
 --   listing   -> lo que un vendedor concreto tiene a la venta de esa impresión
 --
--- El vendedor (`sellers`) ya está separado de la tienda (`stores`) para que la
--- fase 2 (afiliados avalados por una tienda) no requiera rediseñar el modelo:
--- hoy todo listing viene de un seller de tipo 'store', mañana puede venir de
--- uno de tipo 'affiliate' cuyo `store_id` es la tienda que lo avala y le da
--- logística.
+-- El vendedor (`sellers`) está separado de la tienda (`stores`) para que los
+-- afiliados —jugadores que venden avalados por una tienda— no requieran
+-- rediseñar el modelo: un listing de afiliado apunta al mismo `store_id` que lo
+-- despacha, así que los conteos por tienda ya los incluyen solos.
 -- ---------------------------------------------------------------------------
 
-PRAGMA foreign_keys = ON;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 CREATE TABLE IF NOT EXISTS games (
-  id    TEXT PRIMARY KEY,          -- 'magic' | 'pokemon' | 'yugioh' | ...
+  id    TEXT PRIMARY KEY,
   name  TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS stores (
-  id             INTEGER PRIMARY KEY AUTOINCREMENT,
-  slug           TEXT NOT NULL UNIQUE,
-  name           TEXT NOT NULL,
-  url            TEXT NOT NULL,
-  city           TEXT,
-  -- Coordenadas APROXIMADAS (centro de la ciudad), sólo para ordenar tiendas
-  -- por cercanía. No son la dirección de la tienda.
-  lat            REAL,
-  lng            REAL,
-  -- 'shopify' | 'manual' | 'wix' | ...  -> decide qué adaptador de ingesta usar
-  source_type    TEXT NOT NULL,
-  source_config  TEXT NOT NULL DEFAULT '{}',   -- JSON con lo específico del adaptador
-  ships_nationwide INTEGER NOT NULL DEFAULT 1,
-  -- 'live' = se ingirió el feed real de la tienda; 'sample' = datos sintéticos.
-  -- Es lo que decide si la UI advierte que son datos de demostración.
-  data_source    TEXT NOT NULL DEFAULT 'sample',
-  active         INTEGER NOT NULL DEFAULT 1,
-  last_synced_at TEXT
+  id               SERIAL PRIMARY KEY,
+  slug             TEXT NOT NULL UNIQUE,
+  name             TEXT NOT NULL,
+  url              TEXT NOT NULL,
+  city             TEXT,
+  -- Centro de la ciudad, para ordenar por cercanía. No es la dirección.
+  lat              DOUBLE PRECISION,
+  lng              DOUBLE PRECISION,
+  source_type      TEXT NOT NULL,
+  source_config    JSONB NOT NULL DEFAULT '{}'::jsonb,
+  default_game     TEXT REFERENCES games(id),
+  ships_nationwide BOOLEAN NOT NULL DEFAULT TRUE,
+  active           BOOLEAN NOT NULL DEFAULT TRUE,
+  -- 'live' = se ingirió el feed real; 'sample' = datos sintéticos.
+  data_source      TEXT NOT NULL DEFAULT 'sample',
+  last_synced_at   TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS sellers (
-  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  id        SERIAL PRIMARY KEY,
   slug      TEXT NOT NULL UNIQUE,
   name      TEXT NOT NULL,
-  -- 'store' (fase 1) | 'affiliate' (fase 2, jugador avalado por una tienda)
+  -- 'store' | 'affiliate' (jugador avalado por una tienda)
   type      TEXT NOT NULL DEFAULT 'store',
-  -- tienda dueña del inventario (type='store') o tienda avaladora (type='affiliate')
   store_id  INTEGER REFERENCES stores(id) ON DELETE CASCADE,
-  active    INTEGER NOT NULL DEFAULT 1
+  active    BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+CREATE INDEX IF NOT EXISTS idx_sellers_store ON sellers(store_id);
+
 CREATE TABLE IF NOT EXISTS cards (
-  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  id         SERIAL PRIMARY KEY,
   game_id    TEXT NOT NULL REFERENCES games(id),
-  name       TEXT NOT NULL,          -- nombre canónico ("Lightning Bolt")
-  slug       TEXT NOT NULL,          -- "lightning-bolt"
-  -- nombre normalizado (minúsculas, sin acentos ni puntuación) para matching
+  name       TEXT NOT NULL,
+  slug       TEXT NOT NULL,
+  -- minúsculas, sin acentos ni puntuación: la llave de deduplicación y de
+  -- búsqueda. Se calcula en JS (normalizeText) para no depender de `unaccent`,
+  -- que no todos los Postgres administrados traen.
   match_key  TEXT NOT NULL,
-  oracle_id  TEXT,                   -- id estable de Scryfall (magic)
+  oracle_id  TEXT,
   image_url  TEXT,
   type_line  TEXT,
+  -- Prefijo por palabra, que es lo que hacía FTS5 en SQLite. 'simple' no
+  -- necesita diccionario de idioma: los nombres de carta son en inglés.
+  name_ts    tsvector GENERATED ALWAYS AS (to_tsvector('simple', match_key)) STORED,
   UNIQUE (game_id, match_key)
 );
 
 CREATE INDEX IF NOT EXISTS idx_cards_slug ON cards(slug);
+CREATE INDEX IF NOT EXISTS idx_cards_ts ON cards USING GIN (name_ts);
+-- Trigramas para tolerar errores de dedo ("counterspel").
+CREATE INDEX IF NOT EXISTS idx_cards_trgm ON cards USING GIN (match_key gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS printings (
-  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  id               SERIAL PRIMARY KEY,
   card_id          INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
   set_code         TEXT,
   set_name         TEXT,
   collector_number TEXT,
-  language         TEXT NOT NULL DEFAULT 'en',        -- 'en' | 'es' | 'jp' | ...
-  finish           TEXT NOT NULL DEFAULT 'nonfoil',   -- 'nonfoil' | 'foil' | 'etched'
+  language         TEXT NOT NULL DEFAULT 'en',
+  finish           TEXT NOT NULL DEFAULT 'nonfoil',
   scryfall_id      TEXT,
   image_url        TEXT,
-  -- clave de deduplicación: set + número + idioma + acabado
   match_key        TEXT NOT NULL,
   UNIQUE (card_id, match_key)
 );
@@ -85,61 +90,57 @@ CREATE TABLE IF NOT EXISTS printings (
 CREATE INDEX IF NOT EXISTS idx_printings_card ON printings(card_id);
 
 CREATE TABLE IF NOT EXISTS listings (
-  id              INTEGER PRIMARY KEY AUTOINCREMENT,
-  printing_id     INTEGER NOT NULL REFERENCES printings(id) ON DELETE CASCADE,
-  seller_id       INTEGER NOT NULL REFERENCES sellers(id) ON DELETE CASCADE,
-  -- tienda que despacha (hoy = la del seller; en fase 2, la avaladora)
-  store_id        INTEGER NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
-  price_cents     INTEGER NOT NULL,
-  currency        TEXT NOT NULL DEFAULT 'MXN',
-  condition       TEXT NOT NULL DEFAULT 'UNKNOWN',   -- NM | LP | MP | HP | DMG | SEALED | UNKNOWN
-  stock           INTEGER NOT NULL DEFAULT 0,
-  in_stock        INTEGER NOT NULL DEFAULT 0,
-  product_url     TEXT NOT NULL,
-  raw_title       TEXT NOT NULL,      -- título tal cual venía del feed (auditoría)
-  -- id del listing en la fuente (variant id de Shopify, etc.) para upsert idempotente
-  external_id     TEXT NOT NULL,
-  first_seen_at   TEXT NOT NULL,
-  updated_at      TEXT NOT NULL,
+  id            SERIAL PRIMARY KEY,
+  printing_id   INTEGER NOT NULL REFERENCES printings(id) ON DELETE CASCADE,
+  seller_id     INTEGER NOT NULL REFERENCES sellers(id) ON DELETE CASCADE,
+  store_id      INTEGER NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+  price_cents   INTEGER NOT NULL,
+  currency      TEXT NOT NULL DEFAULT 'MXN',
+  condition     TEXT NOT NULL DEFAULT 'UNKNOWN',
+  stock         INTEGER NOT NULL DEFAULT 0,
+  in_stock      BOOLEAN NOT NULL DEFAULT FALSE,
+  product_url   TEXT NOT NULL,
+  raw_title     TEXT NOT NULL,
+  external_id   TEXT NOT NULL,
+  -- De dónde salió este listing. CRÍTICO ahora que las tiendas administran su
+  -- inventario: la sincronización sólo puede tocar lo que vino del feed. Si
+  -- barriera todo, cada corrida borraría lo que la tienda capturó a mano o lo
+  -- que subió un afiliado.
+  origin        TEXT NOT NULL DEFAULT 'feed',
+  first_seen_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (store_id, external_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_listings_printing ON listings(printing_id);
 CREATE INDEX IF NOT EXISTS idx_listings_store ON listings(store_id);
-CREATE INDEX IF NOT EXISTS idx_listings_price ON listings(price_cents);
+CREATE INDEX IF NOT EXISTS idx_listings_seller ON listings(seller_id);
+-- La consulta más común: listings con stock de una carta.
+CREATE INDEX IF NOT EXISTS idx_listings_instock ON listings(printing_id) WHERE in_stock;
 
--- Bitácora de sincronizaciones: qué tienda, cuándo, cuántos listings.
 CREATE TABLE IF NOT EXISTS sync_runs (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  store_id      INTEGER NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
-  source        TEXT NOT NULL,        -- 'live' | 'sample'
-  started_at    TEXT NOT NULL,
-  finished_at   TEXT,
-  status        TEXT NOT NULL,        -- 'ok' | 'error'
-  products_seen INTEGER NOT NULL DEFAULT 0,
+  id                SERIAL PRIMARY KEY,
+  store_id          INTEGER NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+  source            TEXT NOT NULL,
+  started_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  finished_at       TIMESTAMPTZ,
+  status            TEXT NOT NULL,
+  products_seen     INTEGER NOT NULL DEFAULT 0,
   listings_upserted INTEGER NOT NULL DEFAULT 0,
   listings_skipped  INTEGER NOT NULL DEFAULT 0,
-  error         TEXT
+  error             TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_sync_runs_store ON sync_runs(store_id, started_at DESC);
 
--- Búsqueda por nombre. FTS5 con prefijos para autocomplete.
-CREATE VIRTUAL TABLE IF NOT EXISTS cards_fts USING fts5(
-  name,
-  content='cards',
-  content_rowid='id',
-  tokenize="unicode61 remove_diacritics 2",
-  prefix='2 3 4'
+-- Señales de demanda: qué se ve y qué se clickea hacia la tienda. Se llavea por
+-- slug de carta, no por id, para sobrevivir a recargas del catálogo.
+CREATE TABLE IF NOT EXISTS card_events (
+  card_slug TEXT    NOT NULL,
+  day       DATE    NOT NULL,
+  kind      TEXT    NOT NULL,
+  count     INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (card_slug, day, kind)
 );
 
-CREATE TRIGGER IF NOT EXISTS cards_ai AFTER INSERT ON cards BEGIN
-  INSERT INTO cards_fts(rowid, name) VALUES (new.id, new.name);
-END;
-CREATE TRIGGER IF NOT EXISTS cards_ad AFTER DELETE ON cards BEGIN
-  INSERT INTO cards_fts(cards_fts, rowid, name) VALUES ('delete', old.id, old.name);
-END;
-CREATE TRIGGER IF NOT EXISTS cards_au AFTER UPDATE ON cards BEGIN
-  INSERT INTO cards_fts(cards_fts, rowid, name) VALUES ('delete', old.id, old.name);
-  INSERT INTO cards_fts(rowid, name) VALUES (new.id, new.name);
-END;
+CREATE INDEX IF NOT EXISTS idx_card_events_day ON card_events(day);
