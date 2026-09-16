@@ -9,13 +9,13 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "sync": "tsx scripts/sync.ts",
+    "sync": "tsx --env-file-if-exists=.env.local scripts/sync.ts",
     "snapshot": "tsx scripts/snapshot.ts",
     "make-samples": "tsx scripts/make-samples.ts",
     "test": "tsx --test \"src/**/*.test.ts\"",
     "snapshots:normalize": "tsx scripts/normalize-snapshots.ts",
-    "db:migrate": "tsx scripts/db-migrate.ts",
-    "db:seed": "tsx scripts/sync.ts"
+    "db:migrate": "tsx --env-file-if-exists=.env.local scripts/db-migrate.ts",
+    "db:seed": "tsx --env-file-if-exists=.env.local scripts/sync.ts"
   },
   "dependencies": {
     "next": "^16.3.4",

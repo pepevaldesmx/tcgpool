@@ -19,7 +19,7 @@ El catálogo vive en Postgres. Hacen falta una base y dos comandos:
 
 ```bash
 npm install
-export DATABASE_URL=postgres://...   # Vercel Postgres, Neon, o uno local
+export DATABASE_URL=postgres://...   # Supabase, Neon, o uno local
 npm run db:migrate                   # aplica el esquema (idempotente)
 npm run sync                         # carga el catálogo desde data/snapshots/
 npm run dev                          # http://localhost:3000
@@ -27,6 +27,33 @@ npm run dev                          # http://localhost:3000
 
 `npm run build` **no** toca la base: sólo compila. Sin `DATABASE_URL` la app no
 truena — muestra una pantalla que explica qué falta.
+
+### La base en Supabase
+
+Cualquier Postgres 14+ sirve —el código es `pg` y SQL estándar, sin nada
+propietario— pero el proyecto está pensado para Supabase, porque la fase que
+sigue (paneles de tienda) necesita autenticación y ahí viene incluida.
+
+1. Crea el proyecto en [supabase.com](https://supabase.com) y elige la región
+   más cercana a México (`us-east-1` o `us-west-1`).
+2. Copia la cadena del **connection pooler**, no la directa:
+   `postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres`.
+   La directa (`db.<ref>.supabase.co:5432`) sólo responde por IPv6 en el plan
+   gratuito, y las funciones serverless de Vercel salen por IPv4: con ella los
+   deployments truenan con `ENETUNREACH`.
+3. Ponla como `DATABASE_URL` en tres lugares: tu `.env.local`, las variables de
+   entorno del proyecto en Vercel, y los secretos del repositorio en GitHub
+   (los usa el cron de sincronización).
+4. `npm run db:migrate && npm run sync -- --live`.
+
+`db:migrate` crea la extensión `pg_trgm`, que es la que sostiene la búsqueda
+difusa; en Supabase viene disponible sin pedir permisos extra.
+
+Dos cosas que muerden: los proyectos gratuitos **se pausan tras ~una semana sin
+actividad** (el cron de 6 horas basta para mantenerlo despierto, pero si lo
+apagas hay que reanudar el proyecto a mano antes de una demo), y el pooler en
+modo transacción no admite sentencias preparadas — por eso `src/lib/db/index.ts`
+nunca les pone nombre.
 
 ## Datos
 
@@ -60,20 +87,14 @@ verdad, y commitearlo inflaba el repo 11 MB cada 6 horas.
 ### Señales de demanda (cartas de moda)
 
 El home muestra "cartas de moda" = **las más buscadas que además están
-disponibles**. Esa señal se escribe en runtime, y el catálogo SQLite es de sólo
-lectura, así que vive en un Postgres aparte:
+disponibles**. Esa señal se escribe en runtime, en la misma base que el catálogo
+(la tabla `card_events`, que `db:migrate` crea junto con todo lo demás).
 
-```bash
-# 1. crea la base en Neon o Vercel Postgres y expón la variable
-export DATABASE_URL=postgres://...
-# 2. crea la tabla (una sola vez)
-npm run events:migrate
-```
-
-En Vercel basta con que el proyecto tenga `DATABASE_URL` (o `POSTGRES_URL`, que
-la integración pone sola). **Sin esa variable la app funciona igual**: el home
-cae al ranking de oferta y lo dice —"Todavía no medimos búsquedas: por ahora,
-las que más tiendas tienen en stock"— en lugar de fingir popularidad.
+Se llavea por **slug**, no por id: los ids se regeneran si alguna vez se
+reconstruye el catálogo desde cero, y los contadores tienen que sobrevivir a
+eso. **Sin `DATABASE_URL` la app funciona igual**: el home cae al ranking de
+oferta y lo dice —"Todavía no medimos búsquedas: por ahora, las que más tiendas
+tienen en stock"— en lugar de fingir popularidad.
 
 Qué se mide y qué no: se registran vistas de carta y **clics de salida** hacia
 la tienda; el clic pesa el triple porque es la intención de compra más cercana
@@ -84,16 +105,16 @@ en la tienda y nunca la vemos.
 
 El proyecto está enlazado a Vercel (equipo `PPVAPPS`, proyecto `tcgpool`): cada
 push genera un deployment — preview en ramas, producción en la rama de
-producción. No hay nada que configurar en el dashboard, porque `npm run build`
-reconstruye la base y `next.config.ts` incluye `data/tcgpool.db` en el trazado
-de archivos de las funciones serverless.
+producción. Lo único que hay que configurar en el dashboard es `DATABASE_URL`.
 
-En runtime la base es de **sólo lectura**, y se abre así: el filesystem de la
-función serverless es inmutable, de modo que abrirla en modo escritura —o
-dejarla en WAL, que exige crear `-wal`/`-shm` junto al archivo— responde 500 en
-cada request. Por eso `db:build` verifica que el artefacto salga en
-`journal_mode=delete`. Actualizar el catálogo es commitear snapshots nuevos y
-redesplegar, nunca escribir en SQLite desde la app.
+El build **no** toca la base: compila y ya. Actualizar el catálogo es correr la
+ingesta contra Postgres, no redesplegar — la app lee la base en cada request,
+así que un `sync` se ve reflejado sin build de por medio.
+
+Cada función serverless abre **una** conexión (`PGPOOL_MAX=1`): el cupo del
+pooler se agota rapidísimo si cada invocación abre varias. Los scripts de
+ingesta, que corren en un solo proceso, suben ese número por variable de
+entorno.
 
 ### Sincronización periódica
 
@@ -120,14 +141,16 @@ src/
       adapters/shopify.ts  feed público /products.json
       adapters/manual.ts   tiendas sin feed (MTG Wolf corre en Wix)
       normalize.ts         título de tienda -> carta + set + idioma + foil + condición
-  decklist.ts            parser de listas pegadas (Moxfield, Archidekt, a mano)
-  games.ts               catálogo de juegos y detección por product_type
-  trending.ts            "cartas de moda": demanda real, con respaldo por oferta
-  events/store.ts        contadores de demanda en Postgres (escritura en runtime)
       run.ts               orquesta: fetch -> normaliza -> resuelve -> upsert
     cards/scryfall.ts      nombre canónico + imagen
+    decklist.ts            parser de listas pegadas (Moxfield, Archidekt, a mano)
+    fulfillment.ts         qué tiendas cubren una lista en el menor número de pedidos
+    location.ts            ubicación del usuario en cookie + criterio de cercanía
+    games.ts               catálogo de juegos y detección por product_type
+    trending.ts            "cartas de moda": demanda real, con respaldo por oferta
+    events/store.ts        contadores de demanda (escritura en runtime)
 scripts/
-  build-db.ts              reconstruye la base (corre en `npm run build`)
+  db-migrate.ts            aplica el esquema a Postgres
   sync.ts                  job de sincronización
   snapshot.ts              captura un feed sin ingerirlo
   make-samples.ts          regenera los datos de muestra
