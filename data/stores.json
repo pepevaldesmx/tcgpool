@@ -13,7 +13,8 @@
         "maxPages": 20
       },
       "lat": 19.4326,
-      "lng": -99.1332
+      "lng": -99.1332,
+      "defaultGame": "magic"
     },
     {
       "slug": "yellow-rabbit",
@@ -27,7 +28,8 @@
         "maxPages": 20
       },
       "lat": 20.6597,
-      "lng": -103.3496
+      "lng": -103.3496,
+      "defaultGame": "magic"
     },
     {
       "slug": "tao-games",
@@ -41,7 +43,8 @@
         "maxPages": 20
       },
       "lat": 25.6866,
-      "lng": -100.3161
+      "lng": -100.3161,
+      "defaultGame": "magic"
     },
     {
       "slug": "mtg-wolf",
@@ -53,8 +56,10 @@
       "_nota": "Corre en Wix: no expone /products.json. Se ingiere de data/snapshots/mtg-wolf.manual.json hasta que exista un scraper.",
       "sourceConfig": {},
       "lat": 19.4326,
-      "lng": -99.1332
+      "lng": -99.1332,
+      "defaultGame": "magic"
     }
   ],
-  "_nota_coords": "lat/lng son el centro de la ciudad, no la dirección de la tienda: sólo sirven para ordenar por cercanía."
+  "_nota_coords": "lat/lng son el centro de la ciudad, no la dirección de la tienda: sólo sirven para ordenar por cercanía.",
+  "_nota_juego": "defaultGame se usa sólo cuando el product_type del feed no declara el juego; MTG México sí lo declara (MTG Single, Pokemon Single, …) y ese gana."
 }

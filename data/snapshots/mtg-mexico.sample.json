@@ -1,7 +1,4 @@
 {
-  "_sample": true,
-  "_nota": "Feed de MUESTRA con la forma exacta de /products.json de Shopify. Cartas, sets e imágenes son reales (Scryfall); precios, condiciones y stock son sintéticos. Reemplazar con `npm run sync -- --live`.",
-  "_generated_at": "2026-09-01T19:03:53.143Z",
   "products": [
     {
       "id": 1000,
@@ -10,9 +7,9 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
+        "Foil",
         "Magic",
-        "Marvel Super Heroes Commander",
-        "Foil"
+        "Marvel Super Heroes Commander"
       ],
       "variants": [
         {
@@ -37,8 +34,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Teenage Mutant Ninja Turtles Eternal",
-        "Non-Foil"
+        "Non-Foil",
+        "Teenage Mutant Ninja Turtles Eternal"
       ],
       "variants": [
         {
@@ -62,8 +59,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Commander Legends: Battle for Baldur's Gate",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -89,8 +86,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Ravnica: Clue Edition",
-        "Non-Foil"
+        "Non-Foil",
+        "Ravnica: Clue Edition"
       ],
       "variants": [
         {
@@ -121,9 +118,9 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Dominaria Remastered",
-        "Foil"
+        "Foil",
+        "Magic"
       ],
       "variants": [
         {
@@ -147,8 +144,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Commander Legends",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -180,8 +177,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Duskmourn: House of Horror Commander",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -240,8 +237,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Secrets of Strixhaven Commander",
-        "Non-Foil"
+        "Non-Foil",
+        "Secrets of Strixhaven Commander"
       ],
       "variants": [
         {
@@ -272,8 +269,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Commander 2014",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -365,8 +362,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Wilds of Eldraine: Enchanting Tales",
-        "Non-Foil"
+        "Non-Foil",
+        "Wilds of Eldraine: Enchanting Tales"
       ],
       "variants": [
         {
@@ -390,9 +387,9 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
+        "Foil",
         "Magic",
-        "Prophecy",
-        "Foil"
+        "Prophecy"
       ],
       "variants": [
         {
@@ -417,8 +414,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Wilds of Eldraine: Enchanting Tales",
-        "Non-Foil"
+        "Non-Foil",
+        "Wilds of Eldraine: Enchanting Tales"
       ],
       "variants": [
         {
@@ -469,8 +466,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Theros",
-        "Non-Foil"
+        "Non-Foil",
+        "Theros"
       ],
       "variants": [
         {
@@ -494,8 +491,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Aether Revolt",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -520,8 +517,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Double Masters",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -579,8 +576,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Edge of Eternities Commander",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -605,9 +602,9 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
+        "Foil",
         "Magic",
-        "Shadows over Innistrad",
-        "Foil"
+        "Shadows over Innistrad"
       ],
       "variants": [
         {
@@ -631,8 +628,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Avatar: The Last Airbender Eternal",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -664,9 +661,9 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
+        "Foil",
         "Magic",
-        "Special Guests",
-        "Foil"
+        "Special Guests"
       ],
       "variants": [
         {
@@ -697,8 +694,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Jumpstart",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -730,8 +727,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Core Set 2021",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -757,8 +754,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Tarkir: Dragonstorm Commander",
-        "Non-Foil"
+        "Non-Foil",
+        "Tarkir: Dragonstorm Commander"
       ],
       "variants": [
         {
@@ -849,8 +846,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "The List",
-        "Non-Foil"
+        "Non-Foil",
+        "The List"
       ],
       "variants": [
         {
@@ -881,8 +878,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Commander Masters",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -915,8 +912,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Tarkir: Dragonstorm Commander",
-        "Non-Foil"
+        "Non-Foil",
+        "Tarkir: Dragonstorm Commander"
       ],
       "variants": [
         {
@@ -940,8 +937,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Commander 2015",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -1026,8 +1023,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Ravnica: City of Guilds",
-        "Non-Foil"
+        "Non-Foil",
+        "Ravnica: City of Guilds"
       ],
       "variants": [
         {
@@ -1059,8 +1056,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Visions",
-        "Non-Foil"
+        "Non-Foil",
+        "Visions"
       ],
       "variants": [
         {
@@ -1092,8 +1089,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Unlimited Edition",
-        "Non-Foil"
+        "Non-Foil",
+        "Unlimited Edition"
       ],
       "variants": [
         {
@@ -1117,8 +1114,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Legends",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -1150,8 +1147,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Foundations",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -1183,8 +1180,8 @@
       "vendor": "MTG México",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Avatar: The Last Airbender Eternal",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [

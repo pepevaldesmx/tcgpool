@@ -1,5 +1,5 @@
 import type { Database } from "better-sqlite3";
-import type { AdapterResult } from "@/lib/types";
+import type { AdapterResult, GameId } from "@/lib/types";
 import {
   fetchShopifyFeed,
   readSnapshot,
@@ -32,7 +32,8 @@ export interface SyncOptions {
   enrich?: boolean;
   /** Sólo usar la caché de Scryfall, nunca la red. */
   offline?: boolean;
-  gameId?: string;
+  /** Juego a asumir si ni el feed ni la tienda lo declaran. */
+  gameId?: GameId;
   log?: (msg: string) => void;
 }
 
@@ -76,7 +77,7 @@ export async function syncStore(
   def: StoreDefinition,
   opts: SyncOptions,
 ): Promise<SyncResult> {
-  const gameId = opts.gameId ?? "magic";
+  const defaultGame = def.defaultGame ?? opts.gameId ?? "magic";
   const log = opts.log ?? (() => {});
 
   const storeId = upsertStore(db, {
@@ -111,8 +112,12 @@ export async function syncStore(
       listing: Omit<Parameters<typeof upsertListing>[1], "printingId">;
     }> = [];
 
+    // Cuántos listings entraron por juego: sin esto, una tienda que vende
+    // varios juegos mete su Yu-Gi-Oh al catálogo de Magic sin que nadie lo note.
+    const perGame = new Map<string, number>();
+
     for (const raw of result.listings) {
-      const n = normalizeListing(raw);
+      const n = normalizeListing(raw, defaultGame);
       if (!n) {
         skipped++;
         continue;
@@ -124,7 +129,8 @@ export async function syncStore(
       let typeLine: string | null = null;
       let setCode: string | null = null;
 
-      if (opts.enrich !== false && gameId === "magic") {
+      // Scryfall sólo conoce Magic: para los demás juegos no hay a qué resolver.
+      if (opts.enrich !== false && n.game === "magic") {
         const sc = await lookupCardByName(n.cardName, { offline: opts.offline });
         if (sc) {
           canonicalName = sc.name;
@@ -138,8 +144,9 @@ export async function syncStore(
       }
 
       seen.push(n.externalId);
+      perGame.set(n.game, (perGame.get(n.game) ?? 0) + 1);
       prepared.push({
-        card: { gameId, name: canonicalName, oracleId, imageUrl: cardImageUrl, typeLine },
+        card: { gameId: n.game, name: canonicalName, oracleId, imageUrl: cardImageUrl, typeLine },
         printing: {
           cardId: 0, // se rellena al escribir
           setCode,
@@ -173,8 +180,17 @@ export async function syncStore(
     });
     write();
 
+    if (perGame.size > 1) {
+      log(
+        `  juegos: ${[...perGame.entries()]
+          .sort((a, b) => b[1] - a[1])
+          .map(([g, n]) => `${g} ${n}`)
+          .join(" · ")}`,
+      );
+    }
+
     const outOfStock = markMissingAsOutOfStock(db, storeId, seen, now);
-    touchStoreSync(db, storeId);
+    touchStoreSync(db, storeId, result.source);
     finishSyncRun(db, runId, {
       status: "ok",
       productsSeen: result.productsSeen,

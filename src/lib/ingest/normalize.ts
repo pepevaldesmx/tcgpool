@@ -1,4 +1,5 @@
-import type { Condition, Finish, RawListing } from "@/lib/types";
+import { detectGame } from "@/lib/games";
+import type { Condition, Finish, GameId, RawListing } from "@/lib/types";
 
 /** minúsculas, sin acentos, sin puntuación, espacios colapsados */
 export function normalizeText(input: string): string {
@@ -187,11 +188,50 @@ const NON_SINGLE_RE = new RegExp(
   `\\b(?:${NON_SINGLE.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`,
 );
 
+/** Qué clase de producto es. `product_type` manda sobre el título. */
+export type ProductKind = "single" | "sealed" | "accessory" | "unknown";
+
+const KIND_PATTERNS: Array<[RegExp, ProductKind]> = [
+  [/\b(single|singles|carta suelta|cartas sueltas)\b/, "single"],
+  [/\b(sealed|sellado|producto sellado|preventa)\b/, "sealed"],
+  [/\b(accesorio|accesorios|accessories|supplies)\b/, "accessory"],
+];
+
+export interface Classification {
+  game: GameId | null;
+  kind: ProductKind;
+}
+
+/**
+ * Clasifica un producto por juego y tipo.
+ *
+ * Las tiendas reales etiquetan `product_type` como "<Juego> Single" o
+ * "<Juego> Sealed", que es la señal más confiable que existe. Sin ella caemos al
+ * título y a los tags, que es adivinar.
+ *
+ * Importante: sin esto, una tienda que vende varios juegos mete su Yu-Gi-Oh y su
+ * Pokémon al catálogo de Magic.
+ */
+export function classifyProduct(listing: RawListing): Classification {
+  const type = listing.productType ?? "";
+  const tags = (listing.tags ?? []).join(" ");
+
+  const game = detectGame(type) ?? detectGame(tags);
+
+  const typeHaystack = normalizeText(type);
+  for (const [re, kind] of KIND_PATTERNS) {
+    if (re.test(typeHaystack)) return { game, kind };
+  }
+
+  // Sin `product_type` útil: el título decide, con la lista de ruido.
+  const titleHaystack = normalizeText([listing.title, tags].join(" "));
+  if (NON_SINGLE_RE.test(titleHaystack)) return { game, kind: "sealed" };
+  return { game, kind: "unknown" };
+}
+
 export function looksLikeSingle(listing: RawListing): boolean {
-  const haystack = normalizeText(
-    [listing.title, listing.productType, (listing.tags ?? []).join(" ")].join(" "),
-  );
-  if (NON_SINGLE_RE.test(haystack)) return false;
+  const { kind } = classifyProduct(listing);
+  if (kind === "sealed" || kind === "accessory") return false;
   // Un single sin nombre parseable no sirve para el buscador.
   return parseTitle(listing.title).cardName.length > 1;
 }
@@ -201,6 +241,7 @@ export function looksLikeSingle(listing: RawListing): boolean {
 // ---------------------------------------------------------------------------
 
 export interface NormalizedListing {
+  game: GameId;
   cardName: string;
   cardMatchKey: string;
   setName?: string;
@@ -216,17 +257,22 @@ export interface NormalizedListing {
   externalId: string;
 }
 
-export function normalizeListing(raw: RawListing): NormalizedListing | null {
-  if (!looksLikeSingle(raw)) return null;
+export function normalizeListing(
+  raw: RawListing,
+  defaultGame: GameId = "magic",
+): NormalizedListing | null {
+  const { game, kind } = classifyProduct(raw);
+  if (kind === "sealed" || kind === "accessory") return null;
   if (!Number.isFinite(raw.priceMxn) || raw.priceMxn <= 0) return null;
 
   const { cardName, setName } = parseTitle(raw.title);
-  if (!cardName) return null;
+  if (cardName.length < 2) return null;
 
   const variantAndTags = [raw.variantTitle, (raw.tags ?? []).join(" ")].join(" ");
   const stock = raw.stock ?? (raw.available ? 1 : 0);
 
   return {
+    game: game ?? defaultGame,
     cardName,
     cardMatchKey: normalizeText(cardName),
     setName,

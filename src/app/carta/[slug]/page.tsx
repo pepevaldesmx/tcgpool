@@ -8,7 +8,7 @@ import StoreLink from "@/components/StoreLink";
 import {
   getCardBySlug,
   getListingsForCard,
-  isSampleData,
+  getProvenance,
   type ListingFilters,
   type ListingRow,
 } from "@/lib/db/queries";
@@ -97,6 +97,7 @@ export default async function CardPage({ params, searchParams }: Props) {
     sort: (query.orden as ListingFilters["sort"]) ?? "price_asc",
   };
 
+  const provenance = getProvenance();
   const listings = getListingsForCard(card.id, filters);
   // Las facetas se calculan sobre TODO el inventario de la carta, no sobre el
   // resultado filtrado: si no, al filtrar desaparecerían las demás opciones.
@@ -190,9 +191,9 @@ export default async function CardPage({ params, searchParams }: Props) {
         </aside>
 
         <section>
-          {isSampleData() && (
+          {provenance.sample > 0 && (
             <div className="mb-5">
-              <SampleDataNotice />
+              <SampleDataNotice provenance={provenance} />
             </div>
           )}
 
@@ -365,6 +366,14 @@ function ListingRowView({
           {listing.storeCity ?? "México"}
           {listing.sellerType === "affiliate" && ` · afiliado ${listing.sellerName}`}
         </div>
+        {listing.storeDataSource !== "live" && (
+          <span
+            title="Precio y stock sintéticos: esta tienda todavía no se ingiere en vivo"
+            className="mt-1 inline-block rounded-pill border border-warn-line bg-warn-bg px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-warn"
+          >
+            demo
+          </span>
+        )}
       </td>
       <td className="px-4 py-3">
         <div className="max-w-[260px] truncate" title={listing.setName ?? ""}>

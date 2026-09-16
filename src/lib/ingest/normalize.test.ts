@@ -4,6 +4,7 @@ import {
   detectCondition,
   detectFinish,
   detectLanguage,
+  classifyProduct,
   looksLikeSingle,
   normalizeListing,
   parseTitle,
@@ -138,5 +139,51 @@ describe("looksLikeSingle: ruido por palabra completa", () => {
     for (const title of noise) {
       assert.equal(looksLikeSingle({ ...base, title }), false, title);
     }
+  });
+});
+
+describe("classifyProduct", () => {
+  it("saca el juego del product_type, que es como lo etiquetan las tiendas", () => {
+    const cases: Array<[string, string]> = [
+      ["MTG Single", "magic"],
+      ["Pokemon Single", "pokemon"],
+      ["Yugioh Single", "yugioh"],
+      ["One Piece Single", "onepiece"],
+      ["Lorcana Single", "lorcana"],
+      ["Flesh And Blood Single", "fleshandblood"],
+    ];
+    for (const [productType, game] of cases) {
+      assert.equal(classifyProduct({ ...base, productType }).game, game, productType);
+      assert.equal(classifyProduct({ ...base, productType }).kind, "single", productType);
+    }
+  });
+
+  it("descarta el sellado aunque el título parezca una carta", () => {
+    const r = classifyProduct({
+      ...base,
+      title: "Bloomburrow",
+      productType: "MTG Sealed",
+    });
+    assert.equal(r.kind, "sealed");
+    assert.equal(normalizeListing({ ...base, title: "Bloomburrow", productType: "MTG Sealed" }), null);
+  });
+
+  it("usa el juego por defecto de la tienda cuando el feed no lo declara", () => {
+    const r = normalizeListing({ ...base, productType: "Cartas Sueltas" }, "magic");
+    assert.equal(r?.game, "magic");
+    const p = normalizeListing({ ...base, productType: "Cartas Sueltas" }, "pokemon");
+    assert.equal(p?.game, "pokemon");
+  });
+
+  it("un Yu-Gi-Oh de una tienda mayormente de Magic NO entra como Magic", () => {
+    const r = normalizeListing(
+      {
+        ...base,
+        title: "YummySnatchy [26LP-EN005] Ultra Rare",
+        productType: "Yugioh Single",
+      },
+      "magic",
+    );
+    assert.equal(r?.game, "yugioh");
   });
 });

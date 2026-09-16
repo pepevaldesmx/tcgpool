@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getProvenance } from "@/lib/db/queries";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,6 +13,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const provenance = getProvenance();
+
   return (
     <html lang="es">
       <body className="font-sans antialiased">
@@ -50,7 +53,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 stock se toman del sitio de cada tienda y pueden cambiar; la
                 compra siempre se cierra en la tienda.
               </p>
-              <p className="mt-2">MVP · datos de demostración · hecho en México</p>
+              <p className="mt-2">
+                MVP ·{" "}
+                {provenance.sample > 0
+                  ? `${provenance.live} de ${provenance.live + provenance.sample} tiendas con catálogo real`
+                  : "catálogo real de todas las tiendas"}{" "}
+                · hecho en México
+              </p>
             </div>
           </footer>
         </div>

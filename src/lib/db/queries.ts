@@ -42,6 +42,7 @@ export interface ListingRow {
   storeSlug: string;
   storeUrl: string;
   storeCity: string | null;
+  storeDataSource: "live" | "sample";
   sellerName: string;
   sellerType: string;
 }
@@ -293,9 +294,20 @@ export function finishSyncRun(
   );
 }
 
-export function touchStoreSync(db: Database, storeId: number) {
-  db.prepare(`UPDATE stores SET last_synced_at = ? WHERE id = ?`).run(
+/**
+ * Marca la tienda como sincronizada y deja registrado de dónde salieron sus
+ * datos. `source` es la procedencia REAL (leímos el feed de la tienda o un
+ * snapshot de muestra), no el modo con el que se corrió el script: es lo único
+ * que permite que la UI no presente datos sintéticos como reales.
+ */
+export function touchStoreSync(
+  db: Database,
+  storeId: number,
+  source: "live" | "sample",
+) {
+  db.prepare(`UPDATE stores SET last_synced_at = ?, data_source = ? WHERE id = ?`).run(
     new Date().toISOString(),
+    source,
     storeId,
   );
 }
@@ -428,6 +440,7 @@ export function getListingsForCard(cardId: number, filters: ListingFilters = {})
               p.image_url AS printingImage,
               s.id AS storeId, s.name AS storeName, s.slug AS storeSlug,
               s.url AS storeUrl, s.city AS storeCity,
+              s.data_source AS storeDataSource,
               se.name AS sellerName, se.type AS sellerType
        FROM listings l
        JOIN printings p ON p.id = l.printing_id
@@ -448,6 +461,8 @@ export interface StorePublic {
   lat: number | null;
   lng: number | null;
   sourceType: string;
+  /** 'live' = catálogo real de la tienda; 'sample' = datos sintéticos. */
+  dataSource: "live" | "sample";
   lastSyncedAt: string | null;
   listingCount: number;
   inStockCount: number;
@@ -469,7 +484,8 @@ export function listStoresPublic(): StorePublic[] {
   return db
     .prepare(
       `SELECT s.id, s.slug, s.name, s.url, s.city, s.lat, s.lng,
-              s.source_type AS sourceType, s.last_synced_at AS lastSyncedAt,
+              s.source_type AS sourceType, s.data_source AS dataSource,
+              s.last_synced_at AS lastSyncedAt,
               COUNT(l.id) AS listingCount,
               SUM(CASE WHEN l.in_stock = 1 THEN 1 ELSE 0 END) AS inStockCount,
               COUNT(DISTINCT p.card_id) AS cardCount,
@@ -575,17 +591,35 @@ export function cardExists(slug: string): boolean {
   return !!db.prepare(`SELECT 1 FROM cards WHERE slug = ?`).get(slug);
 }
 
+export interface Provenance {
+  /** Tiendas cuyo catálogo salió de su feed real. */
+  live: number;
+  /** Tiendas que todavía muestran datos sintéticos. */
+  sample: number;
+  /** Nombres de las que siguen en muestra, para poder decirlo sin rodeos. */
+  sampleNames: string[];
+}
+
 /**
- * ¿Los datos que se están mostrando salen de los feeds reales de las tiendas o
- * de los snapshots de muestra? La UI lo advierte para no enseñar precios
- * inventados como si fueran reales.
+ * De dónde salen los datos que se están mostrando, tienda por tienda.
+ *
+ * Antes esto era un booleano global y mentía en los dos sentidos: con una sola
+ * tienda real marcaba todo el catálogo como demo, y con una sola tienda de
+ * muestra lo habría marcado todo como real. La UI necesita los números.
  */
-export function isSampleData(): boolean {
+export function getProvenance(): Provenance {
   const db = getDb();
-  const row = db
-    .prepare(`SELECT COUNT(*) AS n FROM sync_runs WHERE source = 'live' AND status = 'ok'`)
-    .get() as { n: number };
-  return row.n === 0;
+  const rows = db
+    .prepare(
+      `SELECT data_source AS dataSource, name FROM stores WHERE active = 1 ORDER BY name`,
+    )
+    .all() as Array<{ dataSource: string; name: string }>;
+  const sampleNames = rows.filter((r) => r.dataSource !== "live").map((r) => r.name);
+  return {
+    live: rows.length - sampleNames.length,
+    sample: sampleNames.length,
+    sampleNames,
+  };
 }
 
 // ---------------------------------------------------------------------------

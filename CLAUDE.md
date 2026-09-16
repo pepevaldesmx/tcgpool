@@ -66,9 +66,21 @@ app móvil nativa. Web responsive es suficiente.
   devuelve `RawListing[]`. Sumar una tienda Shopify no debe requerir código.
 - **`npm run build` tiene que funcionar sin red.** `db:build` resuelve nombres
   contra la caché versionada `data/scryfall-cache.json`.
-- **Nunca presentes datos de muestra como reales.** Mientras no haya un
-  `sync_run` con `source='live'`, la UI muestra el banner de demostración
-  (`isSampleData()`).
+- **Nunca presentes datos de muestra como reales, ni al revés.** La procedencia
+  es POR TIENDA (`stores.data_source`, que la ingesta escribe con el origen real
+  del feed, no con el modo del script). `getProvenance()` devuelve los números y
+  la UI los dice: el aviso cuenta cuántas tiendas son reales y cada listado de
+  una tienda en muestra lleva su marca `demo`. Un booleano global mentía en los
+  dos sentidos.
+- **El juego se detecta POR PRODUCTO, no por tienda.** Las tiendas reales venden
+  varios TCG y lo declaran en `product_type` ("MTG Single", "Yugioh Single",
+  "Pokemon Sealed"). `classifyProduct` lo usa como señal principal; el
+  `defaultGame` de la tienda es sólo el respaldo. Sin esto, el Yu-Gi-Oh de una
+  tienda de Magic entra al catálogo de Magic. Scryfall sólo resuelve Magic.
+- **Los snapshots se guardan normalizados** (`normalizeFeed`): sólo los campos
+  que la ingesta usa, ordenados de forma estable. El feed crudo de Shopify trae
+  `body_html` y timestamps volátiles, y hacía que el cron reescribiera 35 MB
+  cada 6 horas aunque nada hubiera cambiado.
 - **El look vive en tokens semánticos** definidos en el bloque `@theme` de
   `src/app/globals.css`: color (`paper`, `surface`, `line`, `ink`, `accent`,
   `ok`, `warn`), forma (`radius-card`, `radius-control`, `radius-pill`,

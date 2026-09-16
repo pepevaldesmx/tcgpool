@@ -5,7 +5,7 @@ import StoreList from "@/components/StoreList";
 import SampleDataNotice from "@/components/SampleDataNotice";
 import CardTile from "@/components/CardTile";
 import GameMark from "@/components/GameMark";
-import { isSampleData, listGames, listStoresPublic } from "@/lib/db/queries";
+import { getProvenance, listGames, listStoresPublic } from "@/lib/db/queries";
 import { getTrending } from "@/lib/trending";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export default async function HomePage() {
   const stores = listStoresPublic();
   const games = listGames();
   const trending = await getTrending(5);
-  const sample = isSampleData();
+  const provenance = getProvenance();
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4">
@@ -56,9 +56,9 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {sample && (
+        {provenance.sample > 0 && (
           <div className="mt-7 max-w-3xl">
-            <SampleDataNotice />
+            <SampleDataNotice provenance={provenance} />
           </div>
         )}
       </section>

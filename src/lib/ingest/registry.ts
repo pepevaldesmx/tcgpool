@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { SourceType } from "@/lib/types";
+import type { GameId, SourceType } from "@/lib/types";
 
 export interface StoreDefinition {
   slug: string;
@@ -12,6 +12,8 @@ export interface StoreDefinition {
   lng?: number;
   sourceType: SourceType;
   sourceConfig: Record<string, unknown>;
+  /** Juego a asumir cuando el feed no lo declara. Default: magic. */
+  defaultGame?: GameId;
   domainVerified?: boolean;
   active?: boolean;
 }

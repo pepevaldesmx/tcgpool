@@ -11,6 +11,7 @@ import { migrate, openForWrite } from "../src/lib/db/migrate";
 import { loadStoreDefinitions } from "../src/lib/ingest/registry";
 import { syncStore } from "../src/lib/ingest/run";
 import { upsertGame } from "../src/lib/db/queries";
+import { GAMES } from "../src/lib/games";
 
 function arg(name: string): string | undefined {
   const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
@@ -26,9 +27,7 @@ async function main() {
 
   const db = openForWrite();
   migrate(db);
-  upsertGame(db, "magic", "Magic: The Gathering");
-  upsertGame(db, "pokemon", "Pokémon TCG");
-  upsertGame(db, "yugioh", "Yu-Gi-Oh!");
+  for (const game of GAMES) upsertGame(db, game.id, game.name);
 
   const defs = loadStoreDefinitions().filter((d) => !only || d.slug === only);
   if (!defs.length) {

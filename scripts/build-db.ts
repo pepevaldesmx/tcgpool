@@ -8,15 +8,14 @@ import { dropDatabase, journalMode, migrate, openForWrite } from "../src/lib/db/
 import { loadStoreDefinitions } from "../src/lib/ingest/registry";
 import { syncStore } from "../src/lib/ingest/run";
 import { getStats, upsertGame } from "../src/lib/db/queries";
+import { GAMES } from "../src/lib/games";
 
 async function main() {
   dropDatabase();
 
   const db = openForWrite();
   migrate(db);
-  upsertGame(db, "magic", "Magic: The Gathering");
-  upsertGame(db, "pokemon", "Pokémon TCG");
-  upsertGame(db, "yugioh", "Yu-Gi-Oh!");
+  for (const game of GAMES) upsertGame(db, game.id, game.name);
 
   for (const def of loadStoreDefinitions()) {
     const result = await syncStore(db, def, {

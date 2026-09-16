@@ -14,7 +14,8 @@
     "snapshot": "tsx scripts/snapshot.ts",
     "make-samples": "tsx scripts/make-samples.ts",
     "test": "tsx --test src/lib/**/*.test.ts",
-    "events:migrate": "tsx scripts/events-migrate.ts"
+    "events:migrate": "tsx scripts/events-migrate.ts",
+    "snapshots:normalize": "tsx scripts/normalize-snapshots.ts"
   },
   "dependencies": {
     "better-sqlite3": "^12.4.1",

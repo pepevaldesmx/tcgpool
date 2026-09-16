@@ -57,7 +57,7 @@ export async function fetchShopifyFeed(
   config: ShopifyConfig,
   { onPage }: { onPage?: (page: number, count: number) => void } = {},
 ): Promise<ShopifyFeed> {
-  const maxPages = config.maxPages ?? 20;
+  const maxPages = config.maxPages ?? 60;
   const products: ShopifyProduct[] = [];
 
   for (let page = 1; page <= maxPages; page++) {
@@ -86,10 +86,45 @@ export function readSnapshot(slug: string, kind: "live" | "sample"): ShopifyFeed
   return JSON.parse(fs.readFileSync(file, "utf8")) as ShopifyFeed;
 }
 
+/**
+ * Deja el feed en la forma mínima y ESTABLE que la ingesta necesita.
+ *
+ * El feed crudo de Shopify trae `body_html`, timestamps y un orden que cambia
+ * entre corridas, así que guardarlo tal cual hacía que el job de sincronización
+ * reescribiera el archivo entero cada 6 horas —decenas de miles de líneas que
+ * entran y salen— aunque el catálogo no hubiera cambiado. Normalizado, una
+ * corrida sin cambios produce un archivo idéntico y no genera commit.
+ */
+export function normalizeFeed(feed: ShopifyFeed): ShopifyFeed {
+  const products = (feed.products ?? [])
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      handle: p.handle,
+      vendor: p.vendor,
+      product_type: p.product_type,
+      tags: tagsOf(p).slice().sort(),
+      variants: (p.variants ?? [])
+        .map((v) => ({
+          id: v.id,
+          title: v.title,
+          price: v.price,
+          available: v.available,
+          ...(v.sku ? { sku: v.sku } : {}),
+          ...(v.featured_image?.src ? { featured_image: { src: v.featured_image.src } } : {}),
+        }))
+        .sort((a, b) => String(a.id).localeCompare(String(b.id))),
+      images: p.images?.[0]?.src ? [{ src: p.images[0].src }] : [],
+    }))
+    .sort((a, b) => String(a.id).localeCompare(String(b.id)));
+
+  return { products };
+}
+
 export function writeSnapshot(slug: string, kind: "live" | "sample", feed: ShopifyFeed) {
   const file = snapshotPath(slug, kind);
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, JSON.stringify(feed, null, 2));
+  fs.writeFileSync(file, JSON.stringify(normalizeFeed(feed), null, 2));
   return file;
 }
 

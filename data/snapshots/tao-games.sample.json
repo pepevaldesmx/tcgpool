@@ -1,7 +1,4 @@
 {
-  "_sample": true,
-  "_nota": "Feed de MUESTRA con la forma exacta de /products.json de Shopify. Cartas, sets e imágenes son reales (Scryfall); precios, condiciones y stock son sintéticos. Reemplazar con `npm run sync -- --live`.",
-  "_generated_at": "2026-09-01T19:03:53.145Z",
   "products": [
     {
       "id": 1000,
@@ -11,8 +8,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Secrets of Strixhaven Commander",
-        "Non-Foil"
+        "Non-Foil",
+        "Secrets of Strixhaven Commander"
       ],
       "variants": [
         {
@@ -69,8 +66,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Jumpstart",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -121,8 +118,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Duskmourn: House of Horror Commander",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -147,8 +144,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Edge of Eternities Commander",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -206,8 +203,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Duskmourn: House of Horror Commander",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -240,8 +237,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Ravnica Remastered",
-        "Non-Foil"
+        "Non-Foil",
+        "Ravnica Remastered"
       ],
       "variants": [
         {
@@ -272,9 +269,9 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
+        "Foil",
         "Magic",
-        "Marvel Super Heroes Commander",
-        "Foil"
+        "Marvel Super Heroes Commander"
       ],
       "variants": [
         {
@@ -305,9 +302,9 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
+        "Foil",
         "Magic",
-        "Prophecy",
-        "Foil"
+        "Prophecy"
       ],
       "variants": [
         {
@@ -331,9 +328,9 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Final Fantasy: Through the Ages",
-        "Foil"
+        "Foil",
+        "Magic"
       ],
       "variants": [
         {
@@ -358,8 +355,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Wilds of Eldraine: Enchanting Tales",
-        "Non-Foil"
+        "Non-Foil",
+        "Wilds of Eldraine: Enchanting Tales"
       ],
       "variants": [
         {
@@ -391,8 +388,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Wilds of Eldraine: Enchanting Tales",
-        "Non-Foil"
+        "Non-Foil",
+        "Wilds of Eldraine: Enchanting Tales"
       ],
       "variants": [
         {
@@ -416,8 +413,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Breaking News",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -501,8 +498,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Edge of Eternities Commander",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -528,8 +525,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Shadows over Innistrad",
-        "Non-Foil"
+        "Non-Foil",
+        "Shadows over Innistrad"
       ],
       "variants": [
         {
@@ -560,8 +557,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Avatar: The Last Airbender Eternal",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -586,8 +583,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Commander 2011",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -645,8 +642,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Commander Masters",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -671,8 +668,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Duskmourn: House of Horror Commander",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -697,8 +694,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Duel Decks: Venser vs. Koth",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -730,9 +727,9 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
+        "Foil",
         "Magic",
-        "Teenage Mutant Ninja Turtles Eternal",
-        "Foil"
+        "Teenage Mutant Ninja Turtles Eternal"
       ],
       "variants": [
         {
@@ -763,8 +760,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Double Masters 2022",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -789,8 +786,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Double Masters",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [
@@ -816,8 +813,8 @@
       "product_type": "Cartas Sueltas",
       "tags": [
         "Magic",
-        "Unlimited Edition",
-        "Non-Foil"
+        "Non-Foil",
+        "Unlimited Edition"
       ],
       "variants": [
         {
@@ -848,9 +845,9 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Commander Collection: Green",
-        "Foil"
+        "Foil",
+        "Magic"
       ],
       "variants": [
         {
@@ -874,8 +871,8 @@
       "vendor": "Tao Games",
       "product_type": "Cartas Sueltas",
       "tags": [
-        "Magic",
         "Foundations",
+        "Magic",
         "Non-Foil"
       ],
       "variants": [

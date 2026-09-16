@@ -34,6 +34,9 @@ CREATE TABLE IF NOT EXISTS stores (
   source_type    TEXT NOT NULL,
   source_config  TEXT NOT NULL DEFAULT '{}',   -- JSON con lo específico del adaptador
   ships_nationwide INTEGER NOT NULL DEFAULT 1,
+  -- 'live' = se ingirió el feed real de la tienda; 'sample' = datos sintéticos.
+  -- Es lo que decide si la UI advierte que son datos de demostración.
+  data_source    TEXT NOT NULL DEFAULT 'sample',
   active         INTEGER NOT NULL DEFAULT 1,
   last_synced_at TEXT
 );

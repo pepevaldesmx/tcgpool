@@ -118,6 +118,7 @@ src/
       adapters/manual.ts   tiendas sin feed (MTG Wolf corre en Wix)
       normalize.ts         título de tienda -> carta + set + idioma + foil + condición
   decklist.ts            parser de listas pegadas (Moxfield, Archidekt, a mano)
+  games.ts               catálogo de juegos y detección por product_type
   trending.ts            "cartas de moda": demanda real, con respaldo por oferta
   events/store.ts        contadores de demanda en Postgres (escritura en runtime)
       run.ts               orquesta: fetch -> normaliza -> resuelve -> upsert

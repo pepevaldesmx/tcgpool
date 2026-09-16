@@ -1,4 +1,10 @@
-export type GameId = "magic" | "pokemon" | "yugioh";
+export type GameId =
+  | "magic"
+  | "pokemon"
+  | "yugioh"
+  | "onepiece"
+  | "lorcana"
+  | "fleshandblood";
 
 export type Condition = "NM" | "LP" | "MP" | "HP" | "DMG" | "SEALED" | "UNKNOWN";
 
@@ -14,6 +20,8 @@ export interface StoreConfig {
   sourceType: SourceType;
   /** Config específica del adaptador (p.ej. dominio y colecciones de Shopify). */
   sourceConfig: Record<string, unknown>;
+  /** Juego a asumir cuando el feed no lo declara en `product_type`. */
+  defaultGame?: GameId;
   shipsNationwide?: boolean;
   active?: boolean;
 }
