@@ -35,20 +35,15 @@ export default function CardTile({ card }: { card: CardSummary }) {
         <h3 className="truncate text-[15px] font-semibold" title={card.name}>
           {card.name}
         </h3>
-        <p className="mt-auto pt-1 text-xs text-muted">
-          {available ? (
-            <>
-              desde{" "}
-              <span className="text-lg font-bold text-ink tnum">
-                {money(card.minPriceCents)}
-              </span>
-            </>
-          ) : (
-            "sin stock ahora"
-          )}
+        {/* Encabeza la disponibilidad, no el precio: no queremos poner a las
+            tiendas a competir por ser la más barata. */}
+        <p className="mt-auto pt-1 text-[13px] font-semibold text-ink">
+          {available
+            ? `En ${card.storeCount} ${card.storeCount === 1 ? "tienda" : "tiendas"}`
+            : "Sin stock ahora"}
         </p>
-        <p className="text-[11px] text-muted">
-          {card.listingCount} {card.listingCount === 1 ? "listado" : "listados"}
+        <p className="text-[12px] text-muted tnum">
+          {available ? `${card.inStockCount} con stock · desde ${money(card.minPriceCents)}` : "—"}
         </p>
       </div>
     </Link>

@@ -48,7 +48,7 @@ export default async function HomePage() {
           <div className="mt-8 rounded-card border border-line bg-surface p-6 shadow-card">
             <h2 className="text-lg font-bold">¿Traes la lista completa?</h2>
             <p className="mt-1 text-[15px] text-muted">
-              Pégala entera y te decimos qué tienda cubre más y cuánto costaría.
+              Pégala entera y te decimos con qué tiendas la surtes en menos pedidos.
             </p>
             <div className="mt-3.5">
               <DeckPasteBox rows={5} />

@@ -94,7 +94,9 @@ export default async function CardPage({ params, searchParams }: Props) {
     conditions: query.cond ? [query.cond] : undefined,
     finish: (query.acabado as ListingFilters["finish"]) ?? "all",
     language: query.idioma ?? "all",
-    sort: (query.orden as ListingFilters["sort"]) ?? "price_asc",
+    // Por defecto agrupamos por tienda, no por precio: el objetivo es que el
+    // pedido se concentre en pocas tiendas, no que compitan entre ellas.
+    sort: (query.orden as ListingFilters["sort"]) ?? "store",
   };
 
   const provenance = getProvenance();
@@ -109,11 +111,9 @@ export default async function CardPage({ params, searchParams }: Props) {
     finishes: dedupe(all.map((l) => [l.finish, finishLabel(l.finish)] as const)),
   };
 
-  const cheapest = listings.find((l) => l.inStock === 1);
-  const spread =
-    card.minPriceCents != null && card.maxPriceCents != null && card.minPriceCents > 0
-      ? Math.round(((card.maxPriceCents - card.minPriceCents) / card.minPriceCents) * 100)
-      : null;
+  // Un listado cualquiera con stock, para el botón. NO el más barato: no
+  // queremos coronar a una tienda ni empujar a las demás a bajar precio.
+  const available = listings.find((l) => l.inStock === 1);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
@@ -158,35 +158,33 @@ export default async function CardPage({ params, searchParams }: Props) {
 
           <dl className="mt-5 rounded-card border border-line bg-surface px-5 py-3 shadow-card">
             <div className="flex items-baseline justify-between border-b border-line-soft py-2">
-              <dt className="text-[15px] text-muted">Más barata</dt>
-              <dd className="text-[26px] font-bold tnum">
-                {money(card.minPriceCents)}
-              </dd>
-            </div>
-            <div className="flex items-baseline justify-between border-b border-line-soft py-2">
-              <dt className="text-[15px] text-muted">Tiendas</dt>
-              <dd className="font-semibold tnum">{card.storeCount}</dd>
+              <dt className="text-[15px] text-muted">Tiendas que la tienen</dt>
+              <dd className="text-[26px] font-bold tnum">{card.storeCount}</dd>
             </div>
             <div className="flex items-baseline justify-between border-b border-line-soft py-2">
               <dt className="text-[15px] text-muted">Listados con stock</dt>
               <dd className="font-semibold tnum">{card.inStockCount}</dd>
             </div>
-            {spread != null && spread > 0 && (
-              <div className="flex items-baseline justify-between py-2">
-                <dt className="text-[15px] text-muted">Diferencia máx.</dt>
-                <dd className="font-semibold text-accent tnum">+{spread}%</dd>
-              </div>
-            )}
+            {/* El rango se muestra como dato, no como ranking: sin "la más
+                barata" ni el porcentaje de diferencia, que era publicidad de
+                dispersión de precios. */}
+            <div className="flex items-baseline justify-between py-2">
+              <dt className="text-[15px] text-muted">Rango de precio</dt>
+              <dd className="font-semibold tnum">
+                {money(card.minPriceCents)} – {money(card.maxPriceCents)}
+              </dd>
+            </div>
           </dl>
 
-          {cheapest && (
-            <StoreLink
-              href={cheapest.productUrl}
-              slug={slug}
-              className="mt-4 flex items-center justify-center rounded-pill bg-accent px-5 py-3.5 text-[15px] font-bold text-accent-ink shadow-card transition hover:brightness-110"
-            >
-              Ver la más barata en {cheapest.storeName}
-            </StoreLink>
+          {available && (
+            <p className="mt-4 text-[13px] leading-relaxed text-muted">
+              Elige la tienda que más te convenga de la lista. Si traes varias
+              cartas,{" "}
+              <Link href="/lista" className="font-semibold text-accent hover:underline">
+                busca la lista completa
+              </Link>{" "}
+              y te decimos con qué tiendas la surtes en menos pedidos.
+            </p>
           )}
         </aside>
 
@@ -310,13 +308,8 @@ export default async function CardPage({ params, searchParams }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {listings.map((listing, index) => (
-                  <ListingRowView
-                    key={listing.id}
-                    listing={listing}
-                    cardSlug={slug}
-                    cheapest={index === 0 && listing.inStock === 1 && filters.sort !== "store"}
-                  />
+                {listings.map((listing) => (
+                  <ListingRowView key={listing.id} listing={listing} cardSlug={slug} />
                 ))}
                 {listings.length === 0 && (
                   <tr>
@@ -345,15 +338,7 @@ function FilterRow({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function ListingRowView({
-  listing,
-  cardSlug,
-  cheapest,
-}: {
-  listing: ListingRow;
-  cardSlug: string;
-  cheapest: boolean;
-}) {
+function ListingRowView({ listing, cardSlug }: { listing: ListingRow; cardSlug: string }) {
   return (
     <tr
       className={`border-b border-line-soft transition last:border-0 hover:bg-hover ${
@@ -397,11 +382,6 @@ function ListingRowView({
       </td>
       <td className="whitespace-nowrap px-4 py-3 text-right">
         <span className="text-[17px] font-bold tnum">{money(listing.priceCents)}</span>
-        {cheapest && (
-          <span className="ml-2 rounded-pill bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-ink">
-            más barata
-          </span>
-        )}
       </td>
       <td className="px-4 py-3 text-right">
         <StoreLink

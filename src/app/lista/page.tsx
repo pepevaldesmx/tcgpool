@@ -9,6 +9,7 @@ import {
   type CardStorePrice,
 } from "@/lib/db/queries";
 import { money } from "@/lib/format";
+import { planFulfillment, type FulfillmentLine } from "@/lib/fulfillment";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +60,10 @@ export default async function DeckPage({ searchParams }: Props) {
   const found = results.filter((r) => r.card && r.prices.length > 0);
   const missing = results.filter((r) => !r.card || r.prices.length === 0);
 
-  // Cobertura por tienda: lo que de verdad responde "¿a quién le compro?".
+  const storeNames = new Map<string, { name: string; city: string | null }>();
+  for (const p of prices) storeNames.set(p.storeSlug, { name: p.storeName, city: p.storeCity });
+
+  // Cobertura por tienda: cuánto de la lista tiene cada una por su cuenta.
   const coverage = new Map<string, Coverage>();
   for (const r of found) {
     for (const p of r.prices) {
@@ -81,19 +85,32 @@ export default async function DeckPage({ searchParams }: Props) {
     (a, b) => b.covered - a.covered || a.subtotalCents - b.subtotalCents,
   );
 
+  // El plan: con qué tiendas se surte la lista en el menor número de pedidos.
+  const fulfillmentLines: FulfillmentLine[] = results.map((r, i) => ({
+    key: String(i),
+    qty: r.line.qty,
+    priceByStore: new Map(r.prices.map((p) => [p.storeSlug, p.priceCents])),
+  }));
+  const plan = planFulfillment(fulfillmentLines);
+
+  // Dónde queda asignada cada carta dentro del plan.
+  const assignment = new Map<string, { storeSlug: string; priceCents: number }>();
+  for (const leg of plan.legs) {
+    for (const key of leg.cardKeys) {
+      const r = results[Number(key)];
+      const price = r.prices.find((p) => p.storeSlug === leg.storeSlug)!;
+      assignment.set(key, { storeSlug: leg.storeSlug, priceCents: price.priceCents });
+    }
+  }
+
   const totalCopies = lines.reduce((a, l) => a + l.qty, 0);
-  // Comprando cada carta donde esté más barata, sin importar cuántas tiendas.
-  const bestTotal = found.reduce(
-    (sum, r) => sum + Math.min(...r.prices.map((p) => p.priceCents)) * r.line.qty,
-    0,
-  );
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
       <h1 className="text-4xl font-bold tracking-tight">Buscar una lista</h1>
       <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">
-        Pega tu decklist completa y te decimos qué tienda cubre más de la lista y
-        cuánto costaría, en vez de que revises tienda por tienda.
+        Pega tu decklist completa y te decimos con qué tiendas la surtes en el
+        menor número de pedidos, en vez de que revises tienda por tienda.
       </p>
 
       <div className="mt-6 max-w-3xl">
@@ -110,16 +127,84 @@ export default async function DeckPage({ searchParams }: Props) {
       {lines.length > 0 && (
         <>
           <section className="mt-10">
-            <h2 className="text-2xl font-bold tracking-tight">Qué tienda cubre más de tu lista</h2>
-            <p className="mt-1 text-sm text-muted">
+            <h2 className="text-2xl font-bold tracking-tight">
+              Cómo surtir tu lista en menos pedidos
+            </h2>
+            <p className="mt-1 text-[15px] text-muted">
               {lines.length} cartas distintas · {totalCopies}{" "}
               {totalCopies === 1 ? "copia" : "copias"}
-              {found.length > 0 && (
+              {plan.legs.length > 0 && (
                 <>
-                  {" · "}comprando cada una donde esté más barata:{" "}
-                  <span className="font-bold text-ink tnum">{money(bestTotal)}</span>
+                  {" · "}
+                  <span className="font-semibold text-ink">
+                    {plan.legs.length}{" "}
+                    {plan.legs.length === 1 ? "tienda basta" : "tiendas bastan"}
+                  </span>{" "}
+                  para {plan.covered} de {lines.length}
                 </>
               )}
+            </p>
+
+            {plan.legs.length > 0 ? (
+              <ol className="mt-4 space-y-3">
+                {plan.legs.map((leg, i) => {
+                  const store = storeNames.get(leg.storeSlug);
+                  return (
+                    <li
+                      key={leg.storeSlug}
+                      className="flex flex-wrap items-center gap-4 rounded-card border border-line bg-surface px-5 py-4 shadow-card"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-pill bg-accent text-[15px] font-bold text-accent-ink">
+                        {i + 1}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[15px] font-semibold">
+                          {store?.name ?? leg.storeSlug}
+                        </span>
+                        <span className="block text-[13px] text-muted">
+                          {store?.city ?? "México"} · {leg.cardKeys.length}{" "}
+                          {leg.cardKeys.length === 1 ? "carta" : "cartas"} · {leg.copies}{" "}
+                          {leg.copies === 1 ? "copia" : "copias"}
+                        </span>
+                      </span>
+                      <span className="whitespace-nowrap text-right">
+                        <span className="block text-[17px] font-bold tnum">
+                          {money(leg.subtotalCents)}
+                        </span>
+                        <span className="block text-[12px] text-muted">en este pedido</span>
+                      </span>
+                    </li>
+                  );
+                })}
+              </ol>
+            ) : (
+              <p className="mt-4 text-[15px] text-muted">
+                Ninguna tienda conectada tiene cartas de esta lista en stock.
+              </p>
+            )}
+
+            {plan.legs.length > 0 && (
+              <p className="mt-3 text-[13px] text-muted">
+                Total del plan{" "}
+                <span className="font-semibold text-ink tnum">{money(plan.totalCents)}</span>
+                {plan.uncovered.length > 0 && (
+                  <>
+                    {" · "}
+                    {plan.uncovered.length}{" "}
+                    {plan.uncovered.length === 1 ? "carta" : "cartas"} que ninguna tienda
+                    tiene hoy
+                  </>
+                )}
+                . Buscamos el menor número de pedidos, no el precio más bajo: partir la
+                compra entre muchas tiendas sale más caro en envíos y esperas.
+              </p>
+            )}
+          </section>
+
+          <section className="mt-10">
+            <h2 className="text-2xl font-bold tracking-tight">Cobertura por tienda</h2>
+            <p className="mt-1 text-[15px] text-muted">
+              Lo que tiene cada tienda de tu lista, por su cuenta.
             </p>
 
             {byCoverage.length > 0 ? (
@@ -184,17 +269,21 @@ export default async function DeckPage({ searchParams }: Props) {
                   <tr className="border-b border-line bg-thead text-left text-[11px] uppercase tracking-[0.07em] text-muted">
                     <th className="px-4 py-2.5 text-right font-semibold">Cant.</th>
                     <th className="px-4 py-2.5 font-semibold">Carta</th>
-                    <th className="px-4 py-2.5 font-semibold">Tiendas</th>
-                    <th className="px-4 py-2.5 text-right font-semibold">Más barata</th>
+                    <th className="px-4 py-2.5 font-semibold">Disponible en</th>
+                    <th className="px-4 py-2.5 font-semibold">Según el plan</th>
+                    <th className="px-4 py-2.5 text-right font-semibold">Precio</th>
                     <th className="px-4 py-2.5 text-right font-semibold">Subtotal</th>
                   </tr>
                 </thead>
                 <tbody>
                   {results.map((r, i) => {
-                    const min = r.prices.length
-                      ? Math.min(...r.prices.map((p) => p.priceCents))
-                      : null;
-                    const cheapestStore = r.prices.find((p) => p.priceCents === min);
+                    // El precio que se muestra es el de la tienda que el plan
+                    // le asignó, no el más barato del mercado: la tabla es el
+                    // pedido, no una comparativa entre tiendas.
+                    const assigned = assignment.get(String(i));
+                    const assignedStore = assigned
+                      ? storeNames.get(assigned.storeSlug)
+                      : undefined;
                     return (
                       <tr
                         key={`${r.line.raw}-${i}`}
@@ -218,27 +307,27 @@ export default async function DeckPage({ searchParams }: Props) {
                             </div>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-xs text-muted">
+                        <td className="px-4 py-3 text-[13px] text-muted">
                           {r.prices.length
-                            ? r.prices
-                                .slice()
-                                .sort((a, b) => a.priceCents - b.priceCents)
-                                .map((p) => p.storeName)
-                                .join(" · ")
+                            ? `${r.prices.length} ${r.prices.length === 1 ? "tienda la tiene" : "tiendas la tienen"}`
                             : r.card
                               ? "sin stock ahora"
                               : "no está en el catálogo"}
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-right text-[17px] font-bold tnum">
-                          {min != null ? money(min) : "—"}
-                          {cheapestStore && (
-                            <div className="text-[12px] font-normal text-muted">
-                              {cheapestStore.storeName}
-                            </div>
+                        <td className="px-4 py-3 text-[13px]">
+                          {assignedStore ? (
+                            <span className="font-semibold text-ink">
+                              {assignedStore.name}
+                            </span>
+                          ) : (
+                            <span className="text-muted">—</span>
                           )}
                         </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-right text-[17px] font-bold tnum">
+                          {assigned ? money(assigned.priceCents) : "—"}
+                        </td>
                         <td className="whitespace-nowrap px-4 py-3 text-right tnum">
-                          {min != null ? money(min * r.line.qty) : "—"}
+                          {assigned ? money(assigned.priceCents * r.line.qty) : "—"}
                         </td>
                       </tr>
                     );

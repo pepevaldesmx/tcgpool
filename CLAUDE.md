@@ -91,6 +91,17 @@ app móvil nativa. Web responsive es suficiente.
   fría, aire generoso, píldoras en botones y chips, base de 15px) sobre paleta
   de papel gris azulado, tinta azul marino y turquesa profundo como único
   acento. Una sola familia sans para todo: la jerarquía la hacen peso y tamaño.
+- **NO ponemos a las tiendas a competir por precio.** Nada de coronar "la más
+  barata", ni de anunciar la diferencia porcentual entre tiendas. El precio se
+  muestra y se puede ordenar por él, pero nunca es el ranking por defecto:
+  ocultarlo sería deshonesto con el comprador, premiarlo convierte a las tiendas
+  en rivales. Lo que se premia es la COBERTURA — quién surte más de lo que el
+  usuario busca— porque el problema real siempre fue la disponibilidad y porque
+  el objetivo es concentrar el pedido en las menos tiendas posibles.
+- **`planFulfillment` es cubrimiento de conjuntos voraz**, no optimización de
+  precio: elige la tienda que agrega más cartas nuevas y desempata por costo.
+  Partir la compra entre seis tiendas para ahorrar unos pesos sale peor en
+  envíos y esperas, y es justo lo que no queremos empujar.
 - **Dos motores de búsqueda, no uno**: carta suelta (`/buscar`) y lista pegada
   (`/lista`, que responde "qué tienda cubre más de tu lista"). El segundo es el
   que las tiendas ya ofrecen sobre su propio inventario; el valor está en
