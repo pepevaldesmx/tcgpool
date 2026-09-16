@@ -42,6 +42,8 @@ export interface ListingRow {
   storeSlug: string;
   storeUrl: string;
   storeCity: string | null;
+  storeLat: number | null;
+  storeLng: number | null;
   storeDataSource: "live" | "sample";
   sellerName: string;
   sellerType: string;
@@ -397,7 +399,7 @@ export interface ListingFilters {
   conditions?: string[];
   finish?: Finish | "all";
   language?: string | "all";
-  sort?: "price_asc" | "price_desc" | "store";
+  sort?: "price_asc" | "price_desc" | "store" | "cercania";
 }
 
 export function getListingsForCard(cardId: number, filters: ListingFilters = {}): ListingRow[] {
@@ -423,12 +425,15 @@ export function getListingsForCard(cardId: number, filters: ListingFilters = {})
     params.push(filters.language);
   }
 
+  // 'cercania' no se ordena en SQL: el criterio (misma ciudad antes que
+  // kilómetros) vive en src/lib/location.ts y se aplica arriba, donde se conoce
+  // la ubicación del usuario.
   const order =
     filters.sort === "price_desc"
       ? "l.in_stock DESC, l.price_cents DESC"
-      : filters.sort === "store"
-        ? "l.in_stock DESC, s.name ASC, l.price_cents ASC"
-        : "l.in_stock DESC, l.price_cents ASC";
+      : filters.sort === "price_asc"
+        ? "l.in_stock DESC, l.price_cents ASC"
+        : "l.in_stock DESC, s.name ASC, l.price_cents ASC";
 
   return db
     .prepare(
@@ -440,6 +445,7 @@ export function getListingsForCard(cardId: number, filters: ListingFilters = {})
               p.image_url AS printingImage,
               s.id AS storeId, s.name AS storeName, s.slug AS storeSlug,
               s.url AS storeUrl, s.city AS storeCity,
+              s.lat AS storeLat, s.lng AS storeLng,
               s.data_source AS storeDataSource,
               se.name AS sellerName, se.type AS sellerType
        FROM listings l
@@ -649,6 +655,8 @@ export interface CardStorePrice {
   storeSlug: string;
   storeName: string;
   storeCity: string | null;
+  storeLat: number | null;
+  storeLng: number | null;
   priceCents: number;
 }
 
@@ -661,6 +669,7 @@ export function getCheapestByCardAndStore(cardIds: number[]): CardStorePrice[] {
     .prepare(
       `SELECT p.card_id AS cardId, s.id AS storeId, s.slug AS storeSlug,
               s.name AS storeName, s.city AS storeCity,
+              s.lat AS storeLat, s.lng AS storeLng,
               MIN(l.price_cents) AS priceCents
        FROM listings l
        JOIN printings p ON p.id = l.printing_id

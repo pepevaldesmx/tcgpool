@@ -98,6 +98,18 @@ app móvil nativa. Web responsive es suficiente.
   en rivales. Lo que se premia es la COBERTURA — quién surte más de lo que el
   usuario busca— porque el problema real siempre fue la disponibilidad y porque
   el objetivo es concentrar el pedido en las menos tiendas posibles.
+- **La ubicación vive en una cookie, no en el estado del cliente.** La vista de
+  carta y el plan de surtido se calculan en el SERVIDOR; con la ubicación sólo
+  en el navegador habría que reordenar tras hidratar, con parpadeo, y el plan
+  jamás podría tomarla en cuenta. Se guarda redondeada a ~1 km: las coordenadas
+  de las tiendas son el centro de su ciudad, así que más precisión no mejora
+  nada y sería recolectar ubicación fina sin necesitarla. La cookie es entrada
+  no confiable: `parseLocation` valida y devuelve null ante basura.
+- **El criterio de cercanía es MISMA CIUDAD antes que kilómetros**
+  (`proximityRank`). Es la única diferencia que el comprador siente —recoger en
+  tienda, envío al día siguiente—; entre dos ciudades distintas todo es
+  paquetería y 300 o 600 km dan casi lo mismo. Con ubicación, la cercanía es el
+  orden por defecto de los listados; sin ella, la tienda. Nunca el precio.
 - **`planFulfillment` es cubrimiento de conjuntos voraz**, no optimización de
   precio: elige la tienda que agrega más cartas nuevas y desempata por costo.
   Partir la compra entre seis tiendas para ahorrar unos pesos sale peor en

@@ -10,6 +10,8 @@ import {
 } from "@/lib/db/queries";
 import { money } from "@/lib/format";
 import { planFulfillment, type FulfillmentLine } from "@/lib/fulfillment";
+import { formatDistance, proximityRank } from "@/lib/location";
+import { getUserLocation } from "@/lib/location-server";
 
 export const dynamic = "force-dynamic";
 
@@ -60,8 +62,26 @@ export default async function DeckPage({ searchParams }: Props) {
   const found = results.filter((r) => r.card && r.prices.length > 0);
   const missing = results.filter((r) => !r.card || r.prices.length === 0);
 
-  const storeNames = new Map<string, { name: string; city: string | null }>();
-  for (const p of prices) storeNames.set(p.storeSlug, { name: p.storeName, city: p.storeCity });
+  const location = await getUserLocation();
+
+  const storeNames = new Map<
+    string,
+    { name: string; city: string | null; lat: number | null; lng: number | null }
+  >();
+  for (const p of prices)
+    storeNames.set(p.storeSlug, {
+      name: p.storeName,
+      city: p.storeCity,
+      lat: p.storeLat,
+      lng: p.storeLng,
+    });
+
+  // Cercanía como desempate del plan: entre dos tiendas que surten lo mismo,
+  // gana la de tu ciudad. Nunca a costa de cobertura.
+  const storePriority = new Map<string, number>();
+  for (const [slug, store] of storeNames) {
+    storePriority.set(slug, proximityRank(location, store));
+  }
 
   // Cobertura por tienda: cuánto de la lista tiene cada una por su cuenta.
   const coverage = new Map<string, Coverage>();
@@ -91,7 +111,7 @@ export default async function DeckPage({ searchParams }: Props) {
     qty: r.line.qty,
     priceByStore: new Map(r.prices.map((p) => [p.storeSlug, p.priceCents])),
   }));
-  const plan = planFulfillment(fulfillmentLines);
+  const plan = planFulfillment(fulfillmentLines, { storePriority });
 
   // Dónde queda asignada cada carta dentro del plan.
   const assignment = new Map<string, { storeSlug: string; priceCents: number }>();
@@ -162,7 +182,17 @@ export default async function DeckPage({ searchParams }: Props) {
                           {store?.name ?? leg.storeSlug}
                         </span>
                         <span className="block text-[13px] text-muted">
-                          {store?.city ?? "México"} · {leg.cardKeys.length}{" "}
+                          {store?.city ?? "México"}
+                          {location && store && (
+                            <>
+                              {proximityRank(location, store) === 0 ? (
+                                <span className="text-ok"> · en tu ciudad</span>
+                              ) : proximityRank(location, store) < Number.MAX_SAFE_INTEGER ? (
+                                <> · a {formatDistance(proximityRank(location, store))}</>
+                              ) : null}
+                            </>
+                          )}{" "}
+                          · {leg.cardKeys.length}{" "}
                           {leg.cardKeys.length === 1 ? "carta" : "cartas"} · {leg.copies}{" "}
                           {leg.copies === 1 ? "copia" : "copias"}
                         </span>

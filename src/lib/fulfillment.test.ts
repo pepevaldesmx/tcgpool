@@ -54,3 +54,27 @@ describe("planFulfillment", () => {
     assert.equal(plan.totalCents, 0);
   });
 });
+
+describe("planFulfillment con cercanía", () => {
+  it("a igualdad de cobertura prefiere la tienda cercana, aunque sea más cara", () => {
+    const plan = planFulfillment(
+      [line("a", 1, { lejos: 10, cerca: 90 }), line("b", 1, { lejos: 10, cerca: 90 })],
+      { storePriority: new Map([["cerca", 0], ["lejos", 460]]) },
+    );
+    assert.equal(plan.legs[0].storeSlug, "cerca");
+  });
+
+  it("pero NUNCA sacrifica cobertura por cercanía", () => {
+    const plan = planFulfillment(
+      [
+        line("a", 1, { lejos: 10, cerca: 10 }),
+        line("b", 1, { lejos: 10 }),
+        line("c", 1, { lejos: 10 }),
+      ],
+      { storePriority: new Map([["cerca", 0], ["lejos", 900]]) },
+    );
+    assert.equal(plan.legs[0].storeSlug, "lejos");
+    assert.equal(plan.legs[0].cardKeys.length, 3);
+    assert.equal(plan.legs.length, 1);
+  });
+});

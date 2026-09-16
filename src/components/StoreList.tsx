@@ -1,94 +1,44 @@
-"use client";
-
-import { useState } from "react";
+import Link from "next/link";
 import type { StorePublic } from "@/lib/db/queries";
-
-/** Distancia en km entre dos coordenadas (haversine). */
-function distanceKm(
-  a: { lat: number; lng: number },
-  b: { lat: number; lng: number },
-): number {
-  const R = 6371;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const lat1 = (a.lat * Math.PI) / 180;
-  const lat2 = (b.lat * Math.PI) / 180;
-  const h =
-    Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
-
-type Status = "idle" | "asking" | "ok" | "denied" | "unsupported";
+import { formatDistance, proximityRank, type UserLocation } from "@/lib/location";
 
 /**
- * Tiendas ordenadas por inventario (lo que manda el servidor) o por cercanía si
- * el usuario comparte su ubicación. No la pedimos sola al cargar: el permiso se
- * pide cuando la persona lo elige.
+ * Tiendas ordenadas por inventario, o por cercanía si el usuario ya dijo dónde
+ * está. La ubicación viene del selector de la barra —una sola fuente para toda
+ * la app— en vez de que esta lista pida el permiso por su cuenta.
  */
-export default function StoreList({ stores }: { stores: StorePublic[] }) {
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [status, setStatus] = useState<Status>("idle");
-
-  function askLocation() {
-    if (!("geolocation" in navigator)) {
-      setStatus("unsupported");
-      return;
-    }
-    setStatus("asking");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setStatus("ok");
-      },
-      () => setStatus("denied"),
-      { timeout: 8000, maximumAge: 600000 },
-    );
-  }
-
-  const withDistance = stores.map((store) => ({
+export default function StoreList({
+  stores,
+  location,
+}: {
+  stores: StorePublic[];
+  location: UserLocation | null;
+}) {
+  const ranked = stores.map((store) => ({
     store,
-    km:
-      coords && store.lat != null && store.lng != null
-        ? distanceKm(coords, { lat: store.lat, lng: store.lng })
-        : null,
+    rank: proximityRank(location, store),
   }));
-
-  const sorted = coords
-    ? [...withDistance].sort(
-        (a, b) => (a.km ?? Number.MAX_VALUE) - (b.km ?? Number.MAX_VALUE),
-      )
-    : withDistance;
+  const sorted = location
+    ? [...ranked].sort((a, b) => a.rank - b.rank || b.store.inStockCount - a.store.inStockCount)
+    : ranked;
 
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="text-sm text-muted">
-          {coords
-            ? "Ordenadas por cercanía a tu ubicación."
+        <p className="text-[15px] text-muted">
+          {location
+            ? `Ordenadas por cercanía a ${location.city ?? "tu ubicación"}.`
             : "Ordenadas por inventario disponible (tienda + afiliados)."}
         </p>
-        {!coords && (
-          <button
-            type="button"
-            onClick={askLocation}
-            disabled={status === "asking"}
-            className="rounded-pill border border-line bg-surface px-4 py-1.5 text-[13px] font-semibold text-ink shadow-card transition hover:border-accent hover:text-accent disabled:opacity-50"
-          >
-            {status === "asking" ? "Buscando…" : "Ordenar por cercanía"}
-          </button>
+        {!location && (
+          <span className="text-[13px] text-muted">
+            Elige tu ciudad arriba para ordenarlas por cercanía.
+          </span>
         )}
       </div>
 
-      {(status === "denied" || status === "unsupported") && (
-        <p className="mt-2 text-xs text-muted">
-          {status === "denied"
-            ? "No nos diste ubicación; seguimos ordenando por inventario."
-            : "Tu navegador no comparte ubicación; seguimos ordenando por inventario."}
-        </p>
-      )}
-
       <ul className="mt-4 divide-y divide-line-soft overflow-hidden rounded-card border border-line bg-surface shadow-card">
-        {sorted.map(({ store, km }) => (
+        {sorted.map(({ store, rank }) => (
           <li key={store.id}>
             <a
               href={store.url}
@@ -97,14 +47,14 @@ export default function StoreList({ stores }: { stores: StorePublic[] }) {
               className="flex items-center gap-4 px-5 py-4 transition hover:bg-hover"
             >
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-semibold">
-                  {store.name}
-                </span>
+                <span className="block text-[15px] font-semibold">{store.name}</span>
                 <span className="block text-xs text-muted">
                   {store.city ?? "México"}
-                  {km != null && ` · a ${km < 1 ? "menos de 1" : Math.round(km)} km`}
-                  {store.affiliateCount > 0 &&
-                    ` · ${store.affiliateCount} afiliados`}
+                  {location && rank === 0 && <span className="text-ok"> · en tu ciudad</span>}
+                  {location && rank > 0 && rank < Number.MAX_SAFE_INTEGER && (
+                    <> · a {formatDistance(rank)}</>
+                  )}
+                  {store.affiliateCount > 0 && ` · ${store.affiliateCount} afiliados`}
                 </span>
               </span>
               <span className="whitespace-nowrap text-right">
@@ -118,7 +68,7 @@ export default function StoreList({ stores }: { stores: StorePublic[] }) {
         ))}
       </ul>
 
-      {coords && (
+      {location && (
         <p className="mt-2 text-xs text-muted">
           La distancia es al centro de la ciudad de cada tienda, no a su dirección
           exacta.

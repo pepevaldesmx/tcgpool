@@ -39,7 +39,19 @@ export interface FulfillmentPlan {
   totalCents: number;
 }
 
-export function planFulfillment(lines: FulfillmentLine[]): FulfillmentPlan {
+export interface PlanOptions {
+  /**
+   * Preferencia por tienda; menor es mejor. Se usa SÓLO para desempatar entre
+   * tiendas que aportan las mismas cartas — nunca para sacrificar cobertura.
+   * Hoy la llena la cercanía al usuario.
+   */
+  storePriority?: Map<string, number>;
+}
+
+export function planFulfillment(
+  lines: FulfillmentLine[],
+  options: PlanOptions = {},
+): FulfillmentPlan {
   const pending = new Map(lines.filter((l) => l.priceByStore.size > 0).map((l) => [l.key, l]));
   const uncovered = lines.filter((l) => l.priceByStore.size === 0).map((l) => l.key);
   const legs: StoreLeg[] = [];
@@ -65,10 +77,15 @@ export function planFulfillment(lines: FulfillmentLine[]): FulfillmentPlan {
         subtotalCents += price * line.qty;
       }
       const leg: StoreLeg = { storeSlug: slug, cardKeys, copies, subtotalCents };
+      // Orden de desempate: cobertura, luego cercanía, luego costo.
+      const rank = (l: StoreLeg) =>
+        options.storePriority?.get(l.storeSlug) ?? Number.MAX_SAFE_INTEGER;
       const better =
         !best ||
         leg.cardKeys.length > best.cardKeys.length ||
-        (leg.cardKeys.length === best.cardKeys.length && leg.subtotalCents < best.subtotalCents);
+        (leg.cardKeys.length === best.cardKeys.length &&
+          (rank(leg) < rank(best) ||
+            (rank(leg) === rank(best) && leg.subtotalCents < best.subtotalCents)));
       if (better) best = leg;
     }
 

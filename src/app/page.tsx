@@ -7,6 +7,7 @@ import CardTile from "@/components/CardTile";
 import GameMark from "@/components/GameMark";
 import { getProvenance, listGames, listStoresPublic } from "@/lib/db/queries";
 import { getTrending } from "@/lib/trending";
+import { getUserLocation } from "@/lib/location-server";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export default async function HomePage() {
   const stores = listStoresPublic();
   const games = listGames();
   const trending = await getTrending(5);
+  const location = await getUserLocation();
   const provenance = getProvenance();
 
   return (
@@ -114,7 +116,7 @@ export default async function HomePage() {
       <section className="py-9">
         <h2 className="text-2xl font-bold tracking-tight">Tiendas</h2>
         <div className="mt-3">
-          <StoreList stores={stores} />
+          <StoreList stores={stores} location={location} />
         </div>
       </section>
     </div>

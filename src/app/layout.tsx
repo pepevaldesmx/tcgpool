@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getProvenance } from "@/lib/db/queries";
+import { getUserLocation } from "@/lib/location-server";
+import LocationPicker from "@/components/LocationPicker";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,8 +14,9 @@ export const metadata: Metadata = {
     "Busca una carta y mira qué tiendas mexicanas la tienen, en qué versión, condición y precio. Todo en una sola vista.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const provenance = getProvenance();
+  const location = await getUserLocation();
 
   return (
     <html lang="es">
@@ -29,7 +32,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               >
                 TCG Pool
               </Link>
-              <nav className="ml-auto flex items-center gap-1 text-[14px]">
+              <div className="ml-auto hidden sm:block">
+                <LocationPicker current={location} />
+              </div>
+              <nav className="flex items-center gap-1 text-[14px]">
                 <Link href="/buscar" className="rounded-pill px-3 py-1.5 font-medium text-muted transition hover:bg-surface hover:text-accent">
                   Buscar
                 </Link>

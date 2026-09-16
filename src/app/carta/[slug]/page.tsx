@@ -13,6 +13,8 @@ import {
   type ListingRow,
 } from "@/lib/db/queries";
 import { conditionLabel, finishLabel, languageLabel, money, timeAgo } from "@/lib/format";
+import { formatDistance, proximityRank, type UserLocation } from "@/lib/location";
+import { getUserLocation } from "@/lib/location-server";
 
 export const dynamic = "force-dynamic";
 
@@ -88,19 +90,22 @@ export default async function CardPage({ params, searchParams }: Props) {
   const card = getCardBySlug(slug);
   if (!card) notFound();
 
+  const hasLocation = (await getUserLocation()) != null;
   const filters: ListingFilters = {
     onlyInStock: query.stock !== "0",
     storeSlugs: query.tienda ? [query.tienda] : undefined,
     conditions: query.cond ? [query.cond] : undefined,
     finish: (query.acabado as ListingFilters["finish"]) ?? "all",
     language: query.idioma ?? "all",
-    // Por defecto agrupamos por tienda, no por precio: el objetivo es que el
-    // pedido se concentre en pocas tiendas, no que compitan entre ellas.
-    sort: (query.orden as ListingFilters["sort"]) ?? "store",
+    // Con ubicación, el criterio por defecto es la cercanía; sin ella, la
+    // tienda. Nunca el precio: no queremos poner a las tiendas a competir.
+    sort: (query.orden as ListingFilters["sort"]) ?? (hasLocation ? "cercania" : "store"),
   };
 
   const provenance = getProvenance();
-  const listings = getListingsForCard(card.id, filters);
+  const location = await getUserLocation();
+
+  const listings = sortListings(getListingsForCard(card.id, filters), filters.sort, location);
   // Las facetas se calculan sobre TODO el inventario de la carta, no sobre el
   // resultado filtrado: si no, al filtrar desaparecerían las demás opciones.
   const all = getListingsForCard(card.id, { onlyInStock: false });
@@ -199,15 +204,16 @@ export default async function CardPage({ params, searchParams }: Props) {
             <FilterRow label="Orden">
               {(
                 [
+                  ...(location ? ([["cercania", "Cercanía"]] as const) : []),
+                  ["store", "Tienda"],
                   ["price_asc", "Precio ↑"],
                   ["price_desc", "Precio ↓"],
-                  ["store", "Tienda"],
                 ] as const
               ).map(([value, label]) => (
                 <Chip
                   key={value}
                   href={withParam(slug, query, "orden", value)}
-                  active={(query.orden ?? "price_asc") === value}
+                  active={(query.orden ?? filters.sort) === value}
                 >
                   {label}
                 </Chip>
@@ -309,7 +315,12 @@ export default async function CardPage({ params, searchParams }: Props) {
               </thead>
               <tbody>
                 {listings.map((listing) => (
-                  <ListingRowView key={listing.id} listing={listing} cardSlug={slug} />
+                  <ListingRowView
+                    key={listing.id}
+                    listing={listing}
+                    cardSlug={slug}
+                    location={location}
+                  />
                 ))}
                 {listings.length === 0 && (
                   <tr>
@@ -338,7 +349,47 @@ function FilterRow({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function ListingRowView({ listing, cardSlug }: { listing: ListingRow; cardSlug: string }) {
+/**
+ * Ordena por cercanía cuando el usuario la pidió. No se hace en SQL porque el
+ * criterio —misma ciudad antes que kilómetros— vive en src/lib/location.ts.
+ */
+function sortListings(
+  listings: ListingRow[],
+  sort: ListingFilters["sort"],
+  location: UserLocation | null,
+): ListingRow[] {
+  if (sort !== "cercania" || !location) return listings;
+  return [...listings].sort(
+    (a, b) =>
+      b.inStock - a.inStock ||
+      proximityRank(location, { city: a.storeCity, lat: a.storeLat, lng: a.storeLng }) -
+        proximityRank(location, { city: b.storeCity, lat: b.storeLat, lng: b.storeLng }) ||
+      a.priceCents - b.priceCents,
+  );
+}
+
+function ListingRowView({
+  listing,
+  cardSlug,
+  location,
+}: {
+  listing: ListingRow;
+  cardSlug: string;
+  location: UserLocation | null;
+}) {
+  const km =
+    location && listing.storeLat != null && listing.storeLng != null
+      ? proximityRank(location, {
+          city: listing.storeCity,
+          lat: listing.storeLat,
+          lng: listing.storeLng,
+        })
+      : null;
+  const sameCity =
+    location?.city && listing.storeCity
+      ? location.city.toLowerCase() === listing.storeCity.toLowerCase()
+      : false;
+
   return (
     <tr
       className={`border-b border-line-soft transition last:border-0 hover:bg-hover ${
@@ -349,6 +400,10 @@ function ListingRowView({ listing, cardSlug }: { listing: ListingRow; cardSlug: 
         <div className="whitespace-nowrap font-semibold">{listing.storeName}</div>
         <div className="text-xs text-muted">
           {listing.storeCity ?? "México"}
+          {sameCity && <span className="text-ok"> · en tu ciudad</span>}
+          {!sameCity && km != null && km > 0 && km < Number.MAX_SAFE_INTEGER && (
+            <> · a {formatDistance(km)}</>
+          )}
           {listing.sellerType === "affiliate" && ` · afiliado ${listing.sellerName}`}
         </div>
         {listing.storeDataSource !== "live" && (
