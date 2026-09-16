@@ -69,11 +69,16 @@ app móvil nativa. Web responsive es suficiente.
 - **Nunca presentes datos de muestra como reales.** Mientras no haya un
   `sync_run` con `source='live'`, la UI muestra el banner de demostración
   (`isSampleData()`).
-- **El look vive en tokens semánticos** (`paper`, `surface`, `line`, `ink`,
-  `accent`, …) definidos en el bloque `@theme` de `src/app/globals.css`. Las
-  pantallas nunca usan colores literales: cambiar de piel es reescribir ese
-  bloque. Paleta actual: papel gris azulado, tinta azul marino, turquesa
-  profundo como único acento, titulares con serif.
+- **El look vive en tokens semánticos** definidos en el bloque `@theme` de
+  `src/app/globals.css`: color (`paper`, `surface`, `line`, `ink`, `accent`,
+  `ok`, `warn`), forma (`radius-card`, `radius-control`, `radius-pill`,
+  `shadow-card`, `shadow-lift`) y tipografía. Las pantallas nunca usan valores
+  literales —ni colores, ni radios, ni sombras— así que cambiar de piel es
+  reescribir ese bloque.
+  Sistema actual: estructura de marketplace (redondeo de 12px, sombra suave y
+  fría, aire generoso, píldoras en botones y chips, base de 15px) sobre paleta
+  de papel gris azulado, tinta azul marino y turquesa profundo como único
+  acento. Una sola familia sans para todo: la jerarquía la hacen peso y tamaño.
 - **Dos motores de búsqueda, no uno**: carta suelta (`/buscar`) y lista pegada
   (`/lista`, que responde "qué tienda cubre más de tu lista"). El segundo es el
   que las tiendas ya ofrecen sobre su propio inventario; el valor está en

@@ -20,9 +20,7 @@ export default function StoresPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10">
-      <h1 className="font-serif text-3xl font-semibold tracking-tight">
-        Tiendas conectadas
-      </h1>
+      <h1 className="text-4xl font-bold tracking-tight">Tiendas conectadas</h1>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
         Cada tienda se ingiere con su propio adaptador. Las que corren en Shopify
         exponen un catálogo público (
@@ -31,8 +29,8 @@ export default function StoresPage() {
         una entrada más en <code className="font-mono text-ink">data/stores.json</code>.
       </p>
 
-      <div className="table-scroll mt-7 rounded border border-line bg-surface">
-        <table className="w-full min-w-[720px] border-collapse text-sm">
+      <div className="table-scroll mt-7 overflow-hidden rounded-card border border-line bg-surface shadow-card">
+        <table className="w-full min-w-[760px] border-collapse text-[15px]">
           <thead>
             <tr className="border-b border-line bg-thead text-left text-[11px] uppercase tracking-[0.07em] text-muted">
               <th className="px-4 py-2.5 font-semibold">Tienda</th>
@@ -60,9 +58,9 @@ export default function StoresPage() {
                 <td className="px-4 py-3 text-xs text-muted">
                   {SOURCE_LABELS[store.sourceType] ?? store.sourceType}
                 </td>
-                <td className="px-4 py-3 text-right font-mono tnum">{store.cardCount}</td>
-                <td className="px-4 py-3 text-right font-mono tnum">{store.listingCount}</td>
-                <td className="px-4 py-3 text-right font-mono font-bold text-accent tnum">
+                <td className="px-4 py-3 text-right tnum">{store.cardCount}</td>
+                <td className="px-4 py-3 text-right tnum">{store.listingCount}</td>
+                <td className="px-4 py-3 text-right font-bold text-accent tnum">
                   {store.inStockCount}
                 </td>
                 <td className="px-4 py-3 text-xs text-muted">
@@ -74,8 +72,8 @@ export default function StoresPage() {
         </table>
       </div>
 
-      <section className="mt-8 rounded border border-line bg-surface p-6">
-        <h2 className="font-serif text-lg font-semibold">¿Tienes una tienda?</h2>
+      <section className="mt-8 rounded-card border border-line bg-surface p-6 shadow-card">
+        <h2 className="text-xl font-bold">¿Tienes una tienda?</h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
           No necesitamos que cambies nada de tu sitio: si corres en Shopify ya
           publicas el catálogo que leemos. Cada listado manda el tráfico a tu

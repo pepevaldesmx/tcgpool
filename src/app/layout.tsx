@@ -22,18 +22,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="mx-auto flex w-full max-w-6xl items-center gap-6 px-4 py-3">
               <Link
                 href="/"
-                className="font-serif text-[15px] font-semibold tracking-tight text-ink"
+                className="text-[17px] font-bold tracking-tight text-ink"
               >
                 TCG Pool
               </Link>
-              <nav className="ml-auto flex items-center gap-4 text-[13px]">
-                <Link href="/buscar" className="text-muted transition hover:text-accent">
+              <nav className="ml-auto flex items-center gap-1 text-[14px]">
+                <Link href="/buscar" className="rounded-pill px-3 py-1.5 font-medium text-muted transition hover:bg-surface hover:text-accent">
                   Buscar
                 </Link>
-                <Link href="/lista" className="text-muted transition hover:text-accent">
+                <Link href="/lista" className="rounded-pill px-3 py-1.5 font-medium text-muted transition hover:bg-surface hover:text-accent">
                   Listas
                 </Link>
-                <Link href="/tiendas" className="text-muted transition hover:text-accent">
+                <Link href="/tiendas" className="rounded-pill px-3 py-1.5 font-medium text-muted transition hover:bg-surface hover:text-accent">
                   Tiendas
                 </Link>
               </nav>
@@ -43,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="flex-1">{children}</main>
 
           <footer className="mt-8 border-t border-line">
-            <div className="mx-auto w-full max-w-6xl px-4 py-8 text-xs leading-relaxed text-muted">
+            <div className="mx-auto w-full max-w-6xl px-4 py-9 text-[13px] leading-relaxed text-muted">
               <p className="max-w-3xl">
                 TCG Pool agrega el catálogo público de tiendas mexicanas para que
                 encuentres una carta sin ir tienda por tienda. Los precios y el

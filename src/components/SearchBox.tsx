@@ -86,7 +86,7 @@ export default function SearchBox({
   }
 
   const big = size === "lg";
-  const height = big ? "h-12" : "h-10";
+  const height = big ? "h-13" : "h-11";
 
   return (
     <div ref={boxRef} className="relative w-full">
@@ -95,7 +95,7 @@ export default function SearchBox({
           <svg
             aria-hidden
             viewBox="0 0 24 24"
-            className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -114,29 +114,29 @@ export default function SearchBox({
             onKeyDown={onKeyDown}
             placeholder="Busca una carta… ej. Sol Ring"
             aria-label="Buscar carta"
-            className={`${height} w-full rounded-l border border-r-0 border-line-strong bg-surface pl-10 pr-3 text-ink outline-none transition placeholder:text-muted focus:border-accent ${
-              big ? "text-[15px]" : "text-sm"
+            className={`${height} w-full rounded-l-pill border border-r-0 border-line-strong bg-surface pl-11 pr-3 text-ink outline-none transition placeholder:text-muted focus:border-accent ${
+              big ? "text-base" : "text-[15px]"
             }`}
           />
         </div>
         <button
           type="button"
           onClick={() => submit()}
-          className={`${height} shrink-0 rounded-r bg-accent px-6 text-sm font-semibold text-accent-ink transition hover:brightness-110`}
+          className={`${height} shrink-0 rounded-r-pill bg-accent px-7 text-[15px] font-bold text-accent-ink transition hover:brightness-110`}
         >
           Buscar
         </button>
       </div>
 
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-30 mt-1.5 w-full overflow-hidden rounded border border-line bg-surface shadow-lg shadow-ink/5">
+        <ul className="absolute z-30 mt-2 w-full overflow-hidden rounded-card border border-line bg-surface shadow-lift">
           {suggestions.map((s, i) => (
             <li key={s.slug}>
               <button
                 type="button"
                 onMouseEnter={() => setHighlight(i)}
                 onClick={() => submit(s)}
-                className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition ${
+                className={`flex w-full items-center gap-3.5 px-4 py-3 text-left transition ${
                   i === highlight ? "bg-surface-2" : "hover:bg-hover"
                 }`}
               >
@@ -144,10 +144,10 @@ export default function SearchBox({
                 <img
                   src={s.imageUrl ?? ""}
                   alt=""
-                  className="h-11 w-8 shrink-0 rounded-sm bg-surface-2 object-cover ring-1 ring-line"
+                  className="h-12 w-9 shrink-0 rounded-md bg-surface-2 object-cover ring-1 ring-line"
                 />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold">{s.name}</span>
+                  <span className="block truncate text-[15px] font-semibold">{s.name}</span>
                   <span className="block text-xs text-muted">
                     {s.inStockCount > 0
                       ? `${s.storeCount} ${s.storeCount === 1 ? "tienda" : "tiendas"} · desde ${money(s.minPriceCents)}`

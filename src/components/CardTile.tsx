@@ -8,7 +8,7 @@ export default function CardTile({ card }: { card: CardSummary }) {
   return (
     <Link
       href={`/carta/${card.slug}`}
-      className="group flex flex-col overflow-hidden rounded border border-line bg-surface transition hover:border-accent"
+      className="group flex flex-col overflow-hidden rounded-card border border-line bg-surface shadow-card transition hover:-translate-y-0.5 hover:border-accent hover:shadow-lift"
     >
       <div className="relative aspect-[63/88] overflow-hidden bg-surface-2">
         {card.imageUrl ? (
@@ -25,21 +25,21 @@ export default function CardTile({ card }: { card: CardSummary }) {
           </div>
         )}
         {card.storeCount > 1 && (
-          <span className="absolute left-2 top-2 rounded-sm bg-accent px-2 py-0.5 text-[11px] font-semibold text-accent-ink">
+          <span className="absolute left-2.5 top-2.5 rounded-pill bg-accent px-2.5 py-1 text-[11px] font-semibold text-accent-ink">
             {card.storeCount} tiendas
           </span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-0.5 border-t border-line-soft p-3">
-        <h3 className="truncate font-serif text-[15px] font-semibold" title={card.name}>
+      <div className="flex flex-1 flex-col gap-0.5 border-t border-line-soft px-4 py-3.5">
+        <h3 className="truncate text-[15px] font-semibold" title={card.name}>
           {card.name}
         </h3>
         <p className="mt-auto pt-1 text-xs text-muted">
           {available ? (
             <>
               desde{" "}
-              <span className="font-mono text-base font-bold text-ink tnum">
+              <span className="text-lg font-bold text-ink tnum">
                 {money(card.minPriceCents)}
               </span>
             </>

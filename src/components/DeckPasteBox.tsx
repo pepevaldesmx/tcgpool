@@ -22,16 +22,16 @@ export default function DeckPasteBox({
         defaultValue={initialValue}
         placeholder={PLACEHOLDER}
         aria-label="Pega tu lista de cartas"
-        className="w-full resize-y rounded border border-line-strong bg-surface px-3.5 py-3 font-mono text-[13px] leading-relaxed text-ink outline-none transition placeholder:text-muted/70 focus:border-accent"
+        className="w-full resize-y rounded-control border border-line-strong bg-surface px-4 py-3.5 font-mono text-[13px] leading-relaxed text-ink outline-none transition placeholder:text-muted/70 focus:border-accent"
       />
       <div className="flex items-center gap-3">
         <button
           type="submit"
-          className="h-11 shrink-0 rounded bg-accent px-6 text-sm font-semibold text-accent-ink transition hover:brightness-110"
+          className="h-12 shrink-0 rounded-pill bg-accent px-7 text-[15px] font-bold text-accent-ink transition hover:brightness-110"
         >
           Buscar la lista
         </button>
-        <span className="text-xs text-muted">
+        <span className="text-[13px] text-muted">
           Una carta por renglón. Acepta exportaciones de Moxfield y Archidekt.
         </span>
       </div>

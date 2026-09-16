@@ -55,9 +55,9 @@ function Chip({
   return (
     <Link
       href={href}
-      className={`rounded-sm border px-2.5 py-1 text-xs transition ${
+      className={`rounded-pill border px-3.5 py-1.5 text-[13px] transition ${
         active
-          ? "border-ink bg-ink font-semibold text-paper"
+          ? "border-accent bg-accent font-semibold text-accent-ink"
           : "border-line bg-surface text-muted hover:border-accent hover:text-accent"
       }`}
     >
@@ -70,7 +70,7 @@ function ConditionBadge({ condition }: { condition: string }) {
   const nm = condition === "NM";
   return (
     <span
-      className={`inline-block whitespace-nowrap rounded-sm border px-2 py-0.5 text-[11px] font-medium ${
+      className={`inline-block whitespace-nowrap rounded-pill border px-2.5 py-1 text-[12px] font-medium ${
         nm
           ? "border-ok-line bg-ok-bg text-ok"
           : "border-line bg-surface-2 text-muted"
@@ -135,7 +135,7 @@ export default async function CardPage({ params, searchParams }: Props) {
 
       <div className="mt-4 grid gap-9 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-6 lg:self-start">
-          <div className="aspect-[63/88] overflow-hidden rounded border border-line bg-surface-2 shadow-sm shadow-ink/10">
+          <div className="aspect-[63/88] overflow-hidden rounded-card border border-line bg-surface-2 shadow-lift">
             {card.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -150,30 +150,30 @@ export default async function CardPage({ params, searchParams }: Props) {
             )}
           </div>
 
-          <h1 className="mt-4 font-serif text-3xl font-semibold leading-tight tracking-tight">
+          <h1 className="mt-5 text-[32px] font-bold leading-tight tracking-tight">
             {card.name}
           </h1>
-          {card.typeLine && <p className="text-sm text-muted">{card.typeLine}</p>}
+          {card.typeLine && <p className="mt-0.5 text-[15px] text-muted">{card.typeLine}</p>}
 
-          <dl className="mt-4 rounded border border-line bg-surface px-4 py-2">
+          <dl className="mt-5 rounded-card border border-line bg-surface px-5 py-3 shadow-card">
             <div className="flex items-baseline justify-between border-b border-line-soft py-2">
-              <dt className="text-sm text-muted">Más barata</dt>
-              <dd className="font-mono text-2xl font-bold tnum">
+              <dt className="text-[15px] text-muted">Más barata</dt>
+              <dd className="text-[26px] font-bold tnum">
                 {money(card.minPriceCents)}
               </dd>
             </div>
             <div className="flex items-baseline justify-between border-b border-line-soft py-2">
-              <dt className="text-sm text-muted">Tiendas</dt>
-              <dd className="font-mono font-semibold tnum">{card.storeCount}</dd>
+              <dt className="text-[15px] text-muted">Tiendas</dt>
+              <dd className="font-semibold tnum">{card.storeCount}</dd>
             </div>
             <div className="flex items-baseline justify-between border-b border-line-soft py-2">
-              <dt className="text-sm text-muted">Listados con stock</dt>
-              <dd className="font-mono font-semibold tnum">{card.inStockCount}</dd>
+              <dt className="text-[15px] text-muted">Listados con stock</dt>
+              <dd className="font-semibold tnum">{card.inStockCount}</dd>
             </div>
             {spread != null && spread > 0 && (
               <div className="flex items-baseline justify-between py-2">
-                <dt className="text-sm text-muted">Diferencia máx.</dt>
-                <dd className="font-mono font-semibold text-accent tnum">+{spread}%</dd>
+                <dt className="text-[15px] text-muted">Diferencia máx.</dt>
+                <dd className="font-semibold text-accent tnum">+{spread}%</dd>
               </div>
             )}
           </dl>
@@ -182,7 +182,7 @@ export default async function CardPage({ params, searchParams }: Props) {
             <StoreLink
               href={cheapest.productUrl}
               slug={slug}
-              className="mt-3 flex items-center justify-center rounded bg-accent px-4 py-3 text-sm font-semibold text-accent-ink transition hover:brightness-110"
+              className="mt-4 flex items-center justify-center rounded-pill bg-accent px-5 py-3.5 text-[15px] font-bold text-accent-ink shadow-card transition hover:brightness-110"
             >
               Ver la más barata en {cheapest.storeName}
             </StoreLink>
@@ -196,7 +196,7 @@ export default async function CardPage({ params, searchParams }: Props) {
             </div>
           )}
 
-          <div className="space-y-2.5 rounded border border-line bg-surface px-4 py-3.5">
+          <div className="space-y-3 rounded-card border border-line bg-surface px-5 py-4 shadow-card">
             <FilterRow label="Orden">
               {(
                 [
@@ -292,12 +292,12 @@ export default async function CardPage({ params, searchParams }: Props) {
             </FilterRow>
           </div>
 
-          <p className="mt-5 text-sm text-muted">
+          <p className="mt-6 text-[15px] text-muted">
             {listings.length} {listings.length === 1 ? "listado" : "listados"}
           </p>
 
-          <div className="table-scroll mt-2 rounded border border-line bg-surface">
-            <table className="w-full min-w-[720px] border-collapse text-sm">
+          <div className="table-scroll mt-3 overflow-hidden rounded-card border border-line bg-surface shadow-card">
+            <table className="w-full min-w-[820px] border-collapse text-[15px]">
               <thead>
                 <tr className="border-b border-line bg-thead text-left text-[11px] uppercase tracking-[0.07em] text-muted">
                   <th className="px-4 py-2.5 font-semibold">Tienda</th>
@@ -335,8 +335,8 @@ export default async function CardPage({ params, searchParams }: Props) {
 
 function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <span className="w-[74px] shrink-0 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="w-[78px] shrink-0 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">
         {label}
       </span>
       {children}
@@ -359,8 +359,8 @@ function ListingRowView({
         listing.inStock ? "" : "opacity-45"
       }`}
     >
-      <td className="px-4 py-3">
-        <div className="font-semibold">{listing.storeName}</div>
+      <td className="px-4 py-4">
+        <div className="whitespace-nowrap font-semibold">{listing.storeName}</div>
         <div className="text-xs text-muted">
           {listing.storeCity ?? "México"}
           {listing.sellerType === "affiliate" && ` · afiliado ${listing.sellerName}`}
@@ -387,11 +387,9 @@ function ListingRowView({
         <div className="text-muted">{timeAgo(listing.updatedAt)}</div>
       </td>
       <td className="whitespace-nowrap px-4 py-3 text-right">
-        <span className="font-mono text-base font-bold tnum">
-          {money(listing.priceCents)}
-        </span>
+        <span className="text-[17px] font-bold tnum">{money(listing.priceCents)}</span>
         {cheapest && (
-          <span className="ml-2 rounded-sm bg-accent px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-accent-ink">
+          <span className="ml-2 rounded-pill bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-ink">
             más barata
           </span>
         )}
@@ -400,7 +398,7 @@ function ListingRowView({
         <StoreLink
           href={listing.productUrl}
           slug={cardSlug}
-          className="rounded-sm border border-line bg-surface px-3 py-1.5 text-xs font-semibold transition hover:border-accent hover:text-accent"
+          className="rounded-pill border border-line bg-surface px-4 py-2 text-[13px] font-semibold transition hover:border-accent hover:text-accent"
         >
           Ver
         </StoreLink>

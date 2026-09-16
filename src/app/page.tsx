@@ -24,7 +24,7 @@ export default async function HomePage() {
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
           Buscador de singles TCG en México
         </p>
-        <h1 className="mt-3 max-w-3xl font-serif text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">
+        <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight sm:text-[46px]">
           Encuentra tu carta en tiendas mexicanas y afiliados.
         </h1>
 
@@ -32,24 +32,22 @@ export default async function HomePage() {
             que es el caso común; la lista completa queda a un scroll corto. */}
         <div className="mt-8 max-w-3xl">
           <SearchBox size="lg" />
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-[13px] text-muted">
             <span>Prueba:</span>
             {SUGGESTED.map((name) => (
               <Link
                 key={name}
                 href={`/buscar?q=${encodeURIComponent(name)}`}
-                className="rounded-sm border border-line bg-surface px-2.5 py-1 text-ink transition hover:border-accent hover:text-accent"
+                className="rounded-pill border border-line bg-surface px-3.5 py-1.5 text-ink shadow-card transition hover:border-accent hover:text-accent"
               >
                 {name}
               </Link>
             ))}
           </div>
 
-          <div className="mt-7 rounded border border-line bg-surface p-5">
-            <h2 className="font-serif text-base font-semibold">
-              ¿Traes la lista completa?
-            </h2>
-            <p className="mt-1 text-sm text-muted">
+          <div className="mt-8 rounded-card border border-line bg-surface p-6 shadow-card">
+            <h2 className="text-lg font-bold">¿Traes la lista completa?</h2>
+            <p className="mt-1 text-[15px] text-muted">
               Pégala entera y te decimos qué tienda cubre más y cuánto costaría.
             </p>
             <div className="mt-3.5">
@@ -67,9 +65,7 @@ export default async function HomePage() {
 
       {trending.cards.length > 0 && (
         <section className="border-b border-line py-9">
-          <h2 className="font-serif text-xl font-semibold tracking-tight">
-            Cartas de moda
-          </h2>
+          <h2 className="text-2xl font-bold tracking-tight">Cartas de moda</h2>
           <p className="mt-1 text-sm text-muted">
             {trending.source === "demand"
               ? "Las más buscadas que están disponibles ahora."
@@ -84,23 +80,21 @@ export default async function HomePage() {
       )}
 
       <section className="border-b border-line py-9">
-        <h2 className="font-serif text-xl font-semibold tracking-tight">Juegos</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Juegos</h2>
         <ul className="mt-5 grid gap-3 sm:grid-cols-3">
           {games.map((game) => {
             const live = game.inStockCount > 0;
             return (
               <li
                 key={game.id}
-                className={`flex items-center gap-3.5 rounded border border-line bg-surface px-4 py-3.5 ${
+                className={`flex items-center gap-4 rounded-card border border-line bg-surface px-5 py-4 shadow-card ${
                   live ? "" : "opacity-55"
                 }`}
               >
                 <GameMark gameId={game.id} />
                 <div className="min-w-0 flex-1">
-                  <p className="font-serif text-[15px] font-semibold leading-tight">
-                    {game.name}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted">
+                  <p className="text-[15px] font-semibold leading-tight">{game.name}</p>
+                  <p className="mt-0.5 text-[13px] text-muted">
                     {live
                       ? `${game.cardCount.toLocaleString("es-MX")} cartas · ${game.inStockCount.toLocaleString("es-MX")} listados con stock`
                       : "sin tiendas conectadas todavía"}
@@ -118,7 +112,7 @@ export default async function HomePage() {
       </section>
 
       <section className="py-9">
-        <h2 className="font-serif text-xl font-semibold tracking-tight">Tiendas</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Tiendas</h2>
         <div className="mt-3">
           <StoreList stores={stores} />
         </div>

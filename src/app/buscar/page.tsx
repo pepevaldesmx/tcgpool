@@ -29,7 +29,7 @@ export default async function SearchPage({ searchParams }: Props) {
 
       {q && (
         <div className="mt-7 flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
-          <h1 className="font-serif text-lg font-semibold">
+          <h1 className="text-xl font-bold">
             {results.length > 0 ? (
               <>
                 {results.length} {results.length === 1 ? "carta" : "cartas"} para “{q}”
@@ -40,9 +40,9 @@ export default async function SearchPage({ searchParams }: Props) {
           </h1>
           <Link
             href={`/buscar?q=${encodeURIComponent(q)}${onlyInStock ? "" : "&stock=1"}`}
-            className={`rounded-sm border px-3 py-1 text-xs transition ${
+            className={`rounded-pill border px-4 py-1.5 text-[13px] font-semibold shadow-card transition ${
               onlyInStock
-                ? "border-ink bg-ink text-paper"
+                ? "border-accent bg-accent text-accent-ink"
                 : "border-line bg-surface text-muted hover:border-accent hover:text-accent"
             }`}
           >
@@ -52,7 +52,7 @@ export default async function SearchPage({ searchParams }: Props) {
       )}
 
       {q && results.length === 0 && (
-        <div className="mt-6 rounded border border-line bg-surface p-6 text-sm text-ink">
+        <div className="mt-6 rounded-card border border-line bg-surface p-6 text-[15px] text-ink shadow-card">
           <p>
             No encontramos esa carta en el catálogo que tenemos indexado. Puede
             que ninguna de las tiendas conectadas la tenga, o que esté escrita

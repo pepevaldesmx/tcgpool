@@ -90,10 +90,8 @@ export default async function DeckPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
-      <h1 className="font-serif text-3xl font-semibold tracking-tight">
-        Buscar una lista
-      </h1>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+      <h1 className="text-4xl font-bold tracking-tight">Buscar una lista</h1>
+      <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">
         Pega tu decklist completa y te decimos qué tienda cubre más de la lista y
         cuánto costaría, en vez de que revises tienda por tienda.
       </p>
@@ -112,25 +110,21 @@ export default async function DeckPage({ searchParams }: Props) {
       {lines.length > 0 && (
         <>
           <section className="mt-10">
-            <h2 className="font-serif text-xl font-semibold tracking-tight">
-              Qué tienda cubre más de tu lista
-            </h2>
+            <h2 className="text-2xl font-bold tracking-tight">Qué tienda cubre más de tu lista</h2>
             <p className="mt-1 text-sm text-muted">
               {lines.length} cartas distintas · {totalCopies}{" "}
               {totalCopies === 1 ? "copia" : "copias"}
               {found.length > 0 && (
                 <>
                   {" · "}comprando cada una donde esté más barata:{" "}
-                  <span className="font-mono font-bold text-ink tnum">
-                    {money(bestTotal)}
-                  </span>
+                  <span className="font-bold text-ink tnum">{money(bestTotal)}</span>
                 </>
               )}
             </p>
 
             {byCoverage.length > 0 ? (
-              <div className="table-scroll mt-4 rounded border border-line bg-surface">
-                <table className="w-full min-w-[600px] border-collapse text-sm">
+              <div className="table-scroll mt-4 overflow-hidden rounded-card border border-line bg-surface shadow-card">
+                <table className="w-full min-w-[680px] border-collapse text-[15px]">
                   <thead>
                     <tr className="border-b border-line bg-thead text-left text-[11px] uppercase tracking-[0.07em] text-muted">
                       <th className="px-4 py-2.5 font-semibold">Tienda</th>
@@ -148,26 +142,26 @@ export default async function DeckPage({ searchParams }: Props) {
                         className="border-b border-line-soft last:border-0 hover:bg-hover"
                       >
                         <td className="px-4 py-3">
-                          <div className="font-semibold">{c.storeName}</div>
+                          <div className="whitespace-nowrap font-semibold">{c.storeName}</div>
                           <div className="text-xs text-muted">
                             {c.storeCity ?? "México"}
                           </div>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2.5">
-                            <span className="h-1.5 w-28 overflow-hidden rounded-full bg-surface-2">
+                            <span className="h-2 w-32 overflow-hidden rounded-pill bg-surface-2">
                               <span
                                 className="block h-full rounded-full bg-accent"
                                 style={{ width: `${(c.covered / lines.length) * 100}%` }}
                               />
                             </span>
-                            <span className="font-mono text-xs tnum">
+                            <span className="text-[13px] font-semibold tnum">
                               {c.covered} de {lines.length}
                             </span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-right font-mono tnum">{c.copies}</td>
-                        <td className="whitespace-nowrap px-4 py-3 text-right font-mono font-bold tnum">
+                        <td className="px-4 py-3 text-right tnum">{c.copies}</td>
+                        <td className="whitespace-nowrap px-4 py-3 text-right text-[17px] font-bold tnum">
                           {money(c.subtotalCents)}
                         </td>
                       </tr>
@@ -183,11 +177,9 @@ export default async function DeckPage({ searchParams }: Props) {
           </section>
 
           <section className="mt-10">
-            <h2 className="font-serif text-xl font-semibold tracking-tight">
-              Carta por carta
-            </h2>
-            <div className="table-scroll mt-4 rounded border border-line bg-surface">
-              <table className="w-full min-w-[680px] border-collapse text-sm">
+            <h2 className="text-2xl font-bold tracking-tight">Carta por carta</h2>
+            <div className="table-scroll mt-4 overflow-hidden rounded-card border border-line bg-surface shadow-card">
+              <table className="w-full min-w-[760px] border-collapse text-[15px]">
                 <thead>
                   <tr className="border-b border-line bg-thead text-left text-[11px] uppercase tracking-[0.07em] text-muted">
                     <th className="px-4 py-2.5 text-right font-semibold">Cant.</th>
@@ -208,9 +200,7 @@ export default async function DeckPage({ searchParams }: Props) {
                         key={`${r.line.raw}-${i}`}
                         className="border-b border-line-soft last:border-0 hover:bg-hover"
                       >
-                        <td className="px-4 py-3 text-right font-mono tnum">
-                          {r.line.qty}
-                        </td>
+                        <td className="px-4 py-3 text-right tnum">{r.line.qty}</td>
                         <td className="px-4 py-3">
                           {r.card ? (
                             <Link
@@ -239,15 +229,15 @@ export default async function DeckPage({ searchParams }: Props) {
                               ? "sin stock ahora"
                               : "no está en el catálogo"}
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-right font-mono font-bold tnum">
+                        <td className="whitespace-nowrap px-4 py-3 text-right text-[17px] font-bold tnum">
                           {min != null ? money(min) : "—"}
                           {cheapestStore && (
-                            <div className="font-sans text-[11px] font-normal text-muted">
+                            <div className="text-[12px] font-normal text-muted">
                               {cheapestStore.storeName}
                             </div>
                           )}
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-right font-mono tnum">
+                        <td className="whitespace-nowrap px-4 py-3 text-right tnum">
                           {min != null ? money(min * r.line.qty) : "—"}
                         </td>
                       </tr>

@@ -72,7 +72,7 @@ export default function StoreList({ stores }: { stores: StorePublic[] }) {
             type="button"
             onClick={askLocation}
             disabled={status === "asking"}
-            className="rounded-sm border border-line bg-surface px-3 py-1 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent disabled:opacity-50"
+            className="rounded-pill border border-line bg-surface px-4 py-1.5 text-[13px] font-semibold text-ink shadow-card transition hover:border-accent hover:text-accent disabled:opacity-50"
           >
             {status === "asking" ? "Buscando…" : "Ordenar por cercanía"}
           </button>
@@ -87,17 +87,17 @@ export default function StoreList({ stores }: { stores: StorePublic[] }) {
         </p>
       )}
 
-      <ul className="mt-4 divide-y divide-line-soft overflow-hidden rounded border border-line bg-surface">
+      <ul className="mt-4 divide-y divide-line-soft overflow-hidden rounded-card border border-line bg-surface shadow-card">
         {sorted.map(({ store, km }) => (
           <li key={store.id}>
             <a
               href={store.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-4 px-4 py-3 transition hover:bg-hover"
+              className="flex items-center gap-4 px-5 py-4 transition hover:bg-hover"
             >
               <span className="min-w-0 flex-1">
-                <span className="block font-serif text-[15px] font-semibold">
+                <span className="block text-[15px] font-semibold">
                   {store.name}
                 </span>
                 <span className="block text-xs text-muted">
@@ -108,7 +108,7 @@ export default function StoreList({ stores }: { stores: StorePublic[] }) {
                 </span>
               </span>
               <span className="whitespace-nowrap text-right">
-                <span className="block font-mono text-[15px] font-bold tnum">
+                <span className="block text-lg font-bold tnum">
                   {store.inStockCount.toLocaleString("es-MX")}
                 </span>
                 <span className="block text-[11px] text-muted">cartas con stock</span>
