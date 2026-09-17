@@ -18,6 +18,8 @@ interface Reference {
   usd: number | null;
   suggestedCents: number | null;
   rate: number;
+  rateSource: "vivo" | "configurado" | "respaldo";
+  rateAsOf: string | null;
   imageUrl: string | null;
   scryfallUrl: string | null;
   match: "exacta" | "por-set" | "por-nombre" | "ninguna";
@@ -58,6 +60,10 @@ export default function CaptureForm({ token, slug }: { token: string; slug: stri
   const [ref, setRef] = useState<Reference | null>(null);
   const [precio, setPrecio] = useState("");
   const [imagenRota, setImagenRota] = useState(false);
+  // Pesos por dólar con el que la tienda quiere calcular. Arranca en el tipo de
+  // cambio de hoy y se mueve de diez en diez centavos: es el mismo ajuste que
+  // la tienda ya hace de cabeza para cubrir importación y margen.
+  const [tipoCambio, setTipoCambio] = useState<number | null>(null);
 
   // La referencia se pide al elegir la versión, no al buscar: pedirla para
   // todas las impresiones de seis cartas serían decenas de llamadas que casi
@@ -74,7 +80,12 @@ export default function CaptureForm({ token, slug }: { token: string; slug: stri
     fetch(`/api/panel/precio?printingId=${printingId}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((body: Reference | null) => {
-        if (vivo) setRef(body);
+        if (!vivo) return;
+        setRef(body);
+        // El tipo de cambio que la tienda haya ajustado se respeta entre
+        // cartas: quien subió a 26 para la primera no quiere volver a subirlo
+        // en cada captura.
+        setTipoCambio((previo) => previo ?? body?.rate ?? null);
       })
       .catch(() => {});
     return () => {
@@ -95,6 +106,8 @@ export default function CaptureForm({ token, slug }: { token: string; slug: stri
       setBuscando(false);
     }
   }
+
+  const sugerido = (ref?.usd ?? 0) * (tipoCambio ?? ref?.rate ?? 0);
 
   return (
     <div className="mt-4 rounded-card border border-line bg-surface p-5 shadow-card">
@@ -172,25 +185,39 @@ export default function CaptureForm({ token, slug }: { token: string; slug: stri
               <p className="text-[17px] font-semibold">{picked.card.name}</p>
               <p className="text-[13px] text-muted">{printingLabel(picked.printing)}</p>
 
-              {ref?.suggestedCents != null ? (
+              {ref?.usd != null ? (
                 <div className="mt-2">
-                  <p className="text-[13px] text-muted">
-                    Referencia TCGplayer{" "}
-                    <span className="font-semibold text-ink tnum">
-                      US${ref.usd?.toFixed(2)}
-                    </span>{" "}
-                    × {ref.rate} ={" "}
-                    <span className="font-semibold text-ink tnum">
-                      ${(ref.suggestedCents / 100).toFixed(2)}
-                    </span>
+                  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-2 text-[13px] text-muted">
+                    <span>Referencia TCGplayer</span>
+                    <span className="font-semibold text-ink tnum">US${ref.usd.toFixed(2)}</span>
+                    <span>×</span>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="1"
+                      max="99"
+                      value={tipoCambio ?? ref.rate}
+                      onChange={(e) => setTipoCambio(Number(e.target.value))}
+                      className="w-[84px] rounded-control border border-line bg-paper px-2 py-1 text-[13px] font-semibold text-ink tnum"
+                      aria-label="Pesos por dólar"
+                    />
+                    <span>=</span>
+                    <span className="font-semibold text-ink tnum">${sugerido.toFixed(2)}</span>
+                    <button
+                      type="button"
+                      onClick={() => setPrecio(sugerido.toFixed(2))}
+                      className="rounded-pill border border-line bg-paper px-3 py-1 text-[13px] font-semibold text-muted transition hover:border-accent hover:text-accent"
+                    >
+                      Usar este precio
+                    </button>
+                  </div>
+                  <p className="mt-1.5 text-[12px] text-muted">
+                    {ref.rateSource === "vivo"
+                      ? `Tipo de cambio del ${ref.rateAsOf}. Muévelo para cubrir importación y margen.`
+                      : ref.rateSource === "configurado"
+                        ? "Tipo de cambio configurado a mano, no el del día."
+                        : "No pudimos consultar el tipo de cambio de hoy: éste es un respaldo."}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => setPrecio((ref.suggestedCents! / 100).toFixed(2))}
-                    className="mt-1.5 rounded-pill border border-line bg-paper px-3 py-1 text-[13px] font-semibold text-muted transition hover:border-accent hover:text-accent"
-                  >
-                    Usar este precio
-                  </button>
                   {MATCH_AVISO[ref.match] && (
                     <p className="mt-1.5 text-[12px] text-warn">{MATCH_AVISO[ref.match]}</p>
                   )}

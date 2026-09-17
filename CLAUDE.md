@@ -159,9 +159,18 @@ app móvil nativa. Web responsive es suficiente.
   degrada avisando: si sólo se pudo empatar por nombre, la UI dice que el precio
   puede ser de otra edición. Nunca se sustituye el precio de un acabado por el
   de otro: una impresión sin foil no tiene precio foil, y rellenarlo con el de
-  la no-foil sería inventarlo. El multiplicador a pesos (`MXN_POR_USD`) se
-  MUESTRA junto a la aritmética: es una sugerencia que la tienda corrige, no un
-  precio que le imponemos.
+  la no-foil sería inventarlo.
+- **El tipo de cambio es el de hoy, y cuando no lo es, se dice.** Quemarlo en el
+  código lo deja envejecer en silencio y sugerir precios mal sin que nadie lo
+  note. `usdToMxn` lo consulta, lo valida contra una banda de cordura (8–60: una
+  respuesta corrupta convertiría una carta de dos dólares en diez mil pesos) y
+  cae a `MXN_POR_USD` o a un respaldo DECLARANDO cuál usó. En el panel es un
+  campo con flechas de diez centavos, no un número fijo: la tienda lo sube para
+  cubrir importación y margen —así es como ya fija sus precios— y la aritmética
+  completa queda a la vista (`US$1.57 × 18.5 = $29.05`). El precio que se
+  publica es el que quedó en el campo, no una fórmula que se recalcule sola: si
+  se recalculara, el catálogo entero se movería con el dólar sin que la tienda
+  lo decidiera.
 - **NO ponemos a las tiendas a competir por precio.** Nada de coronar "la más
   barata", ni de anunciar la diferencia porcentual entre tiendas. El precio se
   muestra y se puede ordenar por él, pero nunca es el ranking por defecto:

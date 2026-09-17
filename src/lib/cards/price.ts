@@ -11,26 +11,19 @@
  * cambio se muestra siempre para que la tienda vea la aritmética y la corrija.
  */
 import type { PrintingForPricing } from "@/lib/db/queries";
+import { usdToMxn, type FxSource } from "@/lib/cards/fx";
 
 const API = "https://api.scryfall.com";
 const USER_AGENT = "tcgpool/0.1 (comparador de cartas TCG MX; contacto: hola@tcgpool.mx)";
 
-/**
- * Pesos por dólar. NO es sólo el tipo de cambio: las tiendas mexicanas venden
- * arriba del precio de TCGplayer —importación, aduana, margen— y lo medido
- * contra su catálogo real ronda 20–21 pesos por dólar de referencia. Se
- * configura por entorno porque va a envejecer.
- */
-export function mxnPerUsd(): number {
-  const raw = Number(process.env.MXN_POR_USD);
-  return Number.isFinite(raw) && raw > 0 ? raw : 20;
-}
-
 export interface Reference {
   usd: number | null;
-  /** Precio sugerido en centavos de peso. */
+  /** Precio sugerido en centavos de peso, al tipo de cambio de hoy. */
   suggestedCents: number | null;
+  /** Pesos por dólar con el que se calculó; la tienda lo puede mover. */
   rate: number;
+  rateSource: FxSource;
+  rateAsOf: string | null;
   imageUrl: string | null;
   scryfallUrl: string | null;
   /** Qué tan seguro es el empate con la impresión que capturó la tienda. */
@@ -107,12 +100,14 @@ export async function referencePrice(printing: PrintingForPricing): Promise<Refe
     if (card) match = "por-nombre";
   }
 
-  const rate = mxnPerUsd();
+  const fx = await usdToMxn();
   const usd = card ? priceFor(card, printing.finish) : null;
   const ref: Reference = {
     usd,
-    suggestedCents: usd == null ? null : Math.round(usd * rate * 100),
-    rate,
+    suggestedCents: usd == null ? null : Math.round(usd * fx.rate * 100),
+    rate: fx.rate,
+    rateSource: fx.source,
+    rateAsOf: fx.asOf,
     imageUrl: printing.imageUrl ?? (card ? imageOf(card) : null),
     scryfallUrl: card?.scryfall_uri ?? null,
     match,

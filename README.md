@@ -217,10 +217,12 @@ cuáles existen, y la página no se indexa.
 
 Al elegir la versión de una carta, el panel muestra su imagen y un **precio de
 referencia**: el de TCGplayer que [Scryfall](https://scryfall.com/docs/api)
-republica bajo licencia, por impresión concreta, convertido a pesos con
-`MXN_POR_USD` (por omisión 20). La aritmética se enseña completa —`US$1.57 × 20
-= $31.40`— porque es una sugerencia que la tienda corrige, no un precio que le
-imponemos. No scrapeamos TCGplayer ni StarCityGames: sus términos lo prohíben y
+republica bajo licencia, por impresión concreta, convertido a pesos al tipo de
+cambio **del día**. La aritmética se enseña completa —`US$1.57 × 18.5 =
+$29.05`— y el multiplicador es un campo con flechas de diez centavos: la tienda
+lo sube para cubrir importación y margen, que es como ya fija sus precios. Si no
+se puede consultar el tipo de cambio, se usa `MXN_POR_USD` o un respaldo, y la
+UI dice cuál de los tres está usando. No scrapeamos TCGplayer ni StarCityGames: sus términos lo prohíben y
 el acceso se puede cortar.
 
 Ahí la tienda captura cartas a mano y resuelve las **diferencias con su tienda
