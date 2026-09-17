@@ -1,5 +1,5 @@
 {
-  "_nota": "Registro de tiendas. `domainVerified: false` = el dominio se tomó del brief o se dedujo y NO se ha podido confirmar desde este entorno (la política de red de la sesión bloquea el egress a estos hosts). Confírmalo antes de correr `npm run sync -- --live`.",
+  "_nota": "Registro de tiendas. `domainVerified` se confirma con `npm run probe -- <dominio>` (workflow 'Probar dominios de tiendas'), que dice si el dominio sirve /products.json. Quitar una tienda de aquí la BORRA de la base en el siguiente sync, con todos sus listings.",
   "stores": [
     {
       "slug": "mtg-mexico",
@@ -19,31 +19,16 @@
     {
       "slug": "yellow-rabbit",
       "name": "Yellow Rabbit",
-      "url": "https://yellowrabbit.com.mx",
+      "url": "https://yellowrabbit.mx",
       "city": "Guadalajara",
       "sourceType": "shopify",
-      "domainVerified": false,
+      "domainVerified": true,
       "sourceConfig": {
-        "domain": "yellowrabbit.com.mx",
+        "domain": "yellowrabbit.mx",
         "maxPages": 20
       },
       "lat": 20.6597,
       "lng": -103.3496,
-      "defaultGame": "magic"
-    },
-    {
-      "slug": "tao-games",
-      "name": "Tao Games",
-      "url": "https://taogames.mx",
-      "city": "Monterrey",
-      "sourceType": "shopify",
-      "domainVerified": false,
-      "sourceConfig": {
-        "domain": "taogames.mx",
-        "maxPages": 20
-      },
-      "lat": 25.6866,
-      "lng": -100.3161,
       "defaultGame": "magic"
     },
     {
@@ -61,5 +46,9 @@
     }
   ],
   "_nota_coords": "lat/lng son el centro de la ciudad, no la dirección de la tienda: sólo sirven para ordenar por cercanía.",
-  "_nota_juego": "defaultGame se usa sólo cuando el product_type del feed no declara el juego; MTG México sí lo declara (MTG Single, Pokemon Single, …) y ese gana."
+  "_nota_juego": "defaultGame se usa sólo cuando el product_type del feed no declara el juego; MTG México sí lo declara (MTG Single, Pokemon Single, …) y ese gana.",
+  "_nota_descartadas": [
+    "tao-games: no se encontró ningún catálogo de cartas en línea (2026-09).",
+    "tcgempire.com.mx: el sitio responde, pero /products.json da 404 — no es Shopify. Necesita un adaptador propio."
+  ]
 }

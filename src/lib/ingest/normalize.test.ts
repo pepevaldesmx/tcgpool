@@ -175,6 +175,31 @@ describe("classifyProduct", () => {
     assert.equal(p?.game, "pokemon");
   });
 
+  it("un juego que no soportamos NO cae al juego por defecto de la tienda", () => {
+    // Una tienda de Magic que además vende Star Wars Unlimited: meter esas
+    // cartas al catálogo de Magic es peor que no tenerlas.
+    assert.equal(
+      normalizeListing(
+        { ...base, title: "Darth Vader (SOR-010)", productType: "Star Wars Single" },
+        "magic",
+      ),
+      null,
+    );
+    // Pero "Cartas Sueltas" no nombra ningún juego: ahí el respaldo sí aplica.
+    assert.equal(
+      normalizeListing({ ...base, productType: "Cartas Sueltas" }, "magic")?.game,
+      "magic",
+    );
+  });
+
+  it("clasifica Digimon por product_type, no por la tienda", () => {
+    const r = normalizeListing(
+      { ...base, title: "Agumon [BT1-010]", productType: "Digimon Single" },
+      "magic",
+    );
+    assert.equal(r?.game, "digimon");
+  });
+
   it("un Yu-Gi-Oh de una tienda mayormente de Magic NO entra como Magic", () => {
     const r = normalizeListing(
       {

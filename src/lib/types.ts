@@ -4,7 +4,9 @@ export type GameId =
   | "yugioh"
   | "onepiece"
   | "lorcana"
-  | "fleshandblood";
+  | "fleshandblood"
+  | "digimon"
+  | "gundam";
 
 export type Condition = "NM" | "LP" | "MP" | "HP" | "DMG" | "SEALED" | "UNKNOWN";
 

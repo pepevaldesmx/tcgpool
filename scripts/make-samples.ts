@@ -97,23 +97,13 @@ const STORES: StoreStyle[] = [
   },
   {
     slug: "yellow-rabbit",
-    domain: "yellowrabbit.com.mx",
+    domain: "yellowrabbit.mx",
     vendor: "Yellow Rabbit",
     priceFactor: 1.12,
     coverage: 0.6,
     title: (c) => `${c.name} (${c.set_name})`,
     variant: (cond, lang, foil) =>
       `${cond} - ${lang === "es" ? "Español" : "English"}${foil ? " Foil" : ""}`,
-  },
-  {
-    slug: "tao-games",
-    domain: "taogames.mx",
-    vendor: "Tao Games",
-    priceFactor: 0.93,
-    coverage: 0.55,
-    title: (c, foil) => `${c.name} - ${c.set_name}${foil ? " - Foil" : ""}`,
-    variant: (cond, lang) =>
-      `${CONDITIONS.find(([code]) => code === cond)![1]}${lang === "es" ? " Español" : ""}`,
   },
 ];
 

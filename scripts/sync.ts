@@ -8,7 +8,7 @@
  */
 import { closePool, connectionString } from "../src/lib/db";
 import { migrate } from "../src/lib/db/migrate";
-import { upsertGame, getStats } from "../src/lib/db/queries";
+import { getStats, pruneStoresNotIn, upsertGame } from "../src/lib/db/queries";
 import { GAMES } from "../src/lib/games";
 import { loadStoreDefinitions } from "../src/lib/ingest/registry";
 import { syncStore } from "../src/lib/ingest/run";
@@ -66,6 +66,18 @@ async function main() {
         `${result.skipped} descartados · ${result.outOfStock} marcados sin stock · ` +
         `${((Date.now() - started) / 1000).toFixed(1)}s\n`,
     );
+  }
+
+  // Sólo con el registro completo a la vista: con --store no sabemos si las
+  // demás tiendas se quitaron o simplemente no se pidieron.
+  if (!only) {
+    const pruned = await pruneStoresNotIn(defs.map((d) => d.slug));
+    if (pruned.stores.length) {
+      console.log(
+        `✂ fuera del registro: ${pruned.stores.join(", ")} · ` +
+          `${pruned.printings} impresiones y ${pruned.cards} cartas se quedaron sin listados\n`,
+      );
+    }
   }
 
   const stats = await getStats();

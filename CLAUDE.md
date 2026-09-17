@@ -86,6 +86,14 @@ app móvil nativa. Web responsive es suficiente.
   "Pokemon Sealed"). `classifyProduct` lo usa como señal principal; el
   `defaultGame` de la tienda es sólo el respaldo. Sin esto, el Yu-Gi-Oh de una
   tienda de Magic entra al catálogo de Magic. Scryfall sólo resuelve Magic.
+  Ese respaldo aplica a productos que NO nombran juego ("Cartas Sueltas"),
+  nunca a los que nombran uno que no soportamos: `namesUnsupportedGame` los
+  descarta, porque "Star Wars Single" en una tienda de Magic no es Magic.
+- **El registro de tiendas manda: `data/stores.json` es la fuente.** Quitar una
+  tienda de ahí la borra de la base en el siguiente sync (`pruneStoresNotIn`),
+  con sus listados y las cartas que se quedan sin ninguno. El SQL del catálogo
+  no filtra por tienda activa, así que dejarla "inactiva" no la sacaría del
+  buscador.
 - **Los snapshots se guardan normalizados** (`normalizeFeed`): sólo los campos
   que la ingesta usa, ordenados de forma estable. El feed crudo de Shopify trae
   `body_html` y timestamps volátiles, y hacía que el cron reescribiera 35 MB

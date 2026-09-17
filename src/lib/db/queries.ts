@@ -364,6 +364,42 @@ export async function markMissingAsOutOfStock(
   return rows.length;
 }
 
+/**
+ * Borra las tiendas que ya no están en el registro, y detrás de ellas las
+ * impresiones y cartas que se quedaron sin ningún listado.
+ *
+ * `data/stores.json` es el registro: quitar una tienda de ahí tiene que sacarla
+ * del buscador. Sin esto se quedaba en la base para siempre —sus listados
+ * seguían saliendo en las búsquedas, porque el SQL del catálogo no filtra por
+ * tienda activa— y el catálogo acumulaba cartas fantasma de tiendas que ya no
+ * existen.
+ */
+export async function pruneStoresNotIn(
+  slugs: string[],
+): Promise<{ stores: string[]; printings: number; cards: number }> {
+  // Con el registro vacío no se borra nada: sería confundir "no pude leer el
+  // registro" con "ya no hay tiendas".
+  if (!slugs.length) return { stores: [], printings: 0, cards: 0 };
+
+  const gone = await query<{ slug: string }>(
+    `DELETE FROM stores WHERE slug <> ALL($1::text[]) RETURNING slug`,
+    [slugs],
+  );
+  if (!gone.length) return { stores: [], printings: 0, cards: 0 };
+
+  const printings = await query<{ id: number }>(
+    `DELETE FROM printings p
+      WHERE NOT EXISTS (SELECT 1 FROM listings l WHERE l.printing_id = p.id)
+      RETURNING p.id`,
+  );
+  const cards = await query<{ id: number }>(
+    `DELETE FROM cards c
+      WHERE NOT EXISTS (SELECT 1 FROM printings p WHERE p.card_id = c.id)
+      RETURNING c.id`,
+  );
+  return { stores: gone.map((g) => g.slug), printings: printings.length, cards: cards.length };
+}
+
 export async function startSyncRun(storeId: number, source: string): Promise<number> {
   const row = await one<{ id: number }>(
     `INSERT INTO sync_runs (store_id, source, status) VALUES ($1, $2, 'running') RETURNING id`,

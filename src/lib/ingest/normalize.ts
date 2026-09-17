@@ -1,4 +1,4 @@
-import { detectGame } from "@/lib/games";
+import { detectGame, namesUnsupportedGame } from "@/lib/games";
 import type { Condition, Finish, GameId, RawListing } from "@/lib/types";
 
 /** minúsculas, sin acentos, sin puntuación, espacios colapsados */
@@ -263,6 +263,9 @@ export function normalizeListing(
 ): NormalizedListing | null {
   const { game, kind } = classifyProduct(raw);
   if (kind === "sealed" || kind === "accessory") return null;
+  // El `defaultGame` de la tienda es el respaldo para productos que no nombran
+  // juego ("Cartas Sueltas"), NO para los que nombran uno que no soportamos.
+  if (!game && namesUnsupportedGame(raw.productType)) return null;
   if (!Number.isFinite(raw.priceMxn) || raw.priceMxn <= 0) return null;
 
   const { cardName, setName } = parseTitle(raw.title);

@@ -78,11 +78,11 @@ Postgres y deja el feed normalizado en `data/snapshots/<slug>.live.json` como
 evidencia de la corrida. Ese archivo **no se commitea**: la base es la fuente de
 verdad, y commitearlo inflaba el repo 11 MB cada 6 horas.
 
-> ⚠️ Los dominios de `data/stores.json` marcados con `"domainVerified": false`
-> se tomaron del brief o se dedujeron y **no se pudieron confirmar** desde el
-> entorno donde se escribió esto (la política de red bloqueaba esos hosts).
-> Verifícalos antes del primer `--live`. `mtgmexico.com` sí venía confirmado en
-> el brief.
+> ⚠️ Antes de agregar una tienda, confirma su dominio con
+> `npm run probe -- <dominio>` (o el workflow "Probar dominios de tiendas", que
+> sirve desde una red que no alcanza esos hosts). Dice si responde, a dónde
+> redirige, si expone `/products.json` y qué juegos declara en `product_type`.
+> Los que quedan con `"domainVerified": false` no se han podido confirmar.
 
 ### Señales de demanda (cartas de moda)
 
@@ -184,7 +184,7 @@ Cada tienda escribe los títulos a su manera:
 ```
 "Lightning Bolt (Foil) [Marvel Super Heroes Commander]"   MTG México
 "Lightning Bolt (Ravnica: Clue Edition)"                  Yellow Rabbit
-"Lightning Bolt - Double Masters 2022 - Foil"             Tao Games
+"Lightning Bolt - Double Masters 2022 - Foil"             otra tienda
 ```
 
 `src/lib/ingest/normalize.ts` saca de ahí nombre, set, idioma, acabado y
