@@ -1,0 +1,24 @@
+name: Probar dominios de tiendas
+
+# Le pega a un dominio para ver si sirve un feed de Shopify público y qué juegos
+# declara. No toca la base ni necesita secretos: es sólo red, y existe porque
+# quien edita el registro de tiendas no siempre puede alcanzar esos hosts.
+on:
+  workflow_dispatch:
+    inputs:
+      dominios:
+        description: "Dominios separados por espacio"
+        type: string
+        required: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run probe -- ${{ inputs.dominios }}
