@@ -191,9 +191,17 @@ npm run sync -- --live [--store=<slug>]     # ingerir feeds reales
 npm run snapshot -- --store=<slug>          # capturar un feed sin ingerirlo
 npm run make-samples                        # regenerar datos de muestra (usa Scryfall)
 npm run snapshots:normalize                 # reescribir snapshots en forma estable
+npm run db:check                            # diagnostica DATABASE_URL sin revelarla
+npm run smoke                               # reporte del catálogo real (sólo lectura)
+npm run probe -- <dominio>                  # ¿ese dominio sirve un feed de Shopify?
+npm run panel:token -- --store=<slug>       # link del panel de esa tienda
 npm run typecheck
 npm test
 ```
+
+Producción: <https://tcgpool.vercel.app>. Los workflows de GitHub Actions
+(`sync`, `smoke`, `probe`) corren con el secreto `DATABASE_URL` del repositorio:
+son la única vía para tocar la base desde donde no se tiene la cadena.
 
 ## Stack
 

@@ -9,6 +9,8 @@ El problema que resuelve no es principalmente comparar precio: es que el stock
 de cualquier tienda por sí sola es demasiado bajo, y hoy nadie agrega la oferta
 dispersa en un solo lugar buscable.
 
+**Producción:** <https://tcgpool.vercel.app>
+
 > **Estado: MVP demostrable.** Falta pagos, cuentas y el modelo de afiliados
 > (fase 2). El objetivo es poder pararse frente a un dueño de tienda y enseñarle
 > algo que él no puede ver hoy en ningún lado.
@@ -103,6 +105,8 @@ en la tienda y nunca la vemos.
 
 ### Deploy
 
+Producción: <https://tcgpool.vercel.app>
+
 El proyecto está enlazado a Vercel como `tcgpool`, bajo la cuenta personal —no
 bajo el equipo `PPVAPPS`, que sólo tiene otro proyecto—: cada
 push genera un deployment — preview en ramas, producción en la rama de
@@ -195,6 +199,27 @@ carta aparecería tres veces, una por tienda, y no habría comparador.
 
 Los feeds de muestra incluyen productos de ruido (booster boxes, micas,
 playmats) precisamente para ejercitar ese filtro.
+
+## El panel de tienda
+
+Cada tienda administra su inventario en `/tienda/<slug>`, con un link secreto:
+
+```bash
+PANEL_BASE_URL=https://tcgpool.vercel.app npm run panel:token -- --store=mtg-mexico
+npm run panel:token -- --store=mtg-mexico --rotar   # revoca el link anterior
+```
+
+Sin cuentas todavía: quien tiene el link entra. El token se compara contra la
+base y las acciones lo revalidan **también** contra el slug de la URL — si no,
+cambiar una palabra en la dirección editaría el inventario de otra tienda. Un
+token inválido y una tienda inexistente dan el mismo 404, para no confirmar
+cuáles existen, y la página no se indexa.
+
+Ahí la tienda captura cartas a mano y resuelve las **diferencias con su tienda
+en línea**: cuando la importación trae la misma impresión, en la misma
+condición, que algo capturado a mano, lo capturado se queda publicado y el valor
+del feed espera en una advertencia. La tienda decide caso por caso, y una
+advertencia resuelta no se reabre mientras el feed siga diciendo lo mismo.
 
 ## Agregar una tienda
 
