@@ -215,6 +215,14 @@ cambiar una palabra en la dirección editaría el inventario de otra tienda. Un
 token inválido y una tienda inexistente dan el mismo 404, para no confirmar
 cuáles existen, y la página no se indexa.
 
+Al elegir la versión de una carta, el panel muestra su imagen y un **precio de
+referencia**: el de TCGplayer que [Scryfall](https://scryfall.com/docs/api)
+republica bajo licencia, por impresión concreta, convertido a pesos con
+`MXN_POR_USD` (por omisión 20). La aritmética se enseña completa —`US$1.57 × 20
+= $31.40`— porque es una sugerencia que la tienda corrige, no un precio que le
+imponemos. No scrapeamos TCGplayer ni StarCityGames: sus términos lo prohíben y
+el acceso se puede cortar.
+
 Ahí la tienda captura cartas a mano y resuelve las **diferencias con su tienda
 en línea**: cuando la importación trae la misma impresión, en la misma
 condición, que algo capturado a mano, lo capturado se queda publicado y el valor

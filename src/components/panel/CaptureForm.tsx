@@ -1,16 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { saveListingAction } from "@/app/tienda/[slug]/actions";
 import { CONDITION_ORDER, conditionLabel } from "@/lib/format";
 
 interface Printing {
   id: number;
+  setCode: string | null;
   setName: string | null;
   collectorNumber: string | null;
   language: string;
   finish: string;
+  imageUrl: string | null;
 }
+
+interface Reference {
+  usd: number | null;
+  suggestedCents: number | null;
+  rate: number;
+  imageUrl: string | null;
+  scryfallUrl: string | null;
+  match: "exacta" | "por-set" | "por-nombre" | "ninguna";
+}
+
+const MATCH_AVISO: Record<Reference["match"], string | null> = {
+  exacta: null,
+  "por-set": "Precio de esta edición, sin confirmar el número de colección.",
+  "por-nombre": "Precio de OTRA edición de la misma carta: puede no parecerse.",
+  ninguna: null,
+};
 interface Card {
   id: number;
   name: string;
@@ -37,6 +55,32 @@ export default function CaptureForm({ token, slug }: { token: string; slug: stri
   const [cards, setCards] = useState<Card[]>([]);
   const [picked, setPicked] = useState<{ card: Card; printing: Printing } | null>(null);
   const [buscando, setBuscando] = useState(false);
+  const [ref, setRef] = useState<Reference | null>(null);
+  const [precio, setPrecio] = useState("");
+  const [imagenRota, setImagenRota] = useState(false);
+
+  // La referencia se pide al elegir la versión, no al buscar: pedirla para
+  // todas las impresiones de seis cartas serían decenas de llamadas que casi
+  // nadie va a mirar.
+  const printingId = picked?.printing.id;
+  useEffect(() => {
+    setImagenRota(false);
+    if (printingId == null) {
+      setRef(null);
+      return;
+    }
+    let vivo = true;
+    setRef(null);
+    fetch(`/api/panel/precio?printingId=${printingId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body: Reference | null) => {
+        if (vivo) setRef(body);
+      })
+      .catch(() => {});
+    return () => {
+      vivo = false;
+    };
+  }, [printingId]);
 
   async function buscar(e: React.FormEvent) {
     e.preventDefault();
@@ -85,7 +129,10 @@ export default function CaptureForm({ token, slug }: { token: string; slug: stri
                     <li key={p.id}>
                       <button
                         type="button"
-                        onClick={() => setPicked({ card, printing: p })}
+                        onClick={() => {
+                          setPicked({ card, printing: p });
+                          setPrecio("");
+                        }}
                         className="rounded-pill border border-line bg-paper px-3 py-1 text-[13px] text-muted transition hover:border-accent hover:text-accent"
                       >
                         {printingLabel(p)}
@@ -106,9 +153,56 @@ export default function CaptureForm({ token, slug }: { token: string; slug: stri
           <input type="hidden" name="printingId" value={picked.printing.id} />
           <input type="hidden" name="cardName" value={picked.card.name} />
 
-          <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line-soft pb-2">
-            <p className="text-[17px] font-semibold">{picked.card.name}</p>
-            <p className="text-[13px] text-muted">{printingLabel(picked.printing)}</p>
+          <div className="flex gap-4 border-b border-line-soft pb-3">
+            {/* La imagen es la verificación más rápida de que se eligió la
+                versión correcta: el set y el número se leen mal, la ilustración
+                no. */}
+            {(ref?.imageUrl ?? picked.printing.imageUrl) && !imagenRota && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={(ref?.imageUrl ?? picked.printing.imageUrl) as string}
+                alt={picked.card.name}
+                // Una liga de imagen rota deja el ícono gris de "no cargó", que
+                // en un panel se lee como "algo se descompuso". Mejor nada.
+                onError={() => setImagenRota(true)}
+                className="h-[112px] w-[80px] shrink-0 rounded-control border border-line object-cover"
+              />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-[17px] font-semibold">{picked.card.name}</p>
+              <p className="text-[13px] text-muted">{printingLabel(picked.printing)}</p>
+
+              {ref?.suggestedCents != null ? (
+                <div className="mt-2">
+                  <p className="text-[13px] text-muted">
+                    Referencia TCGplayer{" "}
+                    <span className="font-semibold text-ink tnum">
+                      US${ref.usd?.toFixed(2)}
+                    </span>{" "}
+                    × {ref.rate} ={" "}
+                    <span className="font-semibold text-ink tnum">
+                      ${(ref.suggestedCents / 100).toFixed(2)}
+                    </span>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setPrecio((ref.suggestedCents! / 100).toFixed(2))}
+                    className="mt-1.5 rounded-pill border border-line bg-paper px-3 py-1 text-[13px] font-semibold text-muted transition hover:border-accent hover:text-accent"
+                  >
+                    Usar este precio
+                  </button>
+                  {MATCH_AVISO[ref.match] && (
+                    <p className="mt-1.5 text-[12px] text-warn">{MATCH_AVISO[ref.match]}</p>
+                  )}
+                </div>
+              ) : (
+                <p className="mt-2 text-[13px] text-muted">
+                  {ref === null
+                    ? "Buscando precio de referencia…"
+                    : "Sin precio de referencia para esta versión."}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="mt-3 flex flex-wrap items-end gap-3">
@@ -120,6 +214,8 @@ export default function CaptureForm({ token, slug }: { token: string; slug: stri
                 min="1"
                 step="0.01"
                 required
+                value={precio}
+                onChange={(e) => setPrecio(e.target.value)}
                 className="mt-1 block w-32 rounded-control border border-line bg-paper px-3 py-2 text-[15px] text-ink tnum"
               />
             </label>

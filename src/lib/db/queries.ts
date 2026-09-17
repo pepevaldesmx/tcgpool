@@ -543,20 +543,41 @@ export async function getPanelStats(storeId: number): Promise<PanelStats> {
 
 export interface PrintingOption {
   id: number;
+  setCode: string | null;
   setName: string | null;
   collectorNumber: string | null;
   language: string;
   finish: string;
+  imageUrl: string | null;
 }
 
 /** Las impresiones que ya conocemos de una carta, para elegir al capturar. */
 export async function listPrintingsForCard(cardId: number): Promise<PrintingOption[]> {
   return query<PrintingOption>(
-    `SELECT id, set_name AS "setName", collector_number AS "collectorNumber",
-            language, finish
+    `SELECT id, set_code AS "setCode", set_name AS "setName",
+            collector_number AS "collectorNumber", language, finish,
+            image_url AS "imageUrl"
        FROM printings WHERE card_id = $1
       ORDER BY set_name NULLS LAST, collector_number, language, finish`,
     [cardId],
+  );
+}
+
+export interface PrintingForPricing extends PrintingOption {
+  cardName: string;
+}
+
+/** Una impresión con el nombre de su carta: lo que hace falta para pedir precio. */
+export async function getPrintingForPricing(
+  printingId: number,
+): Promise<PrintingForPricing | null> {
+  return one<PrintingForPricing>(
+    `SELECT p.id, p.set_code AS "setCode", p.set_name AS "setName",
+            p.collector_number AS "collectorNumber", p.language, p.finish,
+            p.image_url AS "imageUrl", c.name AS "cardName"
+       FROM printings p JOIN cards c ON c.id = p.card_id
+      WHERE p.id = $1`,
+    [printingId],
   );
 }
 

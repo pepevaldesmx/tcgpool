@@ -151,6 +151,17 @@ app móvil nativa. Web responsive es suficiente.
   revalidan además contra el slug, porque si no, cambiar una palabra en la URL
   editaría el inventario de otra tienda. Token inválido y tienda inexistente dan
   el mismo 404: distinguirlos confirmaría cuáles existen. El panel no se indexa.
+- **El precio de referencia sale de Scryfall, que republica TCGplayer bajo
+  licencia.** Es la misma referencia con la que las tiendas mexicanas fijan sus
+  precios, pero obtenida por una vía que no se puede cortar: scrapear TCGplayer
+  o StarCityGames violaría sus términos y dejaría la plataforma parada el día
+  que lo noten. Se pide por impresión concreta —set y número de colección— y se
+  degrada avisando: si sólo se pudo empatar por nombre, la UI dice que el precio
+  puede ser de otra edición. Nunca se sustituye el precio de un acabado por el
+  de otro: una impresión sin foil no tiene precio foil, y rellenarlo con el de
+  la no-foil sería inventarlo. El multiplicador a pesos (`MXN_POR_USD`) se
+  MUESTRA junto a la aritmética: es una sugerencia que la tienda corrige, no un
+  precio que le imponemos.
 - **NO ponemos a las tiendas a competir por precio.** Nada de coronar "la más
   barata", ni de anunciar la diferencia porcentual entre tiendas. El precio se
   muestra y se puede ordenar por él, pero nunca es el ranking por defecto:
