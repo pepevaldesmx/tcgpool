@@ -1,0 +1,22 @@
+name: Reporte de humo del catálogo
+
+# Corre las consultas que la app usa de verdad contra la base y publica lo que
+# devuelven en el log. Es de sólo lectura y se dispara a mano: sirve para
+# revisar el catálogo desde donde no se puede abrir el sitio.
+on:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Consultar el catálogo
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run smoke
