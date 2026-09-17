@@ -431,6 +431,183 @@ export async function pruneGamesNotIn(
   return { games: games.map((g) => g.id), cards: cards.length };
 }
 
+// ---------------------------------------------------------------------------
+// Conflictos entre el feed y lo capturado a mano
+// ---------------------------------------------------------------------------
+
+/** Los listados que la tienda capturó a mano, que la importación no puede pisar. */
+export async function listManualListings(
+  storeId: number,
+): Promise<Array<{ id: number; printingId: number; condition: string }>> {
+  return query(
+    `SELECT id, printing_id AS "printingId", condition
+       FROM listings WHERE store_id = $1 AND origin = 'manual'`,
+    [storeId],
+  );
+}
+
+export interface ConflictInput {
+  storeId: number;
+  printingId: number;
+  listingId: number;
+  feedExternalId: string;
+  feedPriceCents: number;
+  feedCondition: string;
+  feedStock: number;
+  feedInStock: boolean;
+  feedProductUrl: string;
+  feedRawTitle: string;
+}
+
+/**
+ * Guarda las advertencias de esta corrida.
+ *
+ * Una advertencia ya resuelta NO se reabre si el feed sigue diciendo lo mismo:
+ * la tienda ya decidió y volver a preguntarle es ruido. Si el feed cambió de
+ * opinión —otro precio, otro stock— vuelve a quedar pendiente, porque eso es
+ * una discrepancia nueva sobre la que nadie ha decidido.
+ */
+export async function recordConflicts(rows: ConflictInput[]): Promise<number> {
+  if (!rows.length) return 0;
+  return transaction(async (run) => {
+    const CHUNK = 500;
+    for (let i = 0; i < rows.length; i += CHUNK) {
+      const chunk = rows.slice(i, i + CHUNK);
+      const values: unknown[] = [];
+      const tuples = chunk.map((r, j) => {
+        const b = j * 10;
+        values.push(
+          r.storeId, r.printingId, r.listingId, r.feedExternalId, r.feedPriceCents,
+          r.feedCondition, r.feedStock, r.feedInStock, r.feedProductUrl, r.feedRawTitle,
+        );
+        return `($${b + 1},$${b + 2},$${b + 3},$${b + 4},$${b + 5},$${b + 6},$${b + 7},$${b + 8},$${b + 9},$${b + 10})`;
+      });
+      await run(
+        `INSERT INTO listing_conflicts
+           (store_id, printing_id, listing_id, feed_external_id, feed_price_cents,
+            feed_condition, feed_stock, feed_in_stock, feed_product_url, feed_raw_title)
+         VALUES ${tuples.join(",")}
+         ON CONFLICT (store_id, feed_external_id) DO UPDATE SET
+           printing_id      = EXCLUDED.printing_id,
+           listing_id       = EXCLUDED.listing_id,
+           feed_price_cents = EXCLUDED.feed_price_cents,
+           feed_condition   = EXCLUDED.feed_condition,
+           feed_stock       = EXCLUDED.feed_stock,
+           feed_in_stock    = EXCLUDED.feed_in_stock,
+           feed_product_url = EXCLUDED.feed_product_url,
+           feed_raw_title   = EXCLUDED.feed_raw_title,
+           detected_at      = now(),
+           resolved_at      = CASE
+             WHEN listing_conflicts.feed_price_cents IS DISTINCT FROM EXCLUDED.feed_price_cents
+               OR listing_conflicts.feed_stock       IS DISTINCT FROM EXCLUDED.feed_stock
+               OR listing_conflicts.feed_in_stock    IS DISTINCT FROM EXCLUDED.feed_in_stock
+               OR listing_conflicts.feed_condition   IS DISTINCT FROM EXCLUDED.feed_condition
+             THEN NULL
+             ELSE listing_conflicts.resolved_at
+           END`,
+        values,
+      );
+    }
+    return rows.length;
+  });
+}
+
+export interface ConflictRow {
+  id: number;
+  cardName: string;
+  cardSlug: string;
+  setName: string | null;
+  language: string;
+  finish: string;
+  detectedAt: string;
+  minePriceCents: number;
+  mineCondition: string;
+  mineStock: number;
+  mineInStock: boolean;
+  feedPriceCents: number;
+  feedCondition: string;
+  feedStock: number;
+  feedInStock: boolean;
+  feedProductUrl: string;
+}
+
+/** Las advertencias que la tienda todavía no resuelve. */
+export async function listPendingConflicts(storeId: number): Promise<ConflictRow[]> {
+  return query<ConflictRow>(
+    `SELECT k.id, c.name AS "cardName", c.slug AS "cardSlug",
+            p.set_name AS "setName", p.language, p.finish,
+            k.detected_at AS "detectedAt",
+            l.price_cents AS "minePriceCents", l.condition AS "mineCondition",
+            l.stock AS "mineStock", l.in_stock AS "mineInStock",
+            k.feed_price_cents AS "feedPriceCents", k.feed_condition AS "feedCondition",
+            k.feed_stock AS "feedStock", k.feed_in_stock AS "feedInStock",
+            k.feed_product_url AS "feedProductUrl"
+       FROM listing_conflicts k
+       JOIN listings l ON l.id = k.listing_id
+       JOIN printings p ON p.id = k.printing_id
+       JOIN cards c ON c.id = p.card_id
+      WHERE k.store_id = $1 AND k.resolved_at IS NULL
+      ORDER BY k.detected_at DESC, c.name`,
+    [storeId],
+  );
+}
+
+export async function countPendingConflicts(storeId: number): Promise<number> {
+  const row = await one<{ n: number }>(
+    `SELECT COUNT(*)::int AS n FROM listing_conflicts
+      WHERE store_id = $1 AND resolved_at IS NULL`,
+    [storeId],
+  );
+  return row?.n ?? 0;
+}
+
+/**
+ * La tienda decide. `feed` copia los valores de Shopify al listado publicado y
+ * lo devuelve al control de la importación; `manual` sólo archiva la
+ * advertencia y deja el listado como está.
+ */
+export async function resolveConflict(
+  conflictId: number,
+  storeId: number,
+  resolution: "feed" | "manual",
+): Promise<boolean> {
+  return transaction(async (run) => {
+    const rows = (await run(
+      `SELECT listing_id AS "listingId", feed_external_id AS "feedExternalId",
+              feed_price_cents AS "feedPriceCents", feed_condition AS "feedCondition",
+              feed_stock AS "feedStock", feed_in_stock AS "feedInStock",
+              feed_product_url AS "feedProductUrl", feed_raw_title AS "feedRawTitle"
+         FROM listing_conflicts
+        WHERE id = $1 AND store_id = $2 AND resolved_at IS NULL`,
+      [conflictId, storeId],
+    )) as Array<Record<string, unknown>>;
+    const k = rows[0];
+    if (!k) return false;
+
+    if (resolution === "feed") {
+      // El listado pasa a ser del feed: toma sus valores y su external_id, así
+      // que la próxima importación lo actualiza sola y sin volver a preguntar.
+      await run(
+        `UPDATE listings
+            SET price_cents = $2, condition = $3, stock = $4, in_stock = $5,
+                product_url = $6, raw_title = $7, external_id = $8,
+                origin = 'feed', updated_at = now()
+          WHERE id = $1`,
+        [
+          k.listingId, k.feedPriceCents, k.feedCondition, k.feedStock,
+          k.feedInStock, k.feedProductUrl, k.feedRawTitle, k.feedExternalId,
+        ],
+      );
+    }
+
+    await run(
+      `UPDATE listing_conflicts SET resolved_at = now(), resolution = $2 WHERE id = $1`,
+      [conflictId, resolution],
+    );
+    return true;
+  });
+}
+
 export async function startSyncRun(storeId: number, source: string): Promise<number> {
   const row = await one<{ id: number }>(
     `INSERT INTO sync_runs (store_id, source, status) VALUES ($1, $2, 'running') RETURNING id`,

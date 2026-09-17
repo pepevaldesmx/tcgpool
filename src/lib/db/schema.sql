@@ -35,7 +35,10 @@ CREATE TABLE IF NOT EXISTS stores (
   active           BOOLEAN NOT NULL DEFAULT TRUE,
   -- 'live' = se ingirió el feed real; 'sample' = datos sintéticos.
   data_source      TEXT NOT NULL DEFAULT 'sample',
-  last_synced_at   TIMESTAMPTZ
+  last_synced_at   TIMESTAMPTZ,
+  -- Llave del panel de la tienda. Sin cuentas todavía: quien tiene el link
+  -- entra. Se regenera cambiando este valor.
+  panel_token      TEXT UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS sellers (
@@ -118,6 +121,44 @@ CREATE INDEX IF NOT EXISTS idx_listings_seller ON listings(seller_id);
 -- La consulta más común: listings con stock de una carta.
 CREATE INDEX IF NOT EXISTS idx_listings_instock ON listings(printing_id) WHERE in_stock;
 
+-- ---------------------------------------------------------------------------
+-- Conflictos entre lo que la tienda capturó a mano y lo que dice su Shopify.
+--
+-- La importación NO pisa lo capturado a mano: cuando el feed trae la misma
+-- impresión, en la misma condición, que un listado manual de esa tienda, el
+-- listado manual se queda tal cual y el valor del feed se guarda aquí como
+-- advertencia. La tienda decide caso por caso cuál gana.
+--
+-- Mientras el conflicto está pendiente, la fila del feed NO entra a `listings`:
+-- si entrara, la misma carta de la misma tienda aparecería dos veces en el
+-- buscador, con dos precios distintos.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS listing_conflicts (
+  id               SERIAL PRIMARY KEY,
+  store_id         INTEGER NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+  printing_id      INTEGER NOT NULL REFERENCES printings(id) ON DELETE CASCADE,
+  -- El listado manual que hoy está publicado y que el feed contradice.
+  listing_id       INTEGER REFERENCES listings(id) ON DELETE CASCADE,
+  -- Lo que el feed propone, tal como llegó.
+  feed_external_id TEXT NOT NULL,
+  feed_price_cents INTEGER NOT NULL,
+  feed_condition   TEXT NOT NULL,
+  feed_stock       INTEGER NOT NULL,
+  feed_in_stock    BOOLEAN NOT NULL,
+  feed_product_url TEXT NOT NULL,
+  feed_raw_title   TEXT NOT NULL,
+  detected_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  resolved_at      TIMESTAMPTZ,
+  -- 'feed' = gana Shopify; 'manual' = se queda lo capturado.
+  resolution       TEXT,
+  -- Una advertencia viva por producto del feed: si el feed vuelve a traer lo
+  -- mismo, se actualiza en vez de acumular filas.
+  UNIQUE (store_id, feed_external_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_conflicts_pending
+  ON listing_conflicts(store_id) WHERE resolved_at IS NULL;
+
 CREATE TABLE IF NOT EXISTS sync_runs (
   id                SERIAL PRIMARY KEY,
   store_id          INTEGER NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
@@ -144,3 +185,12 @@ CREATE TABLE IF NOT EXISTS card_events (
 );
 
 CREATE INDEX IF NOT EXISTS idx_card_events_day ON card_events(day);
+
+-- ---------------------------------------------------------------------------
+-- Migraciones incrementales
+--
+-- `CREATE TABLE IF NOT EXISTS` no agrega columnas a una tabla que ya existe, y
+-- este archivo se corre sobre bases con datos. Todo lo que se sume después de
+-- la primera versión de una tabla va aquí, en forma idempotente.
+-- ---------------------------------------------------------------------------
+ALTER TABLE stores ADD COLUMN IF NOT EXISTS panel_token TEXT UNIQUE;

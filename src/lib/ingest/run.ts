@@ -8,11 +8,14 @@ import {
 } from "@/lib/ingest/adapters/shopify";
 import { readManualFeed, type ManualConfig } from "@/lib/ingest/adapters/manual";
 import { normalizeListing, normalizeText } from "@/lib/ingest/normalize";
+import { splitFeedByConflicts } from "@/lib/ingest/conflicts";
 import type { StoreDefinition } from "@/lib/ingest/registry";
 import { cardImage, lookupCardByName, saveCache } from "@/lib/cards/scryfall";
 import {
   finishSyncRun,
+  listManualListings,
   markMissingAsOutOfStock,
+  recordConflicts,
   printingMatchKey,
   startSyncRun,
   touchStoreSync,
@@ -202,7 +205,31 @@ export async function syncStore(
       if (printingId == null) continue;
       listings.push({ ...p.listing, printingId, sellerId, storeId });
     }
-    const upserted = await upsertListings(listings);
+
+    // Lo capturado a mano por la tienda no se pisa: si el feed trae la misma
+    // impresión en la misma condición, ese renglón NO entra y queda como
+    // advertencia para que la tienda decida cuál gana. Entra a `listings`
+    // sería publicar la misma carta dos veces, con dos precios.
+    const manual = await listManualListings(storeId);
+    const { aplicables, conflictos } = splitFeedByConflicts(listings, manual);
+    if (conflictos.length) {
+      log(`  ⚠ ${conflictos.length} en conflicto con lo capturado a mano; esperan a la tienda`);
+      await recordConflicts(
+        conflictos.map(({ row, listingId }) => ({
+          storeId,
+          printingId: row.printingId,
+          listingId,
+          feedExternalId: row.externalId,
+          feedPriceCents: row.priceCents,
+          feedCondition: row.condition,
+          feedStock: row.stock,
+          feedInStock: row.inStock,
+          feedProductUrl: row.productUrl,
+          feedRawTitle: row.rawTitle,
+        })),
+      );
+    }
+    const upserted = await upsertListings(aplicables);
 
     if (Object.keys(perGame).length > 1) {
       log(

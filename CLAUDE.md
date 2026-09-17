@@ -65,6 +65,16 @@ app móvil nativa. Web responsive es suficiente.
   sincronización sólo marca sin stock lo que tiene `origin = 'feed'`: si barriera
   todo, cada corrida borraría lo que la tienda capturó en su panel o lo que subió
   un afiliado.
+- **La importación NO pisa lo que la tienda capturó a mano; levanta una
+  advertencia.** Cuando el feed trae la misma impresión, en la misma condición,
+  que un listado `origin='manual'` de esa tienda, ese renglón del feed NO entra
+  a `listings` —entraría y la misma carta de la misma tienda saldría dos veces,
+  con dos precios— y se guarda en `listing_conflicts`. La tienda decide caso por
+  caso: `feed` copia los valores de Shopify al listado y lo devuelve al control
+  de la importación; `manual` archiva la advertencia. Una advertencia ya resuelta
+  no se reabre si el feed sigue diciendo lo mismo, pero sí si cambió: eso es una
+  discrepancia nueva. La detección es `splitFeedByConflicts`, función pura sobre
+  llaves, para poder probarla sin base.
 - **La búsqueda es `tsvector` con prefijo por palabra, y trigramas de respaldo.**
   `to_tsquery('simple', 'sol:* & ring:*')` reproduce lo que hacía FTS5; cuando no
   hay coincidencia, `pg_trgm` tolera errores de dedo ("counterspel" encuentra
