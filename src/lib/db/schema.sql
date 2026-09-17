@@ -137,8 +137,10 @@ CREATE TABLE IF NOT EXISTS listing_conflicts (
   id               SERIAL PRIMARY KEY,
   store_id         INTEGER NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
   printing_id      INTEGER NOT NULL REFERENCES printings(id) ON DELETE CASCADE,
-  -- El listado manual que hoy está publicado y que el feed contradice.
-  listing_id       INTEGER REFERENCES listings(id) ON DELETE CASCADE,
+  -- El listado manual que hoy está publicado y que el feed contradice. Si ese
+  -- listado desaparece —porque la tienda decidió que gana el feed— el registro
+  -- de la decisión se queda: es la bitácora de quién resolvió qué.
+  listing_id       INTEGER REFERENCES listings(id) ON DELETE SET NULL,
   -- Lo que el feed propone, tal como llegó.
   feed_external_id TEXT NOT NULL,
   feed_price_cents INTEGER NOT NULL,
@@ -194,3 +196,10 @@ CREATE INDEX IF NOT EXISTS idx_card_events_day ON card_events(day);
 -- la primera versión de una tabla va aquí, en forma idempotente.
 -- ---------------------------------------------------------------------------
 ALTER TABLE stores ADD COLUMN IF NOT EXISTS panel_token TEXT UNIQUE;
+
+-- La bitácora de conflictos sobrevive al listado que los originó.
+ALTER TABLE listing_conflicts
+  DROP CONSTRAINT IF EXISTS listing_conflicts_listing_id_fkey;
+ALTER TABLE listing_conflicts
+  ADD CONSTRAINT listing_conflicts_listing_id_fkey
+  FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE SET NULL;

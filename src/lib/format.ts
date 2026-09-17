@@ -11,6 +11,22 @@ export function money(cents: number | null | undefined): string {
   return MXN.format(cents / 100);
 }
 
+const MXN_EXACTO = new Intl.NumberFormat("es-MX", {
+  style: "currency",
+  currency: "MXN",
+  minimumFractionDigits: 2,
+});
+
+/**
+ * Precio al centavo. Para el panel de la tienda: redondear a pesos enteros está
+ * bien en el buscador —nadie elige tienda por cincuenta centavos— pero a quien
+ * captura $95.50 y lee "$96" le estamos diciendo que guardamos otra cosa.
+ */
+export function moneyExact(cents: number | null | undefined): string {
+  if (cents == null) return "—";
+  return MXN_EXACTO.format(cents / 100);
+}
+
 export const CONDITION_LABELS: Record<Condition, string> = {
   NM: "Near Mint",
   LP: "Poco jugada",

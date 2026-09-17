@@ -16,6 +16,7 @@ import {
   listManualListings,
   markMissingAsOutOfStock,
   recordConflicts,
+  supersedeFeedListings,
   printingMatchKey,
   startSyncRun,
   touchStoreSync,
@@ -228,6 +229,11 @@ export async function syncStore(
           feedRawTitle: row.rawTitle,
         })),
       );
+      // Y si una corrida anterior ya había publicado la fila del feed, se
+      // quita: dos listados de la misma carta en la misma tienda es peor que
+      // cualquiera de los dos.
+      const suplantados = await supersedeFeedListings(storeId);
+      if (suplantados) log(`  ${suplantados} listados del feed cedieron a lo capturado`);
     }
     const upserted = await upsertListings(aplicables);
 

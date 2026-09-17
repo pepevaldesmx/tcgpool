@@ -432,6 +432,195 @@ export async function pruneGamesNotIn(
 }
 
 // ---------------------------------------------------------------------------
+// Panel de tienda
+// ---------------------------------------------------------------------------
+
+export interface PanelStore {
+  id: number;
+  slug: string;
+  name: string;
+  city: string | null;
+  sourceType: string;
+  dataSource: "live" | "sample";
+  lastSyncedAt: string | null;
+}
+
+/**
+ * Resuelve la tienda por su llave de panel.
+ *
+ * Sin cuentas todavía: quien tiene el link entra. El token se compara en la
+ * base, nunca se deriva del slug, y un token vacío no abre nada — si no, una
+ * URL sin `?t=` entraría a la primera tienda que empate.
+ */
+export async function getStoreByPanelToken(token: string): Promise<PanelStore | null> {
+  if (!token || token.length < 16) return null;
+  return one<PanelStore>(
+    `SELECT id, slug, name, city, source_type AS "sourceType",
+            data_source AS "dataSource", last_synced_at AS "lastSyncedAt"
+       FROM stores WHERE panel_token = $1 AND active`,
+    [token],
+  );
+}
+
+export interface PanelListing {
+  id: number;
+  cardName: string;
+  cardSlug: string;
+  setName: string | null;
+  collectorNumber: string | null;
+  language: string;
+  finish: string;
+  condition: string;
+  priceCents: number;
+  stock: number;
+  inStock: boolean;
+  origin: string;
+  updatedAt: string;
+}
+
+/**
+ * El inventario de una tienda, lo capturado primero.
+ *
+ * Por defecto sólo lo que tiene stock: de 34,606 listados de una tienda real,
+ * 1,647 tienen existencia. Un panel que abre con 33,000 renglones que dicen
+ * "agotada" no sirve para administrar nada. Lo capturado a mano se muestra
+ * siempre, con o sin stock, porque es lo que la tienda vino a administrar.
+ */
+export async function listStoreInventory(
+  storeId: number,
+  {
+    q = "",
+    limit = 100,
+    onlyManual = false,
+    includeSoldOut = false,
+  }: { q?: string; limit?: number; onlyManual?: boolean; includeSoldOut?: boolean } = {},
+): Promise<PanelListing[]> {
+  const params: unknown[] = [storeId];
+  const where = ["l.store_id = $1"];
+  if (onlyManual) where.push("l.origin = 'manual'");
+  if (!includeSoldOut) where.push("(l.in_stock OR l.origin = 'manual')");
+  if (q.trim()) {
+    params.push(`%${normalizeText(q)}%`);
+    where.push(`c.match_key LIKE $${params.length}`);
+  }
+  params.push(limit);
+
+  return query<PanelListing>(
+    `SELECT l.id, c.name AS "cardName", c.slug AS "cardSlug",
+            p.set_name AS "setName", p.collector_number AS "collectorNumber",
+            p.language, p.finish, l.condition,
+            l.price_cents AS "priceCents", l.stock, l.in_stock AS "inStock",
+            l.origin, l.updated_at AS "updatedAt"
+       FROM listings l
+       JOIN printings p ON p.id = l.printing_id
+       JOIN cards c ON c.id = p.card_id
+      WHERE ${where.join(" AND ")}
+      ORDER BY (l.origin = 'manual') DESC, l.updated_at DESC
+      LIMIT $${params.length}`,
+    params,
+  );
+}
+
+export interface PanelStats {
+  listings: number;
+  inStock: number;
+  manual: number;
+  cards: number;
+}
+
+export async function getPanelStats(storeId: number): Promise<PanelStats> {
+  const row = await one<PanelStats>(
+    `SELECT COUNT(*)::int AS listings,
+            COUNT(*) FILTER (WHERE l.in_stock)::int AS "inStock",
+            COUNT(*) FILTER (WHERE l.origin = 'manual')::int AS manual,
+            COUNT(DISTINCT p.card_id)::int AS cards
+       FROM listings l JOIN printings p ON p.id = l.printing_id
+      WHERE l.store_id = $1`,
+    [storeId],
+  );
+  return row ?? { listings: 0, inStock: 0, manual: 0, cards: 0 };
+}
+
+export interface PrintingOption {
+  id: number;
+  setName: string | null;
+  collectorNumber: string | null;
+  language: string;
+  finish: string;
+}
+
+/** Las impresiones que ya conocemos de una carta, para elegir al capturar. */
+export async function listPrintingsForCard(cardId: number): Promise<PrintingOption[]> {
+  return query<PrintingOption>(
+    `SELECT id, set_name AS "setName", collector_number AS "collectorNumber",
+            language, finish
+       FROM printings WHERE card_id = $1
+      ORDER BY set_name NULLS LAST, collector_number, language, finish`,
+    [cardId],
+  );
+}
+
+/** El seller espejo de la tienda. Todo lo que ella captura cuelga de ahí. */
+export async function getStoreSellerId(storeId: number): Promise<number | null> {
+  const row = await one<{ id: number }>(
+    `SELECT id FROM sellers WHERE store_id = $1 AND type = 'store' ORDER BY id LIMIT 1`,
+    [storeId],
+  );
+  return row?.id ?? null;
+}
+
+export interface ManualListingInput {
+  storeId: number;
+  sellerId: number;
+  printingId: number;
+  priceCents: number;
+  condition: Condition;
+  stock: number;
+  productUrl: string;
+  rawTitle: string;
+}
+
+/**
+ * Crea o actualiza un listado capturado a mano.
+ *
+ * El `external_id` lo generamos nosotros y lleva prefijo `manual:` para que no
+ * pueda colisionar con un id de Shopify, y para que se vea de dónde salió al
+ * leer la tabla.
+ */
+export async function saveManualListing(input: ManualListingInput): Promise<number> {
+  const externalId = `manual:${input.printingId}:${input.condition}`;
+  const row = await one<{ id: number }>(
+    `INSERT INTO listings (printing_id, seller_id, store_id, price_cents, condition,
+                           stock, in_stock, product_url, raw_title, external_id, origin)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'manual')
+     ON CONFLICT (store_id, external_id) DO UPDATE SET
+       price_cents = EXCLUDED.price_cents,
+       condition   = EXCLUDED.condition,
+       stock       = EXCLUDED.stock,
+       in_stock    = EXCLUDED.in_stock,
+       raw_title   = EXCLUDED.raw_title,
+       origin      = 'manual',
+       updated_at  = now()
+     RETURNING id`,
+    [
+      input.printingId, input.sellerId, input.storeId, input.priceCents,
+      input.condition, input.stock, input.stock > 0, input.productUrl,
+      input.rawTitle, externalId,
+    ],
+  );
+  return row!.id;
+}
+
+/** Baja un listado del panel. Sólo lo capturado a mano: el feed se administra solo. */
+export async function deleteManualListing(listingId: number, storeId: number): Promise<boolean> {
+  const rows = await query<{ id: number }>(
+    `DELETE FROM listings WHERE id = $1 AND store_id = $2 AND origin = 'manual' RETURNING id`,
+    [listingId, storeId],
+  );
+  return rows.length > 0;
+}
+
+// ---------------------------------------------------------------------------
 // Conflictos entre el feed y lo capturado a mano
 // ---------------------------------------------------------------------------
 
@@ -512,6 +701,32 @@ export async function recordConflicts(rows: ConflictInput[]): Promise<number> {
   });
 }
 
+/**
+ * Un listado capturado a mano suplanta al del feed para esa misma impresión y
+ * condición: se borra el del feed.
+ *
+ * Evitar el upsert no bastaba. Si una corrida anterior ya había publicado la
+ * fila del feed, al capturar la tienda esa carta quedaban las DOS publicadas:
+ * la misma carta, de la misma tienda, dos veces y con dos precios en la vista
+ * de carta. Los valores del feed no se pierden —viven en la advertencia— y
+ * vuelven si la tienda decide que gana el feed.
+ */
+export async function supersedeFeedListings(storeId: number): Promise<number> {
+  const rows = await query<{ id: number }>(
+    `DELETE FROM listings l
+      WHERE l.store_id = $1
+        AND l.origin = 'feed'
+        AND EXISTS (
+          SELECT 1 FROM listings m
+           WHERE m.store_id = l.store_id AND m.origin = 'manual'
+             AND m.printing_id = l.printing_id AND m.condition = l.condition
+        )
+      RETURNING l.id`,
+    [storeId],
+  );
+  return rows.length;
+}
+
 export interface ConflictRow {
   id: number;
   cardName: string;
@@ -573,7 +788,8 @@ export async function resolveConflict(
 ): Promise<boolean> {
   return transaction(async (run) => {
     const rows = (await run(
-      `SELECT listing_id AS "listingId", feed_external_id AS "feedExternalId",
+      `SELECT listing_id AS "listingId", printing_id AS "printingId",
+              feed_external_id AS "feedExternalId",
               feed_price_cents AS "feedPriceCents", feed_condition AS "feedCondition",
               feed_stock AS "feedStock", feed_in_stock AS "feedInStock",
               feed_product_url AS "feedProductUrl", feed_raw_title AS "feedRawTitle"
@@ -584,26 +800,44 @@ export async function resolveConflict(
     const k = rows[0];
     if (!k) return false;
 
-    if (resolution === "feed") {
-      // El listado pasa a ser del feed: toma sus valores y su external_id, así
-      // que la próxima importación lo actualiza sola y sin volver a preguntar.
-      await run(
-        `UPDATE listings
-            SET price_cents = $2, condition = $3, stock = $4, in_stock = $5,
-                product_url = $6, raw_title = $7, external_id = $8,
-                origin = 'feed', updated_at = now()
-          WHERE id = $1`,
-        [
-          k.listingId, k.feedPriceCents, k.feedCondition, k.feedStock,
-          k.feedInStock, k.feedProductUrl, k.feedRawTitle, k.feedExternalId,
-        ],
-      );
-    }
-
+    // Se archiva ANTES de tocar los listados: borrar el listado manual pone en
+    // NULL su referencia aquí, y entonces ya no sabríamos a qué se refería.
     await run(
       `UPDATE listing_conflicts SET resolved_at = now(), resolution = $2 WHERE id = $1`,
       [conflictId, resolution],
     );
+
+    if (resolution === "feed") {
+      const sellers = (await run(
+        `SELECT id FROM sellers WHERE store_id = $1 AND type = 'store' ORDER BY id LIMIT 1`,
+        [storeId],
+      )) as Array<{ id: number }>;
+      const sellerId = sellers[0]?.id;
+      if (sellerId == null) throw new Error("La tienda no tiene vendedor espejo");
+
+      // Se borra el capturado y se publica el del feed como listado propio, en
+      // vez de renombrar el capturado con el external_id del feed: si otra fila
+      // ya tenía ese id, renombrar violaba la llave única y tiraba la operación
+      // entera.
+      if (k.listingId != null) await run(`DELETE FROM listings WHERE id = $1`, [k.listingId]);
+      await run(
+        `INSERT INTO listings (printing_id, seller_id, store_id, price_cents, condition,
+                               stock, in_stock, product_url, raw_title, external_id, origin)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'feed')
+         ON CONFLICT (store_id, external_id) DO UPDATE SET
+           printing_id = EXCLUDED.printing_id,
+           price_cents = EXCLUDED.price_cents,
+           condition   = EXCLUDED.condition,
+           stock       = EXCLUDED.stock,
+           in_stock    = EXCLUDED.in_stock,
+           origin      = 'feed',
+           updated_at  = now()`,
+        [
+          k.printingId, sellerId, storeId, k.feedPriceCents, k.feedCondition,
+          k.feedStock, k.feedInStock, k.feedProductUrl, k.feedRawTitle, k.feedExternalId,
+        ],
+      );
+    }
     return true;
   });
 }

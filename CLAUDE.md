@@ -138,6 +138,19 @@ app móvil nativa. Web responsive es suficiente.
   MUESTRA sólo lo comprable: `searchCards` filtra por stock salvo que se pida lo
   contrario, y "N tiendas" cuenta tiendas donde se puede comprar hoy, no tiendas
   que la listan. Las que la tienen agotada van aparte y en chico.
+- **Un listado capturado a mano SUPLANTA al del feed** para esa misma impresión
+  y condición (`supersedeFeedListings`). No basta con no actualizarlo: si una
+  corrida anterior ya lo había publicado, quedaban los dos y la misma carta de
+  la misma tienda salía dos veces con dos precios. Los valores del feed no se
+  pierden —viven en la advertencia— y vuelven si la tienda decide que gana él.
+  Resolver a favor del feed BORRA el capturado y publica el del feed como
+  listado nuevo; renombrar el capturado con el `external_id` del feed reventaba
+  la llave única cuando otra fila ya lo tenía.
+- **El panel de tienda se abre con `stores.panel_token`,** no con cuentas. Quien
+  tiene el link entra; el token se compara contra la base y las acciones lo
+  revalidan además contra el slug, porque si no, cambiar una palabra en la URL
+  editaría el inventario de otra tienda. Token inválido y tienda inexistente dan
+  el mismo 404: distinguirlos confirmaría cuáles existen. El panel no se indexa.
 - **NO ponemos a las tiendas a competir por precio.** Nada de coronar "la más
   barata", ni de anunciar la diferencia porcentual entre tiendas. El precio se
   muestra y se puede ordenar por él, pero nunca es el ranking por defecto:
@@ -188,3 +201,13 @@ Next.js (App Router) + PostgreSQL (`pg`) + Tailwind, desplegado en Vercel.
 Una sola base para catálogo y señales de demanda, con `DATABASE_URL` como única
 configuración. El build no la toca: sólo compila. La ingesta corre aparte (cron
 de GitHub Actions) y escribe directo a la base.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
