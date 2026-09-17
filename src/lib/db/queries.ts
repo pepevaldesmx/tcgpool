@@ -14,7 +14,10 @@ export interface CardSummary {
   imageUrl: string | null;
   typeLine: string | null;
   listingCount: number;
+  /** Tiendas donde se puede comprar ahora. */
   storeCount: number;
+  /** Tiendas que la manejan, incluidas las que la tienen agotada. */
+  listedStoreCount: number;
   minPriceCents: number | null;
   maxPriceCents: number | null;
   inStockCount: number;
@@ -484,7 +487,11 @@ const CARD_SUMMARY_SELECT = `
   SELECT c.id, c.name, c.slug, c.game_id AS "gameId", c.image_url AS "imageUrl",
          c.type_line AS "typeLine",
          COUNT(l.id)::int AS "listingCount",
-         COUNT(DISTINCT l.store_id)::int AS "storeCount",
+         -- "3 tiendas" tiene que significar tres tiendas donde la puedes
+         -- comprar HOY. Contando también las agotadas, la cifra prometía una
+         -- disponibilidad que no existe.
+         COUNT(DISTINCT l.store_id) FILTER (WHERE l.in_stock)::int AS "storeCount",
+         COUNT(DISTINCT l.store_id)::int AS "listedStoreCount",
          MIN(CASE WHEN l.in_stock THEN l.price_cents END)::int AS "minPriceCents",
          MAX(CASE WHEN l.in_stock THEN l.price_cents END)::int AS "maxPriceCents",
          COUNT(*) FILTER (WHERE l.in_stock)::int AS "inStockCount"
@@ -500,9 +507,14 @@ function toTsQuery(q: string): string | null {
   return tokens.map((t) => `${t}:*`).join(" & ");
 }
 
+/**
+ * Busca cartas. Por defecto SÓLO lo que se puede comprar hoy: las tiendas dejan
+ * publicado lo agotado (95% del catálogo), y un buscador que lo muestra le hace
+ * perder el tiempo al comprador exactamente igual que el sitio de la tienda.
+ */
 export async function searchCards(
   q: string,
-  { limit = 40, onlyInStock = false }: { limit?: number; onlyInStock?: boolean } = {},
+  { limit = 40, onlyInStock = true }: { limit?: number; onlyInStock?: boolean } = {},
 ): Promise<CardSummary[]> {
   const ts = toTsQuery(q);
   if (!ts) return [];
@@ -671,7 +683,8 @@ export async function getTopCardsBySupply(limit = 5): Promise<CardSummary[]> {
     `${CARD_SUMMARY_SELECT}
      GROUP BY c.id
      HAVING COUNT(*) FILTER (WHERE l.in_stock) > 0
-     ORDER BY COUNT(DISTINCT l.store_id) DESC, COUNT(l.id) DESC, c.name
+     ORDER BY COUNT(DISTINCT l.store_id) FILTER (WHERE l.in_stock) DESC,
+              COUNT(*) FILTER (WHERE l.in_stock) DESC, c.name
      LIMIT $1`,
     [limit],
   );

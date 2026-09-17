@@ -173,6 +173,19 @@ export default async function CardPage({ params, searchParams }: Props) {
               <dt className="text-[15px] text-muted">Listados con stock</dt>
               <dd className="font-semibold tnum">{card.inStockCount}</dd>
             </div>
+            {/* Que otra tienda la maneje aunque esté agotada sí le sirve al
+                comprador —sabe a quién preguntarle o esperar—, pero va aparte
+                y en chico: no es disponibilidad. */}
+            {card.listedStoreCount > card.storeCount && (
+              <div className="flex items-baseline justify-between border-b border-line-soft py-2">
+                <dt className="text-[13px] text-muted">
+                  La manejan pero agotada
+                </dt>
+                <dd className="text-[13px] text-muted tnum">
+                  {card.listedStoreCount - card.storeCount}
+                </dd>
+              </div>
+            )}
             {/* El rango se muestra como dato, no como ranking: sin "la más
                 barata" ni el porcentaje de diferencia, que era publicidad de
                 dispersión de precios. */}

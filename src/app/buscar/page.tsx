@@ -18,7 +18,9 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function SearchPage({ searchParams }: Props) {
   const params = await searchParams;
   const q = params.q?.trim() ?? "";
-  const onlyInStock = params.stock === "1";
+  // Por defecto sólo lo comprable: ver agotadas es lo que se pide, no lo que
+  // se sufre. `?stock=0` las incluye.
+  const onlyInStock = params.stock !== "0";
   const results = q ? await searchCards(q, { limit: 60, onlyInStock }) : [];
 
   return (
@@ -39,14 +41,14 @@ export default async function SearchPage({ searchParams }: Props) {
             )}
           </h1>
           <Link
-            href={`/buscar?q=${encodeURIComponent(q)}${onlyInStock ? "" : "&stock=1"}`}
+            href={`/buscar?q=${encodeURIComponent(q)}${onlyInStock ? "&stock=0" : ""}`}
             className={`rounded-pill border px-4 py-1.5 text-[13px] font-semibold shadow-card transition ${
               onlyInStock
-                ? "border-accent bg-accent text-accent-ink"
-                : "border-line bg-surface text-muted hover:border-accent hover:text-accent"
+                ? "border-line bg-surface text-muted hover:border-accent hover:text-accent"
+                : "border-accent bg-accent text-accent-ink"
             }`}
           >
-            Sólo con stock
+            {onlyInStock ? "Incluir agotadas" : "Sólo con stock"}
           </Link>
         </div>
       )}

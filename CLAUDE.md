@@ -121,6 +121,13 @@ app móvil nativa. Web responsive es suficiente.
   fría, aire generoso, píldoras en botones y chips, base de 15px) sobre paleta
   de papel gris azulado, tinta azul marino y turquesa profundo como único
   acento. Una sola familia sans para todo: la jerarquía la hacen peso y tamaño.
+- **Agotado no es catálogo.** Las tiendas dejan publicado lo que ya no tienen
+  —95% de los listados ingeridos—, y un buscador que lo muestra le hace perder
+  el tiempo al comprador igual que el sitio de la tienda. Se INGIERE todo (que
+  una tienda la maneje es señal: a quién preguntarle, qué esperar) pero se
+  MUESTRA sólo lo comprable: `searchCards` filtra por stock salvo que se pida lo
+  contrario, y "N tiendas" cuenta tiendas donde se puede comprar hoy, no tiendas
+  que la listan. Las que la tienen agotada van aparte y en chico.
 - **NO ponemos a las tiendas a competir por precio.** Nada de coronar "la más
   barata", ni de anunciar la diferencia porcentual entre tiendas. El precio se
   muestra y se puede ordenar por él, pero nunca es el ranking por defecto:
