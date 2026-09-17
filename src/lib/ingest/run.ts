@@ -168,6 +168,7 @@ export async function syncStore(
         printing: {
           setCode,
           setName: n.setName ?? null,
+          collectorNumber: n.collectorNumber ?? null,
           language: n.language,
           finish: n.finish,
           imageUrl: n.imageUrl ?? null,

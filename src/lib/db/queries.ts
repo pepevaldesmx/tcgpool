@@ -389,7 +389,20 @@ export async function pruneStoresNotIn(
     [slugs],
   );
   if (!gone.length) return { stores: [], printings: 0, cards: 0 };
+  const huerfanos = await pruneOrphans();
+  return { stores: gone.map((g) => g.slug), ...huerfanos };
+}
 
+/**
+ * Borra impresiones y cartas que se quedaron sin ningún listado.
+ *
+ * No sólo pasa al quitar una tienda: cuando mejora el parser de títulos, las
+ * cartas mal partidas de antes —"Command Tower (0917)" como carta propia—
+ * quedan sin listados, y en el buscador se ven igual que una válida. Correrlo
+ * en cada sincronización completa es lo que hace que arreglar el parser
+ * realmente limpie el catálogo.
+ */
+export async function pruneOrphans(): Promise<{ printings: number; cards: number }> {
   const printings = await query<{ id: number }>(
     `DELETE FROM printings p
       WHERE NOT EXISTS (SELECT 1 FROM listings l WHERE l.printing_id = p.id)
@@ -400,7 +413,7 @@ export async function pruneStoresNotIn(
       WHERE NOT EXISTS (SELECT 1 FROM printings p WHERE p.card_id = c.id)
       RETURNING c.id`,
   );
-  return { stores: gone.map((g) => g.slug), printings: printings.length, cards: cards.length };
+  return { printings: printings.length, cards: cards.length };
 }
 
 /**

@@ -11,6 +11,7 @@ import { migrate } from "../src/lib/db/migrate";
 import {
   getStats,
   pruneGamesNotIn,
+  pruneOrphans,
   pruneStoresNotIn,
   upsertGame,
 } from "../src/lib/db/queries";
@@ -91,6 +92,17 @@ async function main() {
       console.log(
         `✂ fuera del registro: ${pruned.stores.join(", ")} · ` +
           `${pruned.printings} impresiones y ${pruned.cards} cartas se quedaron sin listados\n`,
+      );
+    }
+  }
+
+  // Lo que se quedó sin listados sale del catálogo: cartas de tiendas que ya
+  // no están, e impresiones que existían sólo por un título mal parseado.
+  if (!only) {
+    const huerfanos = await pruneOrphans();
+    if (huerfanos.cards || huerfanos.printings) {
+      console.log(
+        `✂ sin listados: ${huerfanos.cards} cartas y ${huerfanos.printings} impresiones\n`,
       );
     }
   }

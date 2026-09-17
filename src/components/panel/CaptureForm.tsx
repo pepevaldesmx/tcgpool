@@ -39,9 +39,58 @@ interface Card {
 
 function printingLabel(p: Printing): string {
   return (
-    [p.setName ?? "Sin set", p.collectorNumber, p.language, p.finish === "foil" ? "foil" : null]
+    [
+      p.setName ?? "Sin set",
+      p.collectorNumber ? `#${p.collectorNumber}` : null,
+      p.language,
+      p.finish === "foil" ? "foil" : p.finish === "etched" ? "etched" : null,
+    ]
       .filter(Boolean)
       .join(" · ")
+  );
+}
+
+/**
+ * Una impresión de la cuadrícula.
+ *
+ * Con imagen, porque el set y el número se leen mal y la ilustración no: entre
+ * ocho "Command Tower" de ocho ediciones, la única forma rápida de reconocer la
+ * que tienes en la mano es verla.
+ */
+function PrintingCard({ p, onPick }: { p: Printing; onPick: () => void }) {
+  const [rota, setRota] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={onPick}
+      // El nombre del set se corta a dos renglones en 128px; el título completo
+      // queda en el tooltip para no ensanchar la cuadrícula.
+      title={printingLabel(p)}
+      className="group flex w-[128px] shrink-0 flex-col overflow-hidden rounded-card border border-line bg-paper text-left shadow-card transition hover:border-accent hover:shadow-lift"
+    >
+      <div className="flex h-[124px] w-full items-center justify-center overflow-hidden bg-surface-2">
+        {p.imageUrl && !rota ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={p.imageUrl}
+            alt=""
+            onError={() => setRota(true)}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <span className="text-[11px] text-muted">sin imagen</span>
+        )}
+      </div>
+      <div className="px-2.5 py-2">
+        <p className="line-clamp-2 text-[12px] font-semibold leading-snug text-ink group-hover:text-accent">
+          {p.setName ?? "Sin set"}
+        </p>
+        <p className="mt-0.5 text-[11px] text-muted tnum">
+          {p.collectorNumber ? `#${p.collectorNumber}` : "sin número"} · {p.language}
+          {p.finish !== "nonfoil" ? ` · ${p.finish}` : ""}
+        </p>
+      </div>
+    </button>
   );
 }
 
@@ -137,22 +186,20 @@ export default function CaptureForm({ token, slug }: { token: string; slug: stri
                   No conocemos ninguna versión de esta carta todavía.
                 </p>
               ) : (
-                <ul className="mt-1 flex flex-wrap gap-2">
+                // En scroll horizontal: una carta con veinte impresiones no
+                // debe empujar el formulario fuera de la pantalla.
+                <div className="mt-2 flex gap-3 overflow-x-auto pb-2">
                   {card.printings.map((p) => (
-                    <li key={p.id}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPicked({ card, printing: p });
-                          setPrecio("");
-                        }}
-                        className="rounded-pill border border-line bg-paper px-3 py-1 text-[13px] text-muted transition hover:border-accent hover:text-accent"
-                      >
-                        {printingLabel(p)}
-                      </button>
-                    </li>
+                    <PrintingCard
+                      key={p.id}
+                      p={p}
+                      onPick={() => {
+                        setPicked({ card, printing: p });
+                        setPrecio("");
+                      }}
+                    />
                   ))}
-                </ul>
+                </div>
               )}
             </div>
           ))}

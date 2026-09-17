@@ -176,6 +176,40 @@ describe("classifyProduct", () => {
     assert.equal(normalizeListing({ ...base, productType: "Cartas Sueltas" }, "pokemon"), null);
   });
 
+  it("el número de colección y el acabado NO son parte del nombre", () => {
+    // Estos seis títulos son de MTG México, y antes producían SEIS cartas
+    // distintas llamadas "Command Tower": el buscador partía la carta en
+    // pedazos y el cruce entre tiendas dejaba de funcionar.
+    const casos: Array<[string, string, string | undefined, string | undefined]> = [
+      ["Command Tower [Marvel Super Heroes Commander]", "Command Tower", "Marvel Super Heroes Commander", undefined],
+      ["Command Tower (0917) [Secret Lair Drop Series]", "Command Tower", "Secret Lair Drop Series", "0917"],
+      ["Command Tower (Surge Foil) [Teenage Mutant Ninja Turtles Commander]", "Command Tower", "Teenage Mutant Ninja Turtles Commander", undefined],
+      ["Command Tower (0233) (Surge Foil) [Marvel Super Heroes Commander]", "Command Tower", "Marvel Super Heroes Commander", "0233"],
+      ["Command Tower (DSC) [The List]", "Command Tower", "The List", undefined],
+    ];
+    for (const [titulo, nombre, set, numero] of casos) {
+      const r = parseTitle(titulo);
+      assert.equal(r.cardName, nombre, titulo);
+      assert.equal(r.setName, set, titulo);
+      assert.equal(r.collectorNumber, numero, titulo);
+    }
+  });
+
+  it("un paréntesis con número NO es el nombre del set", () => {
+    // Antes "Command Tower (0917)" guardaba "0917" como nombre del set.
+    const r = parseTitle("Command Tower (0917)");
+    assert.equal(r.cardName, "Command Tower");
+    assert.equal(r.setName, undefined);
+    assert.equal(r.collectorNumber, "0917");
+  });
+
+  it("un paréntesis que sí es un set se respeta", () => {
+    const r = parseTitle("Lightning Bolt (Ravnica: Clue Edition)");
+    assert.equal(r.cardName, "Lightning Bolt");
+    assert.equal(r.setName, "Ravnica: Clue Edition");
+    assert.equal(r.collectorNumber, undefined);
+  });
+
   it("un juego que no soportamos NO cae al juego por defecto de la tienda", () => {
     // Una tienda de Magic que además vende Star Wars Unlimited: meter esas
     // cartas al catálogo de Magic es peor que no tenerlas.

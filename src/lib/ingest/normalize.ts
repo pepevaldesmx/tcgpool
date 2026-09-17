@@ -100,9 +100,25 @@ export function detectLanguage(...parts: Array<string | undefined>): string {
 const NAME_NOISE =
   /\s*[\(\[]\s*(foil|non[-\s]?foil|etched|showcase|extended art|borderless|retro|prerelease|promo|jp|japanese|japones|ingles|english|espanol|spanish|v\.?\d+|version \d+)\s*[\)\]]/gi;
 
+/**
+ * Tratamientos y acabados que las tiendas ponen entre paréntesis. NO son parte
+ * del nombre de la carta: "Command Tower (Surge Foil)" es Command Tower. Lo que
+ * distingue una impresión de otra es el set y el número de colección, no esto.
+ */
+const TREATMENT =
+  /^(foil|non[-\s]?foil|etched|surge\s*foil|rainbow\s*foil|double\s*rainbow|galaxy\s*foil|textured\s*foil|halo\s*foil|confetti\s*foil|raised\s*foil|gilded\s*foil|neon\s*ink|oil\s*slick|step[-\s]?and[-\s]?compleat|serial(ized)?|showcase|extended\s*art|borderless|full\s*art|alternate\s*art|retro(\s*frame)?|prerelease|promo|foil\s*etched|jp|japanese|japones|ingles|english|espanol|spanish|v\.?\d+|version\s*\d+)$/i;
+
+/** "(0233)", "#123", "(0917)": el número de colección, no un nombre de set. */
+const COLLECTOR = /^#?\d{1,5}[a-z★†]?$/i;
+
+/** "(DSC)", "(LTC)": código de set abreviado que las tiendas anexan. */
+const SET_CODE = /^[A-Z0-9]{2,5}$/;
+
 export interface ParsedTitle {
   cardName: string;
   setName?: string;
+  /** Número de colección, si el título lo traía. */
+  collectorNumber?: string;
 }
 
 /**
@@ -116,14 +132,34 @@ export interface ParsedTitle {
 export function parseTitle(rawTitle: string): ParsedTitle {
   let title = rawTitle.replace(/\s+/g, " ").trim();
   let setName: string | undefined;
+  let collectorNumber: string | undefined;
 
   const bracket = title.match(/\[([^\]]+)\]\s*$/);
   if (bracket) {
     setName = bracket[1].trim();
     title = title.slice(0, bracket.index).trim();
-  } else {
+  }
+
+  // Los paréntesis del final se pelan uno por uno, de derecha a izquierda:
+  // "Command Tower (0233) (Surge Foil)" trae dos, y dejar cualquiera de ellos
+  // pegado al nombre convierte una carta en seis cartas distintas — que es
+  // exactamente lo que pasaba, y rompe el cruce entre tiendas.
+  for (;;) {
     const paren = title.match(/\(([^)]+)\)\s*$/);
-    if (paren && !/^(foil|non[-\s]?foil|etched)$/i.test(paren[1].trim())) {
+    if (!paren) break;
+    const inner = paren[1].trim();
+
+    if (COLLECTOR.test(inner)) collectorNumber ??= inner.replace(/^#/, "");
+    else if (TREATMENT.test(inner)) void 0;
+    else if (setName && SET_CODE.test(inner)) void 0;
+    else break; // Es el nombre del set, o algo que no sabemos leer: se queda.
+
+    title = title.slice(0, paren.index).trim();
+  }
+
+  if (!setName) {
+    const paren = title.match(/\(([^)]+)\)\s*$/);
+    if (paren) {
       setName = paren[1].trim();
       title = title.slice(0, paren.index).trim();
     } else {
@@ -136,7 +172,13 @@ export function parseTitle(rawTitle: string): ParsedTitle {
   }
 
   const cardName = title.replace(NAME_NOISE, "").replace(/\s+/g, " ").trim();
-  return { cardName, setName: setName?.replace(NAME_NOISE, "").trim() || undefined };
+  return {
+    cardName,
+    setName: setName?.replace(NAME_NOISE, "").trim() || undefined,
+    // Sin número, la llave ni siquiera aparece: un `undefined` explícito
+    // ensucia las comparaciones de quien use esto.
+    ...(collectorNumber ? { collectorNumber } : {}),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -245,6 +287,7 @@ export interface NormalizedListing {
   cardName: string;
   cardMatchKey: string;
   setName?: string;
+  collectorNumber?: string;
   language: string;
   finish: Finish;
   condition: Condition;
@@ -273,7 +316,7 @@ export function normalizeListing(
   const resolved = game ?? defaultGame;
   if (!isEnabledGame(resolved)) return null;
 
-  const { cardName, setName } = parseTitle(raw.title);
+  const { cardName, setName, collectorNumber } = parseTitle(raw.title);
   if (cardName.length < 2) return null;
 
   const variantAndTags = [raw.variantTitle, (raw.tags ?? []).join(" ")].join(" ");
@@ -284,6 +327,7 @@ export function normalizeListing(
     cardName,
     cardMatchKey: normalizeText(cardName),
     setName,
+    collectorNumber,
     language: detectLanguage(variantAndTags, raw.title),
     finish: detectFinish(variantAndTags, raw.title),
     condition: detectCondition(variantAndTags),

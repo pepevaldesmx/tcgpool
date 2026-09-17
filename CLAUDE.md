@@ -75,6 +75,16 @@ app móvil nativa. Web responsive es suficiente.
   no se reabre si el feed sigue diciendo lo mismo, pero sí si cambió: eso es una
   discrepancia nueva. La detección es `splitFeedByConflicts`, función pura sobre
   llaves, para poder probarla sin base.
+- **El número de colección y el acabado NO son parte del nombre de la carta.**
+  Las tiendas titulan "Command Tower (0233) (Surge Foil) [Marvel...]", y dejar
+  cualquiera de esos paréntesis pegado al nombre convertía UNA carta en seis
+  cartas distintas: el buscador la partía en pedazos y el cruce entre tiendas
+  —la razón de existir del producto— dejaba de funcionar para ella. `parseTitle`
+  pela los paréntesis del final uno por uno: número de colección a la impresión,
+  tratamiento a la basura, y sólo lo que no reconoce se queda como nombre o set.
+  Un paréntesis con puros dígitos NUNCA es el nombre del set. Arreglar el parser
+  no basta: `pruneOrphans` corre en cada sincronización completa para que las
+  cartas mal partidas de antes, que se quedan sin listados, salgan del catálogo.
 - **La búsqueda es `tsvector` con prefijo por palabra, y trigramas de respaldo.**
   `to_tsquery('simple', 'sol:* & ring:*')` reproduce lo que hacía FTS5; cuando no
   hay coincidencia, `pg_trgm` tolera errores de dedo ("counterspel" encuentra
