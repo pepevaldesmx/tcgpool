@@ -62,9 +62,9 @@ async function main() {
       continue;
     }
     console.log(
-      `  ✓ ${result.upserted} listings (${result.source}) · ` +
-        `${result.skipped} descartados · ${result.outOfStock} marcados sin stock · ` +
-        `${((Date.now() - started) / 1000).toFixed(1)}s\n`,
+      `  ${result.partial ? "◐" : "✓"} ${result.upserted} listings (${result.source})` +
+        `${result.partial ? " · PARCIAL, sin barrer agotados" : ` · ${result.outOfStock} marcados sin stock`}` +
+        ` · ${result.skipped} descartados · ${((Date.now() - started) / 1000).toFixed(1)}s\n`,
     );
   }
 

@@ -94,6 +94,12 @@ app móvil nativa. Web responsive es suficiente.
   con sus listados y las cartas que se quedan sin ninguno. El SQL del catálogo
   no filtra por tienda activa, así que dejarla "inactiva" no la sacaría del
   buscador.
+- **Un feed cortado a la mitad se ingiere, pero NO barre agotados.** Una página
+  que falla después de reintentos devuelve lo que alcanzó marcado como
+  `partial`: tirar 3,500 productos ya descargados por un 500 pasajero deja a la
+  tienda entera fuera del buscador. Con feed parcial no corre
+  `markMissingAsOutOfStock` —lo ausente puede estar en las páginas que no
+  llegaron— ni se sobrescribe el snapshot completo anterior.
 - **Los snapshots se guardan normalizados** (`normalizeFeed`): sólo los campos
   que la ingesta usa, ordenados de forma estable. El feed crudo de Shopify trae
   `body_html` y timestamps volátiles, y hacía que el cron reescribiera 35 MB

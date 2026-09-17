@@ -54,4 +54,9 @@ export interface AdapterResult {
   productsSeen: number;
   /** 'live' si se pegó al feed real, 'sample' si se leyó un snapshot local. */
   source: "live" | "sample";
+  /**
+   * El feed se cortó a medias: lo que hay sirve, pero NO sabemos qué falta, así
+   * que no se puede concluir que lo ausente esté agotado.
+   */
+  partial?: boolean;
 }

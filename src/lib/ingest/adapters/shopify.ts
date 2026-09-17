@@ -43,6 +43,8 @@ interface ShopifyProduct {
 
 export interface ShopifyFeed {
   products: ShopifyProduct[];
+  /** La paginación se cortó antes de tiempo. No se guarda en el snapshot. */
+  partial?: boolean;
 }
 
 const USER_AGENT =
@@ -52,29 +54,69 @@ function snapshotPath(slug: string, kind: "live" | "sample") {
   return path.join(process.cwd(), "data", "snapshots", `${slug}.${kind}.json`);
 }
 
-/** Recorre /products.json paginado y devuelve el feed crudo. */
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Una página, con reintentos: un 500 aislado a la mitad no debe tirar la corrida. */
+async function fetchPage(url: string, attempts = 3, backoffMs = 1500): Promise<ShopifyProduct[]> {
+  let last = "";
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
+      });
+      if (res.ok) return ((await res.json()) as ShopifyFeed).products ?? [];
+      last = `HTTP ${res.status}`;
+      // 404 y 403 son definitivos: reintentar sólo gasta el tiempo de la tienda.
+      if (res.status < 500 && res.status !== 429) break;
+    } catch (err) {
+      last = (err as Error).message;
+    }
+    if (attempt < attempts) await sleep(attempt * backoffMs);
+  }
+  throw new Error(`${last} en ${url}`);
+}
+
+/**
+ * Recorre /products.json paginado y devuelve el feed crudo.
+ *
+ * Si una página falla después de los reintentos, devuelve lo que alcanzó a
+ * juntar marcado como `partial` en vez de tirar todo: perder 3,500 productos ya
+ * descargados porque la página 15 dio un 500 deja a la tienda entera fuera del
+ * buscador por un error pasajero.
+ */
 export async function fetchShopifyFeed(
   config: ShopifyConfig,
-  { onPage }: { onPage?: (page: number, count: number) => void } = {},
+  {
+    onPage,
+    onPartial,
+    backoffMs,
+  }: {
+    onPage?: (page: number, count: number) => void;
+    onPartial?: (page: number, reason: string) => void;
+    /** Espera entre reintentos. Los tests la bajan para no dormir segundos. */
+    backoffMs?: number;
+  } = {},
 ): Promise<ShopifyFeed> {
   const maxPages = config.maxPages ?? 60;
   const products: ShopifyProduct[] = [];
 
   for (let page = 1; page <= maxPages; page++) {
     const url = `https://${config.domain}/products.json?limit=250&page=${page}`;
-    const res = await fetch(url, {
-      headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
-    });
-    if (!res.ok) {
-      throw new Error(`${config.domain}: HTTP ${res.status} en ${url}`);
+    let batch: ShopifyProduct[];
+    try {
+      batch = await fetchPage(url, 3, backoffMs);
+    } catch (err) {
+      // La primera página es distinta: sin ella no hay feed, sólo un dominio
+      // que no responde, y eso sí tiene que fallar ruidosamente.
+      if (page === 1) throw new Error(`${config.domain}: ${(err as Error).message}`);
+      onPartial?.(page, (err as Error).message);
+      return { products, partial: true };
     }
-    const body = (await res.json()) as ShopifyFeed;
-    const batch = body.products ?? [];
     onPage?.(page, batch.length);
     products.push(...batch);
     if (batch.length < 250) break;
     // Cortesía con la tienda: no la martillamos.
-    await new Promise((r) => setTimeout(r, 400));
+    await sleep(400);
   }
 
   return { products };
@@ -167,5 +209,5 @@ export function shopifyFeedToListings(
     }
   }
 
-  return { listings, productsSeen: feed.products.length, source };
+  return { listings, productsSeen: feed.products.length, source, partial: feed.partial };
 }

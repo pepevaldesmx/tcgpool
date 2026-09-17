@@ -46,6 +46,8 @@ export interface SyncResult {
   upserted: number;
   skipped: number;
   outOfStock: number;
+  /** El feed se cortó: lo ingerido sirve, pero no se barrió lo ausente. */
+  partial?: boolean;
   perGame: Record<string, number>;
   error?: string;
 }
@@ -56,10 +58,13 @@ async function runAdapter(def: StoreDefinition, opts: SyncOptions): Promise<Adap
     if (opts.mode === "live") {
       const feed = await fetchShopifyFeed(config, {
         onPage: (page, count) => opts.log?.(`  página ${page}: ${count} productos`),
+        onPartial: (page, reason) =>
+          opts.log?.(`  ⚠ el feed se cortó en la página ${page} (${reason}); seguimos con lo que hay`),
       });
       // Guardamos el feed normalizado: permite re-ingerir sin volver a pegarle a
-      // la tienda y deja evidencia de qué se ingirió.
-      writeSnapshot(def.slug, "live", feed);
+      // la tienda y deja evidencia de qué se ingirió. Un feed cortado no
+      // sustituye al último completo: sería cambiar evidencia buena por peor.
+      if (!feed.partial) writeSnapshot(def.slug, "live", feed);
       return shopifyFeedToListings(feed, config, "live");
     }
     const live = readSnapshot(def.slug, "live");
@@ -208,7 +213,10 @@ export async function syncStore(
       );
     }
 
-    const outOfStock = await markMissingAsOutOfStock(storeId, seen);
+    // Sólo se puede concluir "esto ya no está, márcalo agotado" cuando se vio
+    // el catálogo COMPLETO. Con un feed cortado, barrer marcaría como agotado
+    // todo lo que quedó en las páginas que no llegaron.
+    const outOfStock = result.partial ? 0 : await markMissingAsOutOfStock(storeId, seen);
     await touchStoreSync(storeId, result.source);
     await finishSyncRun(runId, {
       status: "ok",
@@ -225,6 +233,7 @@ export async function syncStore(
       upserted,
       skipped,
       outOfStock,
+      partial: result.partial,
       perGame,
     };
   } catch (err) {
