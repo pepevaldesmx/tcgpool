@@ -8,7 +8,12 @@
  */
 import { closePool, connectionString } from "../src/lib/db";
 import { migrate } from "../src/lib/db/migrate";
-import { getStats, pruneStoresNotIn, upsertGame } from "../src/lib/db/queries";
+import {
+  getStats,
+  pruneGamesNotIn,
+  pruneStoresNotIn,
+  upsertGame,
+} from "../src/lib/db/queries";
 import { GAMES } from "../src/lib/games";
 import { loadStoreDefinitions } from "../src/lib/ingest/registry";
 import { syncStore } from "../src/lib/ingest/run";
@@ -65,6 +70,16 @@ async function main() {
       `  ${result.partial ? "◐" : "✓"} ${result.upserted} listings (${result.source})` +
         `${result.partial ? " · PARCIAL, sin barrer agotados" : ` · ${result.outOfStock} marcados sin stock`}` +
         ` · ${result.skipped} descartados · ${((Date.now() - started) / 1000).toFixed(1)}s\n`,
+    );
+  }
+
+  // Los juegos apagados salen siempre: la lista es una constante del código, no
+  // depende de qué tiendas se hayan pedido en esta corrida.
+  const games = await pruneGamesNotIn(GAMES.map((g) => g.id));
+  if (games.cards) {
+    console.log(
+      `✂ juegos fuera del catálogo: ${games.games.join(", ") || "(ninguno)"} · ` +
+        `${games.cards} cartas borradas\n`,
     );
   }
 

@@ -400,6 +400,34 @@ export async function pruneStoresNotIn(
   return { stores: gone.map((g) => g.slug), printings: printings.length, cards: cards.length };
 }
 
+/**
+ * Saca del catálogo los juegos que ya no aceptamos, con sus cartas y listados.
+ *
+ * El filtro de la ingesta impide que entren cartas nuevas de un juego apagado,
+ * pero no borra las que entraron cuando estaba prendido — y en el buscador una
+ * carta vieja de un juego apagado se ve igual que una válida.
+ */
+export async function pruneGamesNotIn(
+  gameIds: string[],
+): Promise<{ games: string[]; cards: number }> {
+  if (!gameIds.length) return { games: [], cards: 0 };
+
+  const cards = await query<{ id: number }>(
+    `DELETE FROM cards WHERE game_id <> ALL($1::text[]) RETURNING id`,
+    [gameIds],
+  );
+  // Un juego que alguna tienda declara como `default_game` se queda: la llave
+  // foránea lo exige, y borrarlo dejaría a la tienda apuntando al vacío.
+  const games = await query<{ id: string }>(
+    `DELETE FROM games g
+      WHERE g.id <> ALL($1::text[])
+        AND NOT EXISTS (SELECT 1 FROM stores s WHERE s.default_game = g.id)
+      RETURNING g.id`,
+    [gameIds],
+  );
+  return { games: games.map((g) => g.id), cards: cards.length };
+}
+
 export async function startSyncRun(storeId: number, source: string): Promise<number> {
   const row = await one<{ id: number }>(
     `INSERT INTO sync_runs (store_id, source, status) VALUES ($1, $2, 'running') RETURNING id`,

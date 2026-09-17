@@ -1,8 +1,21 @@
 import type { GameId } from "@/lib/types";
 
-/** Catálogo de juegos. Un juego existe aquí aunque todavía no tenga listings. */
+/**
+ * Juegos que el catálogo ACEPTA hoy. Sólo Magic: primero probamos el sistema
+ * entero —ingesta, normalización, búsqueda, plan de surtido— con un juego que
+ * tiene catálogo canónico (Scryfall) contra el cual resolver nombres.
+ *
+ * Los demás se DETECTAN igual (ver GAME_PATTERNS) y por eso se pueden descartar
+ * limpiamente: detectar no es lo mismo que aceptar, y sin la detección el
+ * Digimon de una tienda de Magic entraría como Magic. Sumar un juego es moverlo
+ * de FUTUROS a aquí y volver a sincronizar.
+ */
 export const GAMES: ReadonlyArray<{ id: GameId; name: string }> = [
   { id: "magic", name: "Magic: The Gathering" },
+];
+
+/** Detectados y descartados por ahora. Ninguno tiene un Scryfall equivalente. */
+export const FUTURE_GAMES: ReadonlyArray<{ id: GameId; name: string }> = [
   { id: "pokemon", name: "Pokémon TCG" },
   { id: "yugioh", name: "Yu-Gi-Oh!" },
   { id: "onepiece", name: "One Piece Card Game" },
@@ -11,6 +24,12 @@ export const GAMES: ReadonlyArray<{ id: GameId; name: string }> = [
   { id: "digimon", name: "Digimon Card Game" },
   { id: "gundam", name: "Gundam Card Game" },
 ];
+
+const ENABLED = new Set<GameId>(GAMES.map((g) => g.id));
+
+export function isEnabledGame(game: GameId): boolean {
+  return ENABLED.has(game);
+}
 
 /**
  * Detecta el juego desde el `product_type` de la tienda. Las tiendas reales lo

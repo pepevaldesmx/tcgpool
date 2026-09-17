@@ -171,8 +171,9 @@ describe("classifyProduct", () => {
   it("usa el juego por defecto de la tienda cuando el feed no lo declara", () => {
     const r = normalizeListing({ ...base, productType: "Cartas Sueltas" }, "magic");
     assert.equal(r?.game, "magic");
-    const p = normalizeListing({ ...base, productType: "Cartas Sueltas" }, "pokemon");
-    assert.equal(p?.game, "pokemon");
+    // El respaldo resuelve el juego, pero si ese juego está apagado se descarta
+    // igual: el respaldo decide CUÁL juego es, no si lo aceptamos.
+    assert.equal(normalizeListing({ ...base, productType: "Cartas Sueltas" }, "pokemon"), null);
   });
 
   it("un juego que no soportamos NO cae al juego por defecto de la tienda", () => {
@@ -192,23 +193,26 @@ describe("classifyProduct", () => {
     );
   });
 
-  it("clasifica Digimon por product_type, no por la tienda", () => {
-    const r = normalizeListing(
-      { ...base, title: "Agumon [BT1-010]", productType: "Digimon Single" },
-      "magic",
-    );
-    assert.equal(r?.game, "digimon");
+  it("detecta Digimon y lo descarta, en vez de colarlo como Magic", () => {
+    const raw = { ...base, title: "Agumon [BT1-010]", productType: "Digimon Single" };
+    // Se detecta: por eso NO cae al defaultGame de la tienda...
+    assert.equal(classifyProduct(raw).game, "digimon");
+    // ...y como hoy sólo aceptamos Magic, no entra al catálogo.
+    assert.equal(normalizeListing(raw, "magic"), null);
   });
 
   it("un Yu-Gi-Oh de una tienda mayormente de Magic NO entra como Magic", () => {
-    const r = normalizeListing(
-      {
-        ...base,
-        title: "YummySnatchy [26LP-EN005] Ultra Rare",
-        productType: "Yugioh Single",
-      },
-      "magic",
-    );
-    assert.equal(r?.game, "yugioh");
+    const raw = {
+      ...base,
+      title: "YummySnatchy [26LP-EN005] Ultra Rare",
+      productType: "Yugioh Single",
+    };
+    assert.equal(classifyProduct(raw).game, "yugioh");
+    assert.equal(normalizeListing(raw, "magic"), null);
+  });
+
+  it("un single de Magic sí entra", () => {
+    const r = normalizeListing({ ...base, productType: "MTG Single" }, "magic");
+    assert.equal(r?.game, "magic");
   });
 });

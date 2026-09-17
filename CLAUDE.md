@@ -2,7 +2,7 @@
 
 ## Qué es y por qué
 
-Comparador/buscador de cartas TCG (Magic, Pokémon, Yu-Gi-Oh) enfocado a tiendas
+Comparador/buscador de cartas TCG enfocado a tiendas
 mexicanas (LGS). Hoy, un jugador que busca una carta tiene que entrar tienda por
 tienda (cada buscador ve sólo su propio inventario), hojear carpetas en una
 convención, o preguntar en el chat de una tienda a ver si alguien contesta.
@@ -81,6 +81,13 @@ app móvil nativa. Web responsive es suficiente.
   la UI los dice: el aviso cuenta cuántas tiendas son reales y cada listado de
   una tienda en muestra lleva su marca `demo`. Un booleano global mentía en los
   dos sentidos.
+- **Hoy el catálogo es SÓLO Magic** (`GAMES` en `src/lib/games.ts`). Primero se
+  prueba el sistema entero con el único juego que tiene catálogo canónico
+  (Scryfall) contra el cual resolver nombres; los demás están en `FUTURE_GAMES`.
+  Detectar no es aceptar: se siguen detectando todos —si no, el Digimon de una
+  tienda de Magic entraría como Magic— y `normalizeListing` descarta los que no
+  están prendidos. Sumar un juego es moverlo de `FUTURE_GAMES` a `GAMES` y
+  volver a sincronizar; `pruneGamesNotIn` limpia el catálogo en cada corrida.
 - **El juego se detecta POR PRODUCTO, no por tienda.** Las tiendas reales venden
   varios TCG y lo declaran en `product_type` ("MTG Single", "Yugioh Single",
   "Pokemon Sealed"). `classifyProduct` lo usa como señal principal; el

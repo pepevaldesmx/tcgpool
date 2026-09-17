@@ -1,4 +1,4 @@
-import { detectGame, namesUnsupportedGame } from "@/lib/games";
+import { detectGame, isEnabledGame, namesUnsupportedGame } from "@/lib/games";
 import type { Condition, Finish, GameId, RawListing } from "@/lib/types";
 
 /** minúsculas, sin acentos, sin puntuación, espacios colapsados */
@@ -268,6 +268,11 @@ export function normalizeListing(
   if (!game && namesUnsupportedGame(raw.productType)) return null;
   if (!Number.isFinite(raw.priceMxn) || raw.priceMxn <= 0) return null;
 
+  // El juego se decide ANTES de mirar el título: un producto de un juego que
+  // todavía no aceptamos se descarta entero, no se intenta parsear.
+  const resolved = game ?? defaultGame;
+  if (!isEnabledGame(resolved)) return null;
+
   const { cardName, setName } = parseTitle(raw.title);
   if (cardName.length < 2) return null;
 
@@ -275,7 +280,7 @@ export function normalizeListing(
   const stock = raw.stock ?? (raw.available ? 1 : 0);
 
   return {
-    game: game ?? defaultGame,
+    game: resolved,
     cardName,
     cardMatchKey: normalizeText(cardName),
     setName,
