@@ -37,6 +37,14 @@ jobs:
           cache: npm
       - run: npm ci
 
+      # Antes de ingerir, nombrar el problema si la cadena está mal: los
+      # errores de conexión de Postgres no distinguen entre contraseña
+      # equivocada, cadena directa en vez de pooler, y marcador sin sustituir.
+      - name: Diagnosticar la conexión
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run db:check
+
       # 'ambos' existe para el primer arranque: deja las cuatro tiendas con
       # catálogo (las de muestra quedan marcadas como demo en la UI) y encima
       # pone el feed real de las que sí tienen dominio verificado.

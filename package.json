@@ -14,6 +14,7 @@
     "make-samples": "tsx scripts/make-samples.ts",
     "test": "tsx --test \"src/**/*.test.ts\"",
     "snapshots:normalize": "tsx scripts/normalize-snapshots.ts",
+    "db:check": "tsx --env-file-if-exists=.env.local scripts/db-check.ts",
     "db:migrate": "tsx --env-file-if-exists=.env.local scripts/db-migrate.ts",
     "db:seed": "tsx --env-file-if-exists=.env.local scripts/sync.ts"
   },
