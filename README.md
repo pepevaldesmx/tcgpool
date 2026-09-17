@@ -103,7 +103,8 @@ en la tienda y nunca la vemos.
 
 ### Deploy
 
-El proyecto está enlazado a Vercel (equipo `PPVAPPS`, proyecto `tcgpool`): cada
+El proyecto está enlazado a Vercel como `tcgpool`, bajo la cuenta personal —no
+bajo el equipo `PPVAPPS`, que sólo tiene otro proyecto—: cada
 push genera un deployment — preview en ramas, producción en la rama de
 producción. Lo único que hay que configurar en el dashboard es `DATABASE_URL`.
 
