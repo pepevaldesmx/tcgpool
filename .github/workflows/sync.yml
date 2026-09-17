@@ -3,11 +3,28 @@ name: Sincronizar catálogo de tiendas
 # Ingiere los feeds reales directo a Postgres. Ya no commitea snapshots: la base
 # es la fuente de verdad, así que el repo dejó de crecer 11 MB por corrida y el
 # deploy dejó de depender del sync.
+#
+# `sync.ts` aplica el esquema antes de ingerir, así que este workflow también es
+# la forma de estrenar una base vacía: no hace falta correr `db:migrate` aparte
+# ni que nadie saque la cadena de conexión de los secretos.
 on:
   schedule:
     # Cada 6 horas. Para el MVP no hace falta tiempo real.
     - cron: "0 */6 * * *"
   workflow_dispatch:
+    inputs:
+      modo:
+        description: "De dónde sale el catálogo"
+        type: choice
+        default: live
+        options:
+          - live       # feeds reales de las tiendas
+          - muestra    # data/snapshots/*.sample.json (no toca la red de las tiendas)
+          - ambos      # muestra primero, luego live encima
+      tienda:
+        description: "Slug de una sola tienda (vacío = todas)"
+        type: string
+        default: ""
 
 jobs:
   sync:
@@ -19,9 +36,21 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+
+      # 'ambos' existe para el primer arranque: deja las cuatro tiendas con
+      # catálogo (las de muestra quedan marcadas como demo en la UI) y encima
+      # pone el feed real de las que sí tienen dominio verificado.
+      - name: Ingerir datos de muestra
+        if: inputs.modo == 'muestra' || inputs.modo == 'ambos'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PGPOOL_MAX: "4"
+        run: npm run sync -- ${{ inputs.tienda && format('--store={0}', inputs.tienda) || '' }}
+
       - name: Ingerir feeds reales
+        if: inputs.modo != 'muestra'
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           # Los scripts sí pueden abrir varias conexiones; el runtime no.
           PGPOOL_MAX: "4"
-        run: npm run sync -- --live
+        run: npm run sync -- --live ${{ inputs.tienda && format('--store={0}', inputs.tienda) || '' }}
