@@ -101,6 +101,16 @@ app móvil nativa. Web responsive es suficiente.
   reconoce el nombre, de la versión más larga a la más corta —"Erase (Not the
   Urza's Legacy One)" ES una carta y recortarla de más la cambiaría por otra— y
   si nada empata, no inventa.
+- **Toda tienda sabe exportar un CSV; no toda tiene API.** El importador de
+  `/tienda/<slug>` es el conector que no exige que la tienda corra nada en
+  particular, y el único que desbloquea a las que no tienen feed. Se importa
+  SIEMPRE en dos tiempos: primero se lee y se enseña qué se entendió —cuántas
+  reconocidas, cuáles no— y sólo después se escribe. Importar mil renglones a
+  ciegas y avisar del resultado es como una tienda pierde la confianza en un
+  solo movimiento. Los nombres que no se reconocen se REPORTAN, nunca se
+  adivinan. El CSV se lee con `parseCsv` y no con `split(",")`: los nombres de
+  carta traen comas y comillas de verdad ("Jaya, Fiery Negotiator"), y partir
+  por comas los convierte en basura silenciosa.
 - **La búsqueda es `tsvector` con prefijo por palabra, y trigramas de respaldo.**
   `to_tsquery('simple', 'sol:* & ring:*')` reproduce lo que hacía FTS5; cuando no
   hay coincidencia, `pg_trgm` tolera errores de dedo ("counterspel" encuentra

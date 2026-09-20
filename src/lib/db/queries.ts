@@ -465,6 +465,7 @@ export async function pruneGamesNotIn(
 }
 
 export interface CatalogEntry {
+  id: number;
   name: string;
   oracleId: string | null;
   typeLine: string | null;
@@ -480,13 +481,14 @@ export interface CatalogEntry {
  */
 export async function loadCardIndex(gameId: string): Promise<Map<string, CatalogEntry>> {
   const rows = await query<{
+    id: number;
     matchKey: string;
     name: string;
     oracleId: string | null;
     typeLine: string | null;
     imageUrl: string | null;
   }>(
-    `SELECT match_key AS "matchKey", name, oracle_id AS "oracleId",
+    `SELECT id, match_key AS "matchKey", name, oracle_id AS "oracleId",
             type_line AS "typeLine", image_url AS "imageUrl"
        FROM cards WHERE game_id = $1`,
     [gameId],
@@ -494,7 +496,7 @@ export async function loadCardIndex(gameId: string): Promise<Map<string, Catalog
   const indice = new Map<string, CatalogEntry>(
     rows.map((r) => [
       r.matchKey,
-      { name: r.name, oracleId: r.oracleId, typeLine: r.typeLine, imageUrl: r.imageUrl },
+      { id: r.id, name: r.name, oracleId: r.oracleId, typeLine: r.typeLine, imageUrl: r.imageUrl },
     ]),
   );
 
@@ -710,6 +712,64 @@ export async function saveManualListing(input: ManualListingInput): Promise<numb
     ],
   );
   return row!.id;
+}
+
+export interface ImportInput {
+  cardId: number;
+  setName: string | null;
+  collectorNumber: string | null;
+  language: string;
+  finish: string;
+  condition: string;
+  priceCents: number;
+  stock: number;
+}
+
+/**
+ * Guarda un inventario completo capturado por la tienda (importación de CSV).
+ *
+ * Va por lotes por lo mismo que la ingesta: mil renglones fila por fila serían
+ * mil viajes de red contra una base remota. Y al final los listados del feed
+ * que hablan de las mismas cartas ceden, porque lo que la tienda subió manda.
+ */
+export async function importManualListings(
+  storeId: number,
+  sellerId: number,
+  rows: ImportInput[],
+): Promise<{ guardados: number; suplantados: number }> {
+  if (!rows.length) return { guardados: 0, suplantados: 0 };
+
+  const printings: PrintingInput[] = rows.map((r) => ({
+    cardId: r.cardId,
+    setName: r.setName,
+    collectorNumber: r.collectorNumber,
+    language: r.language,
+    finish: r.finish as PrintingInput["finish"],
+  }));
+  const ids = await upsertPrintings(printings);
+
+  const listings: ListingInput[] = [];
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    const printingId = ids.get(`${r.cardId}|${printingMatchKey(printings[i])}`);
+    if (printingId == null) continue;
+    listings.push({
+      printingId,
+      sellerId,
+      storeId,
+      priceCents: r.priceCents,
+      condition: r.condition as ListingInput["condition"],
+      stock: r.stock,
+      inStock: r.stock > 0,
+      productUrl: "",
+      rawTitle: "",
+      externalId: `manual:${printingId}:${r.condition}`,
+      origin: "manual",
+    });
+  }
+  const guardados = await upsertListings(listings);
+  const suplantados = await supersedeFeedListings(storeId);
+  return { guardados, suplantados };
 }
 
 /** Baja un listado del panel. Sólo lo capturado a mano: el feed se administra solo. */

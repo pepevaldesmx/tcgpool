@@ -11,6 +11,7 @@ import { conditionLabel, moneyExact } from "@/lib/format";
 import { timeAgo } from "@/lib/format";
 import { resolveConflictAction, deleteListingAction } from "./actions";
 import CaptureForm from "@/components/panel/CaptureForm";
+import CsvImport from "@/components/panel/CsvImport";
 
 export const dynamic = "force-dynamic";
 
@@ -161,6 +162,15 @@ export default async function PanelPage({ params, searchParams }: Props) {
           pisa nunca.
         </p>
         <CaptureForm token={t} slug={slug} />
+      </section>
+
+      <section className="mt-12">
+        <h2 className="text-xl font-bold">Subir tu inventario</h2>
+        <p className="mt-1 text-[15px] text-muted">
+          Exporta tu inventario como CSV —de Shopify, de tu punto de venta o de una hoja de
+          cálculo— y súbelo aquí. No necesitas cambiar nada de tu sistema.
+        </p>
+        <CsvImport token={t} slug={slug} />
       </section>
 
       <section className="mt-12">

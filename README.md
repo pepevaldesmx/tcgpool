@@ -225,6 +225,14 @@ se puede consultar el tipo de cambio, se usa `MXN_POR_USD` o un respaldo, y la
 UI dice cuál de los tres está usando. No scrapeamos TCGplayer ni StarCityGames: sus términos lo prohíben y
 el acceso se puede cortar.
 
+La tienda también puede **subir su inventario en CSV** — de Shopify, de su punto
+de venta o de una hoja de cálculo. Bastan dos columnas, `nombre` y `precio`; si
+trae set, número, condición, idioma, acabado o cantidad, también se leen, y si
+el nombre viene con adornos ("Command Tower (0233) (Surge Foil)") se pelan. La
+importación va en dos tiempos: primero enseña qué entendió y qué nombres no
+reconoció, y sólo escribe cuando la tienda confirma. Es el conector que no
+exige que la tienda tenga API, y el que desbloquea a las que no tienen feed.
+
 Ahí la tienda captura cartas a mano y resuelve las **diferencias con su tienda
 en línea**: cuando la importación trae la misma impresión, en la misma
 condición, que algo capturado a mano, lo capturado se queda publicado y el valor
