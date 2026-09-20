@@ -22,7 +22,14 @@ export default async function SearchPage({ searchParams }: Props) {
   // Por defecto sólo lo comprable: ver agotadas es lo que se pide, no lo que
   // se sufre. `?stock=0` las incluye.
   const onlyInStock = params.stock !== "0";
-  const results = q ? await searchCards(q, { limit: 60, onlyInStock }) : [];
+  let results = q ? await searchCards(q, { limit: 60, onlyInStock }) : [];
+
+  // Si nadie la tiene AHORA, decirlo es mucho más útil que no encontrar nada:
+  // el comprador sabe que la carta sí existe en el catálogo de alguien, a quién
+  // preguntarle y qué esperar. Antes, un "sin resultados" le hacía creer que
+  // había escrito mal el nombre.
+  const agotadas = onlyInStock && q && results.length === 0;
+  if (agotadas) results = await searchCards(q, { limit: 60, onlyInStock: false });
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
@@ -37,9 +44,13 @@ export default async function SearchPage({ searchParams }: Props) {
         <div className="mt-7 flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
           <h1 className="text-xl font-bold">
             {results.length > 0 ? (
-              <>
-                {results.length} {results.length === 1 ? "carta" : "cartas"} para “{q}”
-              </>
+              agotadas ? (
+                <>Nadie tiene “{q}” disponible ahora</>
+              ) : (
+                <>
+                  {results.length} {results.length === 1 ? "carta" : "cartas"} para “{q}”
+                </>
+              )
             ) : (
               <>Sin resultados para “{q}”</>
             )}
@@ -55,6 +66,13 @@ export default async function SearchPage({ searchParams }: Props) {
             {onlyInStock ? "Incluir agotadas" : "Sólo con stock"}
           </Link>
         </div>
+      )}
+
+      {agotadas && results.length > 0 && (
+        <p className="mt-4 rounded-card border border-line bg-surface px-5 py-3 text-[15px] text-muted shadow-card">
+          Estas tiendas la manejan, pero la tienen agotada. Es a quién
+          preguntarle.
+        </p>
       )}
 
       {q && results.length === 0 && (

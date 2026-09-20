@@ -1115,16 +1115,26 @@ export async function searchCards(
      WHERE c.name_ts @@ to_tsquery('simple', $1)
      GROUP BY c.id
      ${having}
-     ORDER BY (COUNT(*) FILTER (WHERE l.in_stock) > 0) DESC, length(c.name), c.name
+     -- Primero lo comprable; entre varias, la que más copias hay en el mercado,
+     -- que es el mejor proxy de "la que quisiste decir" mientras no haya
+     -- búsquedas que contar: en "bolt", Lightning Bolt salía HASTA ABAJO porque
+     -- el desempate era el largo del nombre.
+     ORDER BY (COUNT(*) FILTER (WHERE l.in_stock) > 0) DESC,
+              COUNT(*) FILTER (WHERE l.in_stock) DESC,
+              length(c.name), c.name
      LIMIT $2`,
     [ts, limit],
   );
   if (byPrefix.length) return byPrefix;
 
-  // Sin coincidencia por prefijo, toleramos errores de dedo con trigramas.
+  // Sin coincidencia por prefijo, toleramos errores de dedo con trigramas —pero
+  // con un piso de parecido. Con el umbral por defecto (0.3), buscar
+  // "counterspell" contestaba "Counterbalance": una carta distinta, de otro
+  // color y otro precio, presentada como si fuera la respuesta. Más vale no
+  // encontrar nada que contestar otra cosa.
   return query<CardSummary>(
     `${CARD_SUMMARY_SELECT}
-     WHERE c.match_key % $1
+     WHERE similarity(c.match_key, $1) >= 0.55
      GROUP BY c.id, c.match_key
      ${having}
      ORDER BY similarity(c.match_key, $1) DESC, c.name

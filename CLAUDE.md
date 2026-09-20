@@ -119,7 +119,13 @@ app móvil nativa. Web responsive es suficiente.
   `to_tsquery('simple', 'sol:* & ring:*')` reproduce lo que hacía FTS5; cuando no
   hay coincidencia, `pg_trgm` tolera errores de dedo ("counterspel" encuentra
   Counterspell). `match_key` se normaliza en JS para no depender de `unaccent`,
-  que no todos los Postgres administrados traen.
+  que no todos los Postgres administrados traen. El respaldo difuso tiene PISO
+  (0.55): con el umbral de fábrica, "counterspell" contestaba "Counterbalance"
+  —otra carta, otro color, otro precio— presentada como si fuera la respuesta.
+  Más vale no encontrar nada que contestar otra cosa. Y si nadie la tiene ahora,
+  se dice: se repite la búsqueda incluyendo agotadas y se avisa, porque "estas
+  tiendas la manejan pero está agotada" le sirve al comprador y "sin resultados"
+  le hace creer que escribió mal el nombre.
 - **Una fuente de datos = un adaptador** en `src/lib/ingest/adapters/`, que
   devuelve `RawListing[]`. Sumar una tienda Shopify no debe requerir código.
 - **`npm run build` tiene que funcionar sin red y sin base.** El build no
