@@ -195,6 +195,25 @@ describe("classifyProduct", () => {
     }
   });
 
+  it("el idioma después del corchete no es parte del nombre", () => {
+    // Títulos reales de MTG México. Antes, el corchete tenía que estar al final
+    // y esto dejaba el título entero como nombre: 552 cartas fantasma, muchas
+    // en español, que es justo lo que un mercado mexicano no puede perder.
+    const casos: Array<[string, string, string | undefined]> = [
+      ["Brainstorm [Mercadian Masques] JAPONES", "Brainstorm", "Mercadian Masques"],
+      ["Angelic Wall [Odyssey] ESPAÑOL", "Angelic Wall", "Odyssey"],
+      ["Archmage of Runes [Foundations]ESPAÑOL", "Archmage of Runes", "Foundations"],
+      // "(Pro Tour)" se queda: no está en la lista de tratamientos, y es el
+      // catálogo —no una lista de palabras— quien lo resuelve después.
+      ["Avatar of Woe (Pro Tour) [Pro Tour Promos] Signed", "Avatar of Woe (Pro Tour)", "Pro Tour Promos"],
+    ];
+    for (const [titulo, nombre, set] of casos) {
+      const r = parseTitle(titulo);
+      assert.equal(r.cardName, nombre, titulo);
+      assert.equal(r.setName, set, titulo);
+    }
+  });
+
   it("un paréntesis con número NO es el nombre del set", () => {
     // Antes "Command Tower (0917)" guardaba "0917" como nombre del set.
     const r = parseTitle("Command Tower (0917)");

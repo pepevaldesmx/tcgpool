@@ -1,0 +1,23 @@
+name: Sembrar el catálogo de Magic
+
+# Baja el archivo masivo de Scryfall (una entrada por nombre de carta) y lo
+# escribe en `cards`. Es idempotente y tarda un par de minutos; se corre a mano
+# cuando salen sets nuevos, no en cada sincronización.
+on:
+  workflow_dispatch:
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Sembrar
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PGPOOL_MAX: "4"
+        run: npm run catalog:seed

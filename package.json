@@ -17,6 +17,7 @@
     "panel:token": "tsx --env-file-if-exists=.env.local scripts/panel-token.ts",
     "probe": "tsx scripts/probe-store.ts",
     "smoke": "tsx --env-file-if-exists=.env.local scripts/smoke.ts",
+    "catalog:seed": "tsx --env-file-if-exists=.env.local scripts/catalog-seed.ts",
     "db:check": "tsx --env-file-if-exists=.env.local scripts/db-check.ts",
     "db:migrate": "tsx --env-file-if-exists=.env.local scripts/db-migrate.ts",
     "db:seed": "tsx --env-file-if-exists=.env.local scripts/sync.ts"

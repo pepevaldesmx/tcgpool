@@ -114,6 +114,13 @@ const COLLECTOR = /^#?\d{1,5}[a-z★†]?$/i;
 /** "(DSC)", "(LTC)": código de set abreviado que las tiendas anexan. */
 const SET_CODE = /^[A-Z0-9]{2,5}$/;
 
+/**
+ * Palabras sueltas que las tiendas cuelgan al final, sin paréntesis:
+ * "Brainstorm [Mercadian Masques] JAPONES". No son parte del nombre.
+ */
+const SUFIJO_SUELTO =
+  /\s+(espanol|español|castellano|japones|japonés|ingles|inglés|english|spanish|japanese|portugues|portugués|aleman|alemán|frances|francés|italiano|coreano|chino|signed|firmada|firmado|oversized|foil|etched|nm|mint)\s*$/i;
+
 export interface ParsedTitle {
   cardName: string;
   setName?: string;
@@ -134,10 +141,22 @@ export function parseTitle(rawTitle: string): ParsedTitle {
   let setName: string | undefined;
   let collectorNumber: string | undefined;
 
-  const bracket = title.match(/\[([^\]]+)\]\s*$/);
+  // El corchete NO tiene que estar al final: las tiendas escriben
+  // "Brainstorm [Mercadian Masques] JAPONES" y exigirlo al final dejaba el
+  // título entero como nombre de la carta. Se toma el último grupo y lo que
+  // quede a los lados se vuelve a pegar.
+  const bracket = title.match(/\[([^\]]+)\]/g);
   if (bracket) {
-    setName = bracket[1].trim();
-    title = title.slice(0, bracket.index).trim();
+    const ultimo = bracket[bracket.length - 1];
+    const at = title.lastIndexOf(ultimo);
+    setName = ultimo.slice(1, -1).trim();
+    title = `${title.slice(0, at).trim()} ${title.slice(at + ultimo.length).trim()}`.trim();
+  }
+
+  // Y lo que quedó colgando después del corchete —idioma, "Signed"— se pela.
+  for (let previo = ""; previo !== title; ) {
+    previo = title;
+    title = title.replace(SUFIJO_SUELTO, "").trim();
   }
 
   // Los paréntesis del final se pelan uno por uno, de derecha a izquierda:

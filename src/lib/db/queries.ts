@@ -197,21 +197,41 @@ export async function upsertPrinting(p: {
  * remoto. Con SQLite local no importaba; aquí es la diferencia entre segundos y
  * media hora.
  */
-export async function upsertCards(
-  rows: Array<{
-    gameId: string;
-    name: string;
-    oracleId?: string | null;
-    imageUrl?: string | null;
-    typeLine?: string | null;
-  }>,
-): Promise<Map<string, number>> {
+export interface CardInput {
+  gameId: string;
+  name: string;
+  oracleId?: string | null;
+  imageUrl?: string | null;
+  typeLine?: string | null;
+}
+
+/**
+ * Una fila por llave. `ON CONFLICT DO UPDATE` no puede tocar la misma fila dos
+ * veces en la MISMA sentencia: Postgres aborta con "cannot affect row a second
+ * time". Y hay nombres repetidos de verdad —"Everythingamajig" existe seis
+ * veces en Magic, con seis textos distintos y el mismo nombre—, así que esto no
+ * es defensivo: es el caso normal en cuanto el lote es grande.
+ */
+export function dedupeCards(rows: CardInput[]): CardInput[] {
+  const vistas = new Set<string>();
+  const out: CardInput[] = [];
+  for (const c of rows) {
+    const key = `${c.gameId}|${normalizeText(c.name)}`;
+    if (vistas.has(key)) continue;
+    vistas.add(key);
+    out.push(c);
+  }
+  return out;
+}
+
+export async function upsertCards(rows: CardInput[]): Promise<Map<string, number>> {
   const ids = new Map<string, number>();
   if (!rows.length) return ids;
 
   const CHUNK = 500;
-  for (let i = 0; i < rows.length; i += CHUNK) {
-    const chunk = rows.slice(i, i + CHUNK);
+  const unicas = dedupeCards(rows);
+  for (let i = 0; i < unicas.length; i += CHUNK) {
+    const chunk = unicas.slice(i, i + CHUNK);
     const values: unknown[] = [];
     const tuples = chunk.map((c, j) => {
       const b = j * 7;
@@ -442,6 +462,53 @@ export async function pruneGamesNotIn(
     [gameIds],
   );
   return { games: games.map((g) => g.id), cards: cards.length };
+}
+
+export interface CatalogEntry {
+  name: string;
+  oracleId: string | null;
+  typeLine: string | null;
+  imageUrl: string | null;
+}
+
+/**
+ * El catálogo entero de un juego, en memoria, llaveado por nombre normalizado.
+ *
+ * Son ~33,000 filas y ~3 MB: cabe de sobra, y evita el patrón que hacía que una
+ * ingesta tardara diez minutos —una llamada de red por nombre— y que un CSV de
+ * mil renglones no cupiera en una petición web. Se carga una vez por corrida.
+ */
+export async function loadCardIndex(gameId: string): Promise<Map<string, CatalogEntry>> {
+  const rows = await query<{
+    matchKey: string;
+    name: string;
+    oracleId: string | null;
+    typeLine: string | null;
+    imageUrl: string | null;
+  }>(
+    `SELECT match_key AS "matchKey", name, oracle_id AS "oracleId",
+            type_line AS "typeLine", image_url AS "imageUrl"
+       FROM cards WHERE game_id = $1`,
+    [gameId],
+  );
+  const indice = new Map<string, CatalogEntry>(
+    rows.map((r) => [
+      r.matchKey,
+      { name: r.name, oracleId: r.oracleId, typeLine: r.typeLine, imageUrl: r.imageUrl },
+    ]),
+  );
+
+  // Las cartas de dos caras se llaman "Bruce Banner // Hulk" en el catálogo,
+  // pero las tiendas titulan sólo la cara de enfrente. Se registra ese alias,
+  // sin pisar una carta que ya se llame así de por sí.
+  for (const [key, entry] of [...indice]) {
+    if (!key.includes(" ")) continue;
+    const cara = entry.name.split("//")[0]?.trim();
+    if (!cara || cara === entry.name) continue;
+    const aliasKey = normalizeText(cara);
+    if (aliasKey && !indice.has(aliasKey)) indice.set(aliasKey, entry);
+  }
+  return indice;
 }
 
 // ---------------------------------------------------------------------------
@@ -959,11 +1026,23 @@ function toTsQuery(q: string): string | null {
  */
 export async function searchCards(
   q: string,
-  { limit = 40, onlyInStock = true }: { limit?: number; onlyInStock?: boolean } = {},
+  {
+    limit = 40,
+    onlyInStock = true,
+    includeUnlisted = false,
+  }: { limit?: number; onlyInStock?: boolean; includeUnlisted?: boolean } = {},
 ): Promise<CardSummary[]> {
   const ts = toTsQuery(q);
   if (!ts) return [];
-  const having = onlyInStock ? `HAVING COUNT(*) FILTER (WHERE l.in_stock) > 0` : "";
+  // El catálogo trae las ~37,000 cartas de Magic que existen, no sólo las que
+  // alguien vende: sin este filtro el buscador contestaría con cartas que nadie
+  // tiene, que es justo lo contrario de para qué existe. El panel de tienda sí
+  // las pide —captura lo que nadie lista todavía— con `includeUnlisted`.
+  const having = onlyInStock
+    ? `HAVING COUNT(*) FILTER (WHERE l.in_stock) > 0`
+    : includeUnlisted
+      ? ""
+      : `HAVING COUNT(l.id) > 0`;
 
   const byPrefix = await query<CardSummary>(
     `${CARD_SUMMARY_SELECT}
@@ -1092,7 +1171,9 @@ export interface GamePublic {
 export async function listGames(): Promise<GamePublic[]> {
   return query<GamePublic>(
     `SELECT g.id, g.name,
-            COUNT(DISTINCT c.id)::int AS "cardCount",
+            -- Cartas que alguien vende, no cartas que existen: el catálogo
+            -- sembrado trae todo Magic y "37,000 cartas" prometería stock.
+            COUNT(DISTINCT c.id) FILTER (WHERE l.id IS NOT NULL)::int AS "cardCount",
             COUNT(*) FILTER (WHERE l.in_stock)::int AS "inStockCount"
      FROM games g
      LEFT JOIN cards c ON c.game_id = g.id
@@ -1114,7 +1195,8 @@ export interface Stats {
 export async function getStats(): Promise<Stats> {
   const row = await one<Stats>(
     `SELECT (SELECT COUNT(*)::int FROM stores WHERE active) AS stores,
-            (SELECT COUNT(*)::int FROM cards) AS cards,
+            (SELECT COUNT(DISTINCT p.card_id)::int
+               FROM listings l JOIN printings p ON p.id = l.printing_id) AS cards,
             (SELECT COUNT(*)::int FROM listings) AS listings,
             (SELECT COUNT(*)::int FROM listings WHERE in_stock) AS "inStock",
             (SELECT MAX(last_synced_at) FROM stores) AS "lastSyncedAt"`,

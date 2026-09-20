@@ -85,6 +85,22 @@ app móvil nativa. Web responsive es suficiente.
   Un paréntesis con puros dígitos NUNCA es el nombre del set. Arreglar el parser
   no basta: `pruneOrphans` corre en cada sincronización completa para que las
   cartas mal partidas de antes, que se quedan sin listados, salgan del catálogo.
+- **`cards` es el catálogo de Magic COMPLETO, no el inventario.** Se siembra de
+  los datos masivos de Scryfall (`npm run catalog:seed`, ~33,000 nombres) porque
+  resolver nombres contra la red no escala: la ingesta pagaba 150 ms por nombre
+  —diez minutos por tienda— y un CSV de mil renglones no cabría en una petición
+  web. Con el catálogo sembrado se resuelve en memoria y sin red; Scryfall queda
+  para lo que no está. Consecuencia que NO hay que deshacer: "N cartas" en la UI
+  cuenta cartas que alguien vende, nunca filas de `cards`, y `searchCards`
+  esconde las que nadie lista (el panel las pide con `includeUnlisted`, porque
+  capturar lo que nadie tiene es justo su trabajo).
+- **Quién es una carta lo decide el catálogo, no una lista de palabras.** Las
+  tiendas cuelgan "(Pro Tour)", "(Promo Pack)", "(Oversized)" y lo que se les
+  ocurra mañana; perseguirlas con un regex es una carrera perdida.
+  `resolveAgainstCatalog` recorta paréntesis del final hasta que el catálogo
+  reconoce el nombre, de la versión más larga a la más corta —"Erase (Not the
+  Urza's Legacy One)" ES una carta y recortarla de más la cambiaría por otra— y
+  si nada empata, no inventa.
 - **La búsqueda es `tsvector` con prefijo por palabra, y trigramas de respaldo.**
   `to_tsquery('simple', 'sol:* & ring:*')` reproduce lo que hacía FTS5; cuando no
   hay coincidencia, `pg_trgm` tolera errores de dedo ("counterspel" encuentra
@@ -221,6 +237,7 @@ npm run sync -- --live [--store=<slug>]     # ingerir feeds reales
 npm run snapshot -- --store=<slug>          # capturar un feed sin ingerirlo
 npm run make-samples                        # regenerar datos de muestra (usa Scryfall)
 npm run snapshots:normalize                 # reescribir snapshots en forma estable
+npm run catalog:seed                        # siembra las ~33,000 cartas de Magic
 npm run db:check                            # diagnostica DATABASE_URL sin revelarla
 npm run smoke                               # reporte del catálogo real (sólo lectura)
 npm run probe -- <dominio>                  # ¿ese dominio sirve un feed de Shopify?

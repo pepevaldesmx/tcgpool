@@ -9,11 +9,13 @@ import {
 import { readManualFeed, type ManualConfig } from "@/lib/ingest/adapters/manual";
 import { normalizeListing, normalizeText } from "@/lib/ingest/normalize";
 import { splitFeedByConflicts } from "@/lib/ingest/conflicts";
+import { resolveAgainstCatalog } from "@/lib/ingest/resolve";
 import type { StoreDefinition } from "@/lib/ingest/registry";
 import { cardImage, lookupCardByName, saveCache } from "@/lib/cards/scryfall";
 import {
   finishSyncRun,
   listManualListings,
+  loadCardIndex,
   markMissingAsOutOfStock,
   recordConflicts,
   supersedeFeedListings,
@@ -117,6 +119,13 @@ export async function syncStore(
       printing: Omit<PrintingInput, "cardId">;
       listing: Omit<ListingInput, "printingId" | "sellerId" | "storeId">;
     }
+    // El catálogo sembrado resuelve los nombres sin salir a la red. Scryfall
+    // queda sólo para lo que no está —títulos con erratas, cartas nuevas— que
+    // es una fracción diminuta de un feed.
+    const indice = opts.enrich !== false ? await loadCardIndex("magic") : new Map();
+    let desdeCatalogo = 0;
+    let desdeScryfall = 0;
+
     const pending: Pending[] = [];
     const cards = new Map<string, Parameters<typeof upsertCards>[0][number]>();
     const perGame: Record<string, number> = {};
@@ -138,14 +147,29 @@ export async function syncStore(
 
       // Scryfall sólo conoce Magic: para los demás juegos no hay a qué resolver.
       if (opts.enrich !== false && n.game === "magic") {
-        const sc = await lookupCardByName(n.cardName, { offline: opts.offline });
-        if (sc) {
-          canonicalName = sc.name;
-          cardImageUrl = cardImage(sc) ?? cardImageUrl;
-          oracleId = sc.oracle_id ?? null;
-          typeLine = sc.type_line ?? null;
-          if (n.setName && sc.set_name?.toLowerCase() === n.setName.toLowerCase()) {
-            setCode = sc.set;
+        let local = indice.get(n.cardMatchKey);
+        if (!local) {
+          // El catálogo decide si "Avatar of Woe (Pro Tour)" es "Avatar of Woe".
+          const recortado = resolveAgainstCatalog(n.cardName, (k) => indice.has(k));
+          if (recortado) local = indice.get(normalizeText(recortado));
+        }
+        if (local) {
+          desdeCatalogo++;
+          canonicalName = local.name;
+          cardImageUrl = local.imageUrl ?? cardImageUrl;
+          oracleId = local.oracleId;
+          typeLine = local.typeLine;
+        } else {
+          desdeScryfall++;
+          const sc = await lookupCardByName(n.cardName, { offline: opts.offline });
+          if (sc) {
+            canonicalName = sc.name;
+            cardImageUrl = cardImage(sc) ?? cardImageUrl;
+            oracleId = sc.oracle_id ?? null;
+            typeLine = sc.type_line ?? null;
+            if (n.setName && sc.set_name?.toLowerCase() === n.setName.toLowerCase()) {
+              setCode = sc.set;
+            }
           }
         }
       }
@@ -238,6 +262,9 @@ export async function syncStore(
     }
     const upserted = await upsertListings(aplicables);
 
+    if (desdeScryfall) {
+      log(`  nombres: ${desdeCatalogo} del catálogo · ${desdeScryfall} consultados a Scryfall`);
+    }
     if (Object.keys(perGame).length > 1) {
       log(
         `  juegos: ${Object.entries(perGame)
