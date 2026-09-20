@@ -85,6 +85,10 @@ app móvil nativa. Web responsive es suficiente.
   Un paréntesis con puros dígitos NUNCA es el nombre del set. Arreglar el parser
   no basta: `pruneOrphans` corre en cada sincronización completa para que las
   cartas mal partidas de antes, que se quedan sin listados, salgan del catálogo.
+  **Pero sólo borra las que no tienen `oracle_id`**: el catálogo sembrado son
+  33,000 cartas sin listados A PROPÓSITO, y barrer por "sin listados" a secas lo
+  borraba entero en cada corrida. Lo que hay que barrer es lo que Scryfall nunca
+  reconoció, que es justo lo que inventó un parser malo.
 - **`cards` es el catálogo de Magic COMPLETO, no el inventario.** Se siembra de
   los datos masivos de Scryfall (`npm run catalog:seed`, ~33,000 nombres) porque
   resolver nombres contra la red no escala: la ingesta pagaba 150 ms por nombre
@@ -207,6 +211,22 @@ app móvil nativa. Web responsive es suficiente.
   publica es el que quedó en el campo, no una fórmula que se recalcule sola: si
   se recalculara, el catálogo entero se movería con el dólar sin que la tienda
   lo decidiera.
+- **"Cartas de moda" = las más BUSCADAS que además se pueden comprar.** Se
+  miden tres señales con pesos distintos porque no dicen lo mismo: buscar (×1)
+  es teclear un nombre, abrir la carta (×2) es interés, y el clic de salida (×3)
+  es lo más cerca que estamos de ver una venta —ocurre en la tienda y nunca la
+  vemos—. Contar sólo las cartas que se abren dejaba fuera a quien busca, mira
+  el precio en la lista y se va, que es la mayoría. Mientras no haya búsquedas
+  que contar, el respaldo ordena por disponibilidad y lo DICE, y excluye las
+  tierras básicas: son lo que toda tienda surte, así que barren cualquier
+  ranking y el home acababa presumiendo que Plains está en dos tiendas.
+- **Una muestra tiene que mentir en el contenido, nunca en la FORMA.** El demo
+  de MTG Wolf eran 24 staples de Commander, todos con stock, y por eso el plan
+  de surtido SIEMPRE lo recomendaba: cubría las seis cartas de cualquier lista
+  de prueba con datos inventados. Ahora sale de una muestra uniforme de los
+  datos masivos de Scryfall (`npm run make-wolf-demo`): 800 listados, dos
+  tercios con stock, mediana de seis pesos y sin la cola cara. Se parece a la
+  carpeta de una tienda chica, que es lo que es.
 - **NO ponemos a las tiendas a competir por precio.** Nada de coronar "la más
   barata", ni de anunciar la diferencia porcentual entre tiendas. El precio se
   muestra y se puede ordenar por él, pero nunca es el ranking por defecto:
@@ -246,6 +266,7 @@ npm run sync                                # ingerir desde data/snapshots/
 npm run sync -- --live [--store=<slug>]     # ingerir feeds reales
 npm run snapshot -- --store=<slug>          # capturar un feed sin ingerirlo
 npm run make-samples                        # regenerar datos de muestra (usa Scryfall)
+npm run make-wolf-demo                      # regenerar el demo de MTG Wolf
 npm run snapshots:normalize                 # reescribir snapshots en forma estable
 npm run catalog:seed                        # siembra las ~33,000 cartas de Magic
 npm run db:check                            # diagnostica DATABASE_URL sin revelarla

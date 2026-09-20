@@ -10,7 +10,11 @@ import { isConfigured, query } from "@/lib/db";
  * Nada aquí tumba una página: un contador perdido no le importa a nadie.
  */
 
-export type EventKind = "view" | "clickout";
+/**
+ * `search` es la intención más temprana: alguien tecleó ese nombre. `view` es
+ * que abrió la carta; `clickout`, que se fue a comprarla a la tienda.
+ */
+export type EventKind = "search" | "view" | "clickout";
 
 export function isEventsStoreEnabled(): boolean {
   return isConfigured();
@@ -35,16 +39,19 @@ export async function recordEvent(slug: string, kind: EventKind): Promise<void> 
 /**
  * Slugs más demandados en la ventana, de mayor a menor.
  *
- * Un clic de salida pesa el triple que una vista: la venta ocurre en la tienda
- * y nunca la vemos, así que ese clic es la intención de compra más cercana que
- * podemos observar.
+ * Los tres eventos NO valen igual, porque no dicen lo mismo. Buscar es teclear
+ * un nombre; abrir la carta es interés; el clic de salida es lo más cerca que
+ * estamos de ver una venta —ocurre en la tienda y nunca la vemos— y por eso
+ * pesa el triple.
  */
 export async function getTopCardSlugs(limit = 5, windowDays = 14): Promise<string[]> {
   if (!isConfigured()) return [];
   try {
     const rows = await query<{ card_slug: string }>(
       `SELECT card_slug,
-              SUM(CASE WHEN kind = 'clickout' THEN count * 3 ELSE count END) AS score
+              SUM(CASE kind WHEN 'clickout' THEN count * 3
+                            WHEN 'view'     THEN count * 2
+                            ELSE count END) AS score
        FROM card_events
        WHERE day >= CURRENT_DATE - $1::int
        GROUP BY card_slug

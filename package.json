@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "sync": "tsx --env-file-if-exists=.env.local scripts/sync.ts",
     "snapshot": "tsx scripts/snapshot.ts",
+    "make-wolf-demo": "tsx scripts/make-wolf-demo.ts",
     "make-samples": "tsx scripts/make-samples.ts",
     "test": "tsx --test \"src/**/*.test.ts\"",
     "snapshots:normalize": "tsx scripts/normalize-snapshots.ts",

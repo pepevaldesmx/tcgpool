@@ -4,11 +4,11 @@ import { recordEvent, type EventKind } from "@/lib/events/store";
 
 export const dynamic = "force-dynamic";
 
-const KINDS: EventKind[] = ["view", "clickout"];
+const KINDS: EventKind[] = ["search", "view", "clickout"];
 
 /**
- * Registra una señal de demanda. El cliente la manda al ver una carta y al
- * salir hacia la tienda.
+ * Registra una señal de demanda. El cliente la manda al buscar, al ver una
+ * carta y al salir hacia la tienda.
  *
  * Sólo acepta slugs que existen en el catálogo: sin esa guarda cualquiera
  * podría llenar la tabla de basura y ensuciar el ranking.

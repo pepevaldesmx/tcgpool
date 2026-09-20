@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import SearchBox from "@/components/SearchBox";
 import CardTile from "@/components/CardTile";
 import { searchCards } from "@/lib/db/queries";
+import TrackSearch from "@/components/TrackSearch";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,9 @@ export default async function SearchPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
+      {/* La búsqueda se le acredita a la carta que encabezó los resultados: es
+          la que el usuario quiso decir. */}
+      {results[0] && <TrackSearch slug={results[0].slug} query={q} />}
       <div className="max-w-2xl">
         <SearchBox initialQuery={q} autoFocus={!q} size="lg" />
       </div>

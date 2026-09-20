@@ -414,13 +414,18 @@ export async function pruneStoresNotIn(
 }
 
 /**
- * Borra impresiones y cartas que se quedaron sin ningún listado.
+ * Borra impresiones y cartas que se quedaron sin ningún listado Y que el
+ * catálogo nunca reconoció.
  *
- * No sólo pasa al quitar una tienda: cuando mejora el parser de títulos, las
- * cartas mal partidas de antes —"Command Tower (0917)" como carta propia—
- * quedan sin listados, y en el buscador se ven igual que una válida. Correrlo
- * en cada sincronización completa es lo que hace que arreglar el parser
- * realmente limpie el catálogo.
+ * Las dos condiciones importan, y la segunda se aprendió a golpes: el catálogo
+ * sembrado son 33,000 cartas que NO tienen listados a propósito —son las cartas
+ * que existen, no las que alguien vende— así que barrer por "sin listados" a
+ * secas lo borraba entero en cada sincronización, y con él la resolución de
+ * nombres sin red y el importador de CSV.
+ *
+ * Lo que sí hay que barrer son las cartas que inventó un parser malo
+ * —"Command Tower (0917)" como carta propia— y ésas se distinguen porque
+ * Scryfall nunca las reconoció: no tienen `oracle_id`.
  */
 export async function pruneOrphans(): Promise<{ printings: number; cards: number }> {
   const printings = await query<{ id: number }>(
@@ -430,7 +435,8 @@ export async function pruneOrphans(): Promise<{ printings: number; cards: number
   );
   const cards = await query<{ id: number }>(
     `DELETE FROM cards c
-      WHERE NOT EXISTS (SELECT 1 FROM printings p WHERE p.card_id = c.id)
+      WHERE c.oracle_id IS NULL
+        AND NOT EXISTS (SELECT 1 FROM printings p WHERE p.card_id = c.id)
       RETURNING c.id`,
   );
   return { printings: printings.length, cards: cards.length };
@@ -1265,9 +1271,19 @@ export async function getStats(): Promise<Stats> {
 }
 
 /** Ranking de respaldo: en cuántas tiendas está la carta. */
+/**
+ * Respaldo de "cartas de moda" cuando todavía no hay búsquedas que contar.
+ *
+ * Sin las tierras básicas: son lo que TODA tienda surte, así que barren
+ * cualquier ranking por disponibilidad y el home acaba presumiendo que Plains
+ * está en dos tiendas. Cierto, y no le interesa a nadie.
+ */
 export async function getTopCardsBySupply(limit = 5): Promise<CardSummary[]> {
   return query<CardSummary>(
     `${CARD_SUMMARY_SELECT}
+     -- Sin type_line es una carta que el catálogo nunca reconoció (fichas, art
+     -- cards): tampoco debería encabezar el home.
+     WHERE c.type_line IS NOT NULL AND c.type_line NOT ILIKE 'Basic Land%'
      GROUP BY c.id
      HAVING COUNT(*) FILTER (WHERE l.in_stock) > 0
      ORDER BY COUNT(DISTINCT l.store_id) FILTER (WHERE l.in_stock) DESC,
