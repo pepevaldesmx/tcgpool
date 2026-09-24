@@ -21,24 +21,99 @@ Games) tienen buscador de decklist, pero nunca cruzan con otras tiendas.
 una carta que sabemos repartida entre 2–3 tiendas mexicanas, y que salga en
 segundos algo que él no puede ver hoy en ningún lado.
 
-## Fases
+## Cómo funciona el mercado (y por qué el producto es así)
 
-**Fase 1 (lo que existe en este repo):** agregar el catálogo de varias tiendas
-establecidas en un buscador.
+Las cartas vienen en sobres. Una tienda compra sobres, los abre, y vende lo que
+salió. **No puede conseguir una carta porque alguien la quiera** — su inventario
+es el azar de lo que abrió, más lo que le compra a sus clientes.
 
-**Fase 2 (NO construir todavía):** afiliados. Un jugador con colección propia se
-certifica como vendedor a través de una tienda que lo avala; cada tienda tiene
-panel de afiliados con sus propias condiciones; el afiliado lleva la carta a la
-tienda y ésta la manda con sus pedidos; comisión ~1% incrustada en el flujo de
-pago, con umbral de volumen.
+De ahí sale todo lo demás. Que ninguna tienda tenga lo que buscas no es una
+falla: es el estado normal. Y la oferta que falta no está en las tiendas, está
+en las cajas de los jugadores que abrieron sobres hace años. Por eso los
+afiliados no son un extra: son la respuesta al problema que el producto existe
+para resolver.
 
-El modelo de datos ya lo soporta: `sellers` está separado de `stores` desde
-ahora. **Al tocar el esquema, no colapses esa separación.**
+Consecuencia práctica: una señal de "esto lo buscan y nadie lo tiene" NO le
+sirve a una tienda para reabastecerse, porque no puede. Sirve para saber qué
+comprarle a un cliente que llega a vender.
 
-## Fuera de alcance del MVP
+## Los tres roles
 
-Pagos, checkout, carrito, cuentas de usuario, login, comisiones, afiliados P2P,
-app móvil nativa. Web responsive es suficiente.
+**Usuario** busca cartas y arma comandas. **Tienda** vende su inventario y avala
+afiliados. **Afiliado** vende el suyo a través de una tienda: su stock suma al
+de ella, la tienda NO cobra comisión de lo que él venda, y responde por él. La
+tienda gana inventario, visitas cuando alguien recoge, y puede condicionar la
+afiliación a que le compre sobres.
+
+Los roles son RELACIONES (`memberships`), no un campo del usuario: el dueño de
+una tienda también compra cartas.
+
+## La comanda
+
+Buscar una lista crea una **comanda**: el grupo de cartas que el usuario va a
+comprar, armado desde la menor cantidad de fuentes posibles. El usuario puede
+cambiar las fuentes. Lo que no se consigue cae en su **wishlist**, que vive por
+su cuenta —se alimenta de búsquedas sueltas y de pendientes de varias comandas—
+y avisa por correo UNA vez cuando aparece cualquier impresión de esa carta.
+
+Al pagar se revisa carta por carta. Si alguien se la ganó en ese instante, se
+busca otra fuente y **se le enseña el cambio al usuario antes de cobrar**: el
+precio y hasta el costo de recolección se mueven. Si no hay otra fuente, esa
+carta se va a la wishlist y no se cobra. No se aparta inventario: la regla de
+"rearmar y avisar" cubre el caso sin bloquear stock de nadie.
+
+## El dinero
+
+De la comanda se restan las comisiones de cobro y **2% + IVA (2.32%) nuestro**;
+el resto se le paga a tiendas y afiliados. Ganamos 2%; el 0.32% es IVA del SAT,
+no ingreso. Envíos y consolidación se cobran aparte.
+
+| Entrega (misma ciudad) | |
+|---|---|
+| Recoger en cada tienda | gratis |
+| Consolidar en una tienda y recoger | $50 |
+| A domicilio desde una tienda | $100 |
+| Consolidar + domicilio | $150 |
+
+Entre ciudades, $100 por cada ciudad de origen. La consolidación siempre se
+cobra aparte.
+
+**Los $50 sólo existen si hay lote.** Una corrida del mensajero junta VARIAS
+comandas de las mismas tiendas; con una sola comanda, ésa paga la corrida
+entera. Por eso la recolección va por días fijos y no "cuando el usuario pague":
+el calendario es lo que fabrica la densidad. Y por eso concentrar la comanda en
+pocas fuentes no era sólo comodidad del comprador — es la economía del
+mensajero.
+
+**Pagarle a un afiliado no es como pagarle a una tienda.** Son personas físicas:
+retención de ISR e IVA y CFDI de por medio. Por eso `sellers` guarda RFC y
+régimen fiscal.
+
+## Sincronización: la elige el vendedor
+
+No estudiamos cada tienda para ver cómo la conectamos: el vendedor elige su
+método de un catálogo de conectores, y sumamos conectores conforme hagan falta.
+Cuelgan de `sellers` y no de `stores`, porque un afiliado también tiene
+inventario que sincronizar.
+
+CSV no es la opción pobre, es el SUSTRATO: ManaBox y TCGplayer exportan CSV, así
+que "sincronizar con ManaBox" es el importador con un preset de columnas, no un
+conector nuevo.
+
+Y la frescura del inventario es la cara visible del conector, lo que le da a la
+tienda una razón propia para conectarse mejor: CSV manual = muchas comandas que
+se rompen al pagar; feed cada 6 h = algunas; app conectada con webhooks = casi
+ninguna.
+
+## Alcance de arranque
+
+**Sólo Magic y sólo CDMX.** Las tres tiendas del registro están en CDMX. La
+lógica de envíos foráneos se modela igual aunque duerma. Expandir ciudades y
+juegos viene después de entender esto.
+
+## Fuera de alcance
+
+App móvil nativa. Web responsive es suficiente.
 
 ## Invariantes técnicas
 
@@ -152,7 +227,9 @@ app móvil nativa. Web responsive es suficiente.
   Ese respaldo aplica a productos que NO nombran juego ("Cartas Sueltas"),
   nunca a los que nombran uno que no soportamos: `namesUnsupportedGame` los
   descarta, porque "Star Wars Single" en una tienda de Magic no es Magic.
-- **El registro de tiendas manda: `data/stores.json` es la fuente.** Quitar una
+- **TRANSITORIO — el registro de tiendas es `data/stores.json`.** Se muda a la
+  base en cuanto exista el admin, que es donde se dan de alta las tiendas. Hasta
+  entonces: Quitar una
   tienda de ahí la borra de la base en el siguiente sync (`pruneStoresNotIn`),
   con sus listados y las cartas que se quedan sin ninguno. El SQL del catálogo
   no filtra por tienda activa, así que dejarla "inactiva" no la sacaría del
@@ -192,8 +269,10 @@ app móvil nativa. Web responsive es suficiente.
   Resolver a favor del feed BORRA el capturado y publica el del feed como
   listado nuevo; renombrar el capturado con el `external_id` del feed reventaba
   la llave única cuando otra fila ya lo tenía.
-- **El panel de tienda se abre con `stores.panel_token`,** no con cuentas. Quien
-  tiene el link entra; el token se compara contra la base y las acciones lo
+- **TRANSITORIO — el panel se abre con `stores.panel_token`.** Se muere en
+  cuanto haya cuentas de verdad (`users` + `memberships`), pero sigue vivo
+  mientras tanto: quitarlo el mismo día que se agrega su reemplazo deja el panel
+  muerto entre un deploy y el otro. Quien tiene el link entra; el token se compara contra la base y las acciones lo
   revalidan además contra el slug, porque si no, cambiar una palabra en la URL
   editaría el inventario de otra tienda. Token inválido y tienda inexistente dan
   el mismo 404: distinguirlos confirmaría cuáles existen. El panel no se indexa.

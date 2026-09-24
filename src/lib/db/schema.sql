@@ -203,3 +203,247 @@ ALTER TABLE listing_conflicts
 ALTER TABLE listing_conflicts
   ADD CONSTRAINT listing_conflicts_listing_id_fkey
   FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE SET NULL;
+
+-- ===========================================================================
+-- PLATAFORMA: cuentas, comandas, wishlist, dinero, logística, conectores
+--
+-- Todo lo de aquí abajo es ADITIVO a propósito. El catálogo y la ingesta
+-- siguen corriendo en producción contra las tablas de arriba mientras el código
+-- migra; quitar `stores.panel_token` o `stores.source_type` el mismo día que se
+-- agregan sus reemplazos dejaría el sitio muerto entre un deploy y el otro.
+-- Se retiran cuando el código deje de leerlos, no antes.
+--
+-- Nota de vocabulario: las tablas del catálogo están en inglés y éstas dicen
+-- `comandas`. No es descuido: una comanda no es un "order" —existe antes del
+-- pago, se arma sola, cambia de fuentes y se parte en varias entregas— y es la
+-- palabra con la que se habla del producto.
+-- ===========================================================================
+
+-- --- Cuentas ---------------------------------------------------------------
+--
+-- Los roles son RELACIONES, no una columna: el dueño de una tienda también
+-- compra cartas, y un afiliado también busca. Con "tipo de usuario" como campo,
+-- esa persona necesitaría dos cuentas y dos correos.
+CREATE TABLE IF NOT EXISTS users (
+  id         SERIAL PRIMARY KEY,
+  email      TEXT NOT NULL,
+  -- Id del proveedor de identidad, si el login termina siendo externo.
+  auth_id    TEXT UNIQUE,
+  name       TEXT,
+  phone      TEXT,
+  is_admin   BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Único por correo sin importar mayúsculas: Pepe@ y pepe@ son la misma persona.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users (lower(email));
+
+CREATE TABLE IF NOT EXISTS memberships (
+  id         SERIAL PRIMARY KEY,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  seller_id  INTEGER NOT NULL REFERENCES sellers(id) ON DELETE CASCADE,
+  -- 'owner' administra; 'operator' captura inventario.
+  role       TEXT NOT NULL DEFAULT 'owner',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (user_id, seller_id)
+);
+
+CREATE TABLE IF NOT EXISTS addresses (
+  id          SERIAL PRIMARY KEY,
+  user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  label       TEXT,
+  line1       TEXT NOT NULL,
+  line2       TEXT,
+  city        TEXT NOT NULL,
+  state       TEXT,
+  postal_code TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_addresses_user ON addresses(user_id);
+
+-- --- Logística -------------------------------------------------------------
+--
+-- La corrida es una entidad propia y no un campo de la comanda, porque UNA
+-- corrida junta VARIAS comandas. De ahí salen los $50: el mensajero recorre las
+-- mismas tiendas una vez y el costo se reparte. Sin agrupar, la primera comanda
+-- del día paga la corrida entera.
+CREATE TABLE IF NOT EXISTS runs (
+  id            SERIAL PRIMARY KEY,
+  city          TEXT NOT NULL,
+  scheduled_for DATE NOT NULL,
+  status        TEXT NOT NULL DEFAULT 'programada',
+  courier       TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (city, scheduled_for)
+);
+
+CREATE TABLE IF NOT EXISTS run_stops (
+  id       SERIAL PRIMARY KEY,
+  run_id   INTEGER NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
+  store_id INTEGER NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+  position INTEGER NOT NULL DEFAULT 0,
+  status   TEXT NOT NULL DEFAULT 'pendiente',
+  UNIQUE (run_id, store_id)
+);
+
+-- --- Comanda ---------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS comandas (
+  id       SERIAL PRIMARY KEY,
+  user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  -- abierta | pagada | en_preparacion | lista | entregada | cancelada | expirada
+  status   TEXT NOT NULL DEFAULT 'abierta',
+  city     TEXT,
+  -- recoger_en_cada_tienda (gratis) | consolidar_y_recoger | envio_directo |
+  -- consolidar_y_enviar
+  delivery TEXT NOT NULL DEFAULT 'recoger_en_cada_tienda',
+  pickup_store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL,
+  address_id      INTEGER REFERENCES addresses(id) ON DELETE SET NULL,
+  run_id          INTEGER REFERENCES runs(id) ON DELETE SET NULL,
+
+  -- Cada componente por separado: el usuario tiene derecho a ver de qué se
+  -- compone el total, y la liquidación a cada vendedor se calcula del subtotal,
+  -- nunca del total.
+  subtotal_cents      INTEGER NOT NULL DEFAULT 0,
+  consolidation_cents INTEGER NOT NULL DEFAULT 0,
+  shipping_cents      INTEGER NOT NULL DEFAULT 0,
+  commission_cents    INTEGER NOT NULL DEFAULT 0,
+  processing_cents    INTEGER NOT NULL DEFAULT 0,
+  total_cents         INTEGER NOT NULL DEFAULT 0,
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  -- Una comanda sin pagar se libera: si no, se acumulan comandas fantasma que
+  -- ensucian cualquier medición de demanda.
+  expires_at TIMESTAMPTZ,
+  paid_at    TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_comandas_user ON comandas(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_comandas_run ON comandas(run_id) WHERE run_id IS NOT NULL;
+
+-- El renglón guarda COPIA del nombre, la condición y el precio. El listado
+-- original puede desaparecer entre que se arma la comanda y que se paga —de
+-- hecho es lo normal—, y una comanda tiene que poder leerse dos años después.
+CREATE TABLE IF NOT EXISTS comanda_lines (
+  id          SERIAL PRIMARY KEY,
+  comanda_id  INTEGER NOT NULL REFERENCES comandas(id) ON DELETE CASCADE,
+  listing_id  INTEGER REFERENCES listings(id) ON DELETE SET NULL,
+  printing_id INTEGER REFERENCES printings(id) ON DELETE SET NULL,
+  seller_id   INTEGER REFERENCES sellers(id) ON DELETE SET NULL,
+  store_id    INTEGER REFERENCES stores(id) ON DELETE SET NULL,
+
+  card_name   TEXT NOT NULL,
+  set_name    TEXT,
+  condition   TEXT NOT NULL,
+  language    TEXT,
+  finish      TEXT,
+  unit_price_cents INTEGER NOT NULL,
+  qty         INTEGER NOT NULL DEFAULT 1,
+  -- confirmada | perdida | reemplazada | removida
+  status      TEXT NOT NULL DEFAULT 'confirmada',
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_comanda_lines_comanda ON comanda_lines(comanda_id);
+
+-- --- Wishlist --------------------------------------------------------------
+--
+-- Vive por su cuenta, no colgada de una comanda: se alimenta de búsquedas que
+-- no dieron nada Y de lo que fue quedando pendiente de varias comandas.
+-- Cualquier impresión de la carta dispara el aviso: quien quiere una carta la
+-- quiere como sea.
+CREATE TABLE IF NOT EXISTS wishlist_items (
+  id          SERIAL PRIMARY KEY,
+  user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  card_id     INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+  -- 'busqueda' y 'comanda' son intensidades de deseo distintas: lo intentó
+  -- comprar tres veces no es lo mismo que lo buscó una vez.
+  source      TEXT NOT NULL DEFAULT 'busqueda',
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  notified_at TIMESTAMPTZ
+);
+
+-- Un solo deseo VIVO por carta y usuario: se avisa UNA vez y el renglón se
+-- cierra. Si la sigue queriendo, la vuelve a pedir. Un correo cada ocho días
+-- por la misma carta es un correo que nadie abre.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wishlist_vivo
+  ON wishlist_items (user_id, card_id) WHERE notified_at IS NULL;
+
+-- --- Dinero ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS payments (
+  id           SERIAL PRIMARY KEY,
+  comanda_id   INTEGER NOT NULL REFERENCES comandas(id) ON DELETE CASCADE,
+  provider     TEXT NOT NULL,
+  provider_ref TEXT,
+  amount_cents INTEGER NOT NULL,
+  fee_cents    INTEGER NOT NULL DEFAULT 0,
+  -- pendiente | pagado | fallido | reembolsado
+  status       TEXT NOT NULL DEFAULT 'pendiente',
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  -- El webhook del proveedor llega más de una vez: sin esto, un reintento suyo
+  -- se convierte en un cobro duplicado.
+  UNIQUE (provider, provider_ref)
+);
+
+-- Lo que se le paga a cada vendedor de una comanda. Las retenciones son cero
+-- para una tienda que factura por su cuenta, y no para un afiliado: una
+-- plataforma que cobra por cuenta de personas físicas retiene ISR e IVA.
+CREATE TABLE IF NOT EXISTS payouts (
+  id               SERIAL PRIMARY KEY,
+  seller_id        INTEGER NOT NULL REFERENCES sellers(id) ON DELETE CASCADE,
+  comanda_id       INTEGER REFERENCES comandas(id) ON DELETE SET NULL,
+  gross_cents      INTEGER NOT NULL,
+  processing_cents INTEGER NOT NULL DEFAULT 0,
+  commission_cents INTEGER NOT NULL DEFAULT 0,
+  isr_cents        INTEGER NOT NULL DEFAULT 0,
+  iva_cents        INTEGER NOT NULL DEFAULT 0,
+  net_cents        INTEGER NOT NULL,
+  status           TEXT NOT NULL DEFAULT 'pendiente',
+  cfdi_uuid        TEXT,
+  paid_at          TIMESTAMPTZ,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_payouts_seller ON payouts(seller_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS shipments (
+  id            SERIAL PRIMARY KEY,
+  comanda_id    INTEGER NOT NULL REFERENCES comandas(id) ON DELETE CASCADE,
+  from_city     TEXT NOT NULL,
+  to_address_id INTEGER REFERENCES addresses(id) ON DELETE SET NULL,
+  cost_cents    INTEGER NOT NULL DEFAULT 0,
+  carrier       TEXT,
+  tracking      TEXT,
+  status        TEXT NOT NULL DEFAULT 'pendiente',
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- --- Conectores ------------------------------------------------------------
+--
+-- Cuelgan del VENDEDOR, no de la tienda: un afiliado también tiene inventario
+-- que sincronizar, y ManaBox es justo lo que usaría un jugador para escanear su
+-- colección. Con el método en la tienda, el afiliado se queda sin herramientas.
+CREATE TABLE IF NOT EXISTS connectors (
+  id          SERIAL PRIMARY KEY,
+  seller_id   INTEGER NOT NULL REFERENCES sellers(id) ON DELETE CASCADE,
+  -- csv | shopify_publico | shopify_app | wix | api
+  type        TEXT NOT NULL,
+  config      JSONB NOT NULL DEFAULT '{}'::jsonb,
+  -- REFERENCIA a la credencial, nunca la credencial. Un token de Shopify en
+  -- texto plano en la base es un token filtrado el día del primer respaldo.
+  secret_ref  TEXT,
+  active      BOOLEAN NOT NULL DEFAULT TRUE,
+  last_run_at TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_connectors_seller ON connectors(seller_id) WHERE active;
+
+-- --- Migraciones sobre tablas que ya existían ------------------------------
+ALTER TABLE sellers ADD COLUMN IF NOT EXISTS rfc TEXT;
+ALTER TABLE sellers ADD COLUMN IF NOT EXISTS regimen_fiscal TEXT;
+ALTER TABLE sellers ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'activo';
+ALTER TABLE stores  ADD COLUMN IF NOT EXISTS affiliation_terms TEXT;
+-- Los afiliados también sincronizan, así que la bitácora deja de ser por tienda.
+ALTER TABLE sync_runs ADD COLUMN IF NOT EXISTS seller_id INTEGER
+  REFERENCES sellers(id) ON DELETE CASCADE;
