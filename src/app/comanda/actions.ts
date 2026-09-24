@@ -11,7 +11,7 @@ import {
   setDelivery,
   setLineQty,
 } from "@/lib/db/comandas";
-import { findCardByName, getSourceListing, getSourceListings } from "@/lib/db/queries";
+import { findCardsByNames, getSourceListing, getSourceListings } from "@/lib/db/queries";
 import { armarComanda, type Pedido } from "@/lib/comanda/armar";
 import { esEntrega } from "@/lib/comanda/money";
 import { parseDecklist } from "@/lib/decklist";
@@ -56,12 +56,12 @@ export async function armarDesdeLista(formData: FormData): Promise<void> {
   const deck = parseDecklist(lista);
   if (deck.length === 0) redirect("/lista");
 
-  const pedidos: Pedido[] = await Promise.all(
-    deck.map(async (l) => {
-      const card = await findCardByName(l.name);
-      return { nombre: l.name, cardId: card?.id ?? null, qty: l.qty };
-    }),
-  );
+  const catalogo = await findCardsByNames(deck.map((l) => l.name));
+  const pedidos: Pedido[] = deck.map((l) => ({
+    nombre: l.name,
+    cardId: catalogo.get(l.name)?.id ?? null,
+    qty: l.qty,
+  }));
 
   const cardIds = pedidos.map((p) => p.cardId).filter((id): id is number => id != null);
   const sources = await getSourceListings(cardIds);

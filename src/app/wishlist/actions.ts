@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addToWishlist, removeFromWishlist } from "@/lib/db/wishlist";
-import { findCardByName } from "@/lib/db/queries";
+import { findCardsByNames } from "@/lib/db/queries";
 import { getSesion } from "@/lib/auth/session";
 
 /**
@@ -27,13 +27,9 @@ export async function agregarAWishlist(formData: FormData): Promise<void> {
     .filter(Boolean)
     .slice(0, 300);
 
-  const cardIds: number[] = [];
-  const desconocidos: string[] = [];
-  for (const nombre of nombres) {
-    const card = await findCardByName(nombre);
-    if (card) cardIds.push(card.id);
-    else desconocidos.push(nombre);
-  }
+  const catalogo = await findCardsByNames(nombres);
+  const cardIds = [...new Set([...catalogo.values()].map((c) => c.id))];
+  const desconocidos = nombres.filter((n) => !catalogo.has(n));
 
   const source = formData.get("origen") === "comanda" ? "comanda" : "busqueda";
   await addToWishlist(sesion.user.id, cardIds, source);

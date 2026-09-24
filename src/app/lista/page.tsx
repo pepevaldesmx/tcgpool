@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import DeckPasteBox from "@/components/DeckPasteBox";
 import { parseDecklist, type DeckLine } from "@/lib/decklist";
 import {
-  findCardByName,
+  findCardsByNames,
   getCheapestByCardAndStore,
   type CardSummary,
   type CardStorePrice,
@@ -48,13 +48,14 @@ export default async function DeckPage({ searchParams }: Props) {
   const raw = (await searchParams).lista?.trim() ?? "";
   const lines = raw ? parseDecklist(raw) : [];
 
-  const results: LineResult[] = await Promise.all(
-    lines.map(async (line) => ({
-      line,
-      card: await findCardByName(line.name),
-      prices: [] as CardStorePrice[],
-    })),
-  );
+  // Los nombres se resuelven en UNA consulta: uno por uno, una lista de
+  // Commander pagaba cien viajes de red antes de que el usuario viera nada.
+  const catalogo = await findCardsByNames(lines.map((l) => l.name));
+  const results: LineResult[] = lines.map((line) => ({
+    line,
+    card: catalogo.get(line.name) ?? null,
+    prices: [] as CardStorePrice[],
+  }));
 
   const cardIds = results.map((r) => r.card?.id).filter((id): id is number => id != null);
   const prices = await getCheapestByCardAndStore(cardIds);

@@ -1465,6 +1465,51 @@ export async function getSourceListing(listingId: number): Promise<SourceListing
   return one<SourceListing>(`${SOURCE_LISTING_SELECT} WHERE l.id = $1 AND l.in_stock`, [listingId]);
 }
 
+/**
+ * Resuelve MUCHOS nombres de una vez.
+ *
+ * Una lista de Commander son cien renglones, y `findCardByName` uno por uno son
+ * cien viajes de red contra una base remota antes de que el usuario vea nada.
+ * Los exactos salen en UNA consulta; el respaldo difuso se paga sólo por los que
+ * no empataron, que en una lista pegada de verdad son dos o tres.
+ *
+ * Devuelve un Map por el nombre TAL CUAL se recibió, para poder reportar los que
+ * no se reconocieron con las palabras del usuario.
+ */
+export async function findCardsByNames(names: string[]): Promise<Map<string, CardSummary>> {
+  const encontradas = new Map<string, CardSummary>();
+  if (!names.length) return encontradas;
+
+  // El nombre normalizado es la llave; varios nombres distintos pueden
+  // normalizar al mismo ("Sol Ring" y "sol  ring").
+  const porLlave = new Map<string, string[]>();
+  for (const name of names) {
+    const key = normalizeText(name);
+    if (!key) continue;
+    porLlave.set(key, [...(porLlave.get(key) ?? []), name]);
+  }
+  if (porLlave.size === 0) return encontradas;
+
+  const exactas = await query<CardSummary>(
+    `${CARD_SUMMARY_SELECT} WHERE c.match_key = ANY($1::text[])
+      GROUP BY c.id`,
+    [[...porLlave.keys()]],
+  );
+  for (const card of exactas) {
+    for (const original of porLlave.get(normalizeText(card.name)) ?? []) {
+      encontradas.set(original, card);
+    }
+  }
+
+  for (const [key, originales] of porLlave) {
+    if (originales.some((o) => encontradas.has(o))) continue;
+    const difusa = (await searchCards(key, { limit: 1 }))[0];
+    if (difusa) for (const original of originales) encontradas.set(original, difusa);
+  }
+
+  return encontradas;
+}
+
 export interface CardStorePrice {
   cardId: number;
   storeId: number;
