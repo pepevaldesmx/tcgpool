@@ -5,6 +5,7 @@ import SearchBox from "@/components/SearchBox";
 import SampleDataNotice from "@/components/SampleDataNotice";
 import TrackCardView from "@/components/TrackCardView";
 import StoreLink from "@/components/StoreLink";
+import { agregarFuente } from "@/app/comanda/actions";
 import {
   getCardBySlug,
   getListingsForCard,
@@ -455,13 +456,29 @@ function ListingRowView({
         <span className="text-[17px] font-bold tnum">{money(listing.priceCents)}</span>
       </td>
       <td className="px-4 py-3 text-right">
-        <StoreLink
-          href={listing.productUrl}
-          slug={cardSlug}
-          className="rounded-pill border border-line bg-surface px-4 py-2 text-[13px] font-semibold transition hover:border-accent hover:text-accent"
-        >
-          Ver
-        </StoreLink>
+        <div className="flex items-center justify-end gap-1.5">
+          {/* Agregar sólo lo comprable: un botón sobre una carta agotada es una
+              promesa que se rompe en el siguiente clic. */}
+          {listing.inStock && (
+            <form action={agregarFuente}>
+              <input type="hidden" name="listingId" value={listing.id} />
+              <input type="hidden" name="volverA" value={`/carta/${cardSlug}`} />
+              <button
+                type="submit"
+                className="whitespace-nowrap rounded-pill bg-accent px-4 py-2 text-[13px] font-semibold text-accent-ink transition hover:shadow-lift"
+              >
+                Agregar
+              </button>
+            </form>
+          )}
+          <StoreLink
+            href={listing.productUrl}
+            slug={cardSlug}
+            className="rounded-pill border border-line bg-surface px-4 py-2 text-[13px] font-semibold transition hover:border-accent hover:text-accent"
+          >
+            Ver
+          </StoreLink>
+        </div>
       </td>
     </tr>
   );

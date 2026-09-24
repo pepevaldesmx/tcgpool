@@ -447,3 +447,22 @@ ALTER TABLE stores  ADD COLUMN IF NOT EXISTS affiliation_terms TEXT;
 -- Los afiliados también sincronizan, así que la bitácora deja de ser por tienda.
 ALTER TABLE sync_runs ADD COLUMN IF NOT EXISTS seller_id INTEGER
   REFERENCES sellers(id) ON DELETE CASCADE;
+
+-- La carta, no sólo la impresión: cuando un renglón se pierde al pagar, lo que
+-- se va a la wishlist es la CARTA —cualquier impresión dispara el aviso—, y sin
+-- esto habría que recuperarla desde `printings`, que puede haber sido barrida.
+ALTER TABLE comanda_lines ADD COLUMN IF NOT EXISTS card_id INTEGER
+  REFERENCES cards(id) ON DELETE SET NULL;
+
+-- UNA comanda abierta por persona. Es el carrito: dos pestañas armando listas
+-- distintas crearían dos comandas, y cada una pagaría su propia corrida del
+-- mensajero. Concentrar es justo lo que abarata la entrega.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_comanda_abierta
+  ON comandas (user_id) WHERE status = 'abierta';
+
+-- El mismo listado dos veces en la misma comanda es MÁS CANTIDAD, no otro
+-- renglón: dos renglones de la misma fuente se pagarían y recogerían igual, y
+-- sólo servirían para confundir el conteo. La misma carta desde DOS tiendas
+-- distintas sí son dos renglones, y esta llave lo permite.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_comanda_lines_fuente
+  ON comanda_lines (comanda_id, listing_id) WHERE listing_id IS NOT NULL;

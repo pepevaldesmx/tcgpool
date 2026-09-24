@@ -12,6 +12,7 @@ import { money } from "@/lib/format";
 import { planFulfillment, type FulfillmentLine } from "@/lib/fulfillment";
 import { formatDistance, proximityRank } from "@/lib/location";
 import { getUserLocation } from "@/lib/location-server";
+import { armarDesdeLista } from "@/app/comanda/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -230,6 +231,23 @@ export default async function DeckPage({ searchParams }: Props) {
                 . Buscamos el menor número de pedidos, no el precio más bajo: partir la
                 compra entre muchas tiendas sale más caro en envíos y esperas.
               </p>
+            )}
+
+            {plan.legs.length > 0 && (
+              <form action={armarDesdeLista} className="mt-5">
+                <input type="hidden" name="lista" value={raw} />
+                <button
+                  type="submit"
+                  className="rounded-pill bg-accent px-6 py-2.5 text-[15px] font-semibold text-accent-ink shadow-card transition hover:shadow-lift"
+                >
+                  Armar mi comanda
+                </button>
+                <span className="ml-3 text-[13px] text-muted">
+                  {plan.uncovered.length > 0
+                    ? `Las ${plan.uncovered.length} que nadie tiene se van a tu wishlist.`
+                    : "Puedes cambiar las fuentes antes de pagar."}
+                </span>
+              </form>
             )}
           </section>
 

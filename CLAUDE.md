@@ -363,6 +363,64 @@ App móvil nativa. Web responsive es suficiente.
   identidad por cada icono.
 - **Salir es POST.** Con GET, cualquier imagen o link ajeno apuntando a `/salir`
   sacaría a la persona de su sesión sin que lo pidiera.
+- **UNA comanda abierta por persona**, con índice único parcial
+  (`WHERE status = 'abierta'`). Es el carrito: dos pestañas armando listas
+  distintas crearían dos comandas, y cada una pagaría su propia corrida del
+  mensajero. Concentrar es justo lo que abarata la entrega.
+- **Un renglón guarda la COPIA y la FUENTE, no una de las dos.** La copia
+  congelada (nombre, set, condición, precio unitario) es lo que el usuario vio y
+  aceptó; el `listing_id` es contra lo que se vuelve a verificar al pagar. Si el
+  renglón leyera el precio del listado en cada vista, la tienda podría subirlo
+  entre que el usuario armó la comanda y que pagó, sin que nadie se enterara.
+- **La cantidad NUNCA rebasa el stock de la fuente**, ni al agregar, ni al
+  repetir la misma fuente, ni al escribirla a mano. Sin el tope en el
+  `ON CONFLICT`, apretar "Agregar" cinco veces dejaba cinco copias de la única
+  que hay: una comanda que se rompe sola al pagar. El mismo listado dos veces es
+  MÁS CANTIDAD, no otro renglón; la misma carta desde dos tiendas distintas sí
+  son dos renglones.
+- **El plan decide EN QUÉ TIENDA; `armarComanda` decide CUÁL listado.** Son dos
+  preguntas distintas y colapsarlas hacía que el plan prometiera un total y la
+  comanda cobrara otro. La llave del plan es el índice del pedido y no el id de
+  la carta, porque una lista pegada puede traerla repetida; las repeticiones se
+  suman por fuente ANTES de llegar a la base (`agruparPorFuente`), o el
+  `INSERT ... ON CONFLICT` truena con "cannot affect row a second time".
+- **Dentro de una tienda gana el precio; la condición sólo desempata.** Ordenar
+  sólo por precio metía en silencio la copia más maltratada cuando cuesta lo
+  mismo que una sana. Lo que NO se hace es preferir la mejor condición sobre el
+  precio: el plan de `/lista` cuenta con el más barato, y si la comanda eligiera
+  otro los dos totales no cuadrarían. La condición va SIEMPRE visible en el
+  renglón.
+- **El renglón dice de quién es la carta.** El stock de un afiliado suma al de
+  su tienda, pero la carta es de él; el comprador tiene derecho a saberlo. Y si
+  la tienda todavía es de muestra, el renglón lleva su marca `demo`: una comanda
+  con renglones sintéticos no puede presentarse como una compra real.
+- **La aritmética del dinero es pura y vive en `src/lib/comanda/money.ts`.**
+  Nuestra comisión se RESTA del subtotal, no se suma al usuario: de $500 el
+  usuario paga $500. Sumarla encima subiría el precio de las cartas frente al de
+  la tienda y nos pondría a competir con nuestros propios vendedores. Envío y
+  consolidación sí se suman, porque no son cartas: son un servicio que le
+  pagamos al mensajero, y por eso no entran a la base del pago a vendedores. El
+  pago a vendedores nunca es negativo: una carta de tres pesos no cubre la cuota
+  fija de la terminal, y un pago negativo no es un pago, es un error. Las tarifas
+  de cobro están declaradas como SUPUESTO en un solo lugar, no repartidas por la
+  aplicación.
+- **Recoger no paga envío aunque las cartas vengan de otra ciudad**: si el
+  usuario va a la tienda, no hay paquete.
+- **La wishlist se llama por `card_id`, no por `printing_id`.** Cuando alguien
+  quiere una carta la quiere como sea, así que cualquier impresión dispara el
+  aviso. Y se avisa UNA vez: el índice único parcial
+  `(user_id, card_id) WHERE notified_at IS NULL` deja un pendiente vivo por
+  carta, y una fila ya avisada no estorba —volver a agregarla crea otra, que es
+  justo lo que significa "la sigo queriendo"—. La regla vive en el ESQUEMA, no en
+  el código que inserta.
+- **Lo que no se consiguió no se escribe solo en la wishlist.** Se enseña y el
+  usuario decide: la wishlist es suya, no un efecto colateral de haber buscado.
+  Los nombres que el catálogo no reconoce se REPORTAN, nunca se adivinan, igual
+  que en la importación de inventario.
+- **Ninguna acción cree un id que venga del formulario.** El `comanda_id` se
+  resuelve desde la sesión y cada renglón se toca con `WHERE comanda_id = ...`;
+  el precio y la tienda de una fuente se leen de la base. Con el precio en el
+  formulario, cualquiera compraría una carta de mil pesos en uno.
 - **El SQL de cuentas vive en `src/lib/db/accounts.ts`**, aparte de `queries.ts`,
   que es el catálogo: son las personas y su relación con los vendedores, no
   cartas. La regla de que las pantallas no hablan con Postgres directo se

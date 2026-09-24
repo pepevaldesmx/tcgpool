@@ -1373,6 +1373,98 @@ export async function findCardByName(name: string): Promise<CardSummary | null> 
   return (await searchCards(name, { limit: 1 }))[0] ?? null;
 }
 
+/** Un listado concreto, con todo lo que un renglón de comanda tiene que copiar. */
+export interface SourceListing {
+  listingId: number;
+  cardId: number;
+  cardName: string;
+  cardSlug: string;
+  printingId: number;
+  setName: string | null;
+  setCode: string | null;
+  collectorNumber: string | null;
+  imageUrl: string | null;
+  language: string;
+  finish: string;
+  condition: string;
+  priceCents: number;
+  stock: number;
+  storeId: number;
+  storeSlug: string;
+  storeName: string;
+  storeCity: string | null;
+  /** 'live' | 'sample'. Va hasta la comanda: un renglón de muestra se marca. */
+  storeDataSource: string;
+  storeLat: number | null;
+  storeLng: number | null;
+  sellerId: number;
+  sellerName: string;
+  sellerType: string;
+  origin: string;
+}
+
+// De mejor a peor. Sólo desempata: el precio manda.
+const CONDICIONES_SQL = `ARRAY['NM','LP','MP','HP','DMG','SEALED','UNKNOWN']`;
+
+const SOURCE_LISTING_SELECT = `
+  SELECT l.id AS "listingId", p.card_id AS "cardId", c.name AS "cardName",
+         c.slug AS "cardSlug", p.id AS "printingId", p.set_name AS "setName",
+         p.set_code AS "setCode", p.collector_number AS "collectorNumber",
+         p.image_url AS "imageUrl", p.language, p.finish,
+         l.condition, l.price_cents AS "priceCents", l.stock, l.origin,
+         st.id AS "storeId", st.slug AS "storeSlug", st.name AS "storeName",
+         st.city AS "storeCity", st.data_source AS "storeDataSource",
+         st.lat AS "storeLat", st.lng AS "storeLng",
+         se.id AS "sellerId", se.name AS "sellerName", se.type AS "sellerType"
+    FROM listings l
+    JOIN printings p ON p.id = l.printing_id
+    JOIN cards c ON c.id = p.card_id
+    JOIN stores st ON st.id = l.store_id
+    JOIN sellers se ON se.id = l.seller_id`;
+
+/**
+ * El listado que se va a comprar en cada tienda: UNO por (carta, tienda).
+ *
+ * `getCheapestByCardAndStore` sólo da el precio, y con un precio no se puede
+ * armar una comanda —hace falta el listado concreto, con su condición, idioma y
+ * acabado, y saber si es de la tienda o de un afiliado suyo—.
+ *
+ * El criterio es precio y, a igualdad de precio, mejor condición: ordenar sólo
+ * por precio metería silenciosamente la copia más maltratada cuando cuesta lo
+ * mismo que una sana. Lo que NO se hace es preferir la mejor condición sobre el
+ * precio: el plan de surtido de `/lista` cuenta con el más barato, y si la
+ * comanda eligiera otro, los dos totales no cuadrarían.
+ */
+export async function getSourceListings(cardIds: number[]): Promise<SourceListing[]> {
+  if (!cardIds.length) return [];
+  return query<SourceListing>(
+    `SELECT * FROM (
+       SELECT DISTINCT ON ("cardId", "storeId") *
+         FROM (${SOURCE_LISTING_SELECT}
+                WHERE l.in_stock AND p.card_id = ANY($1::int[])) todos
+        ORDER BY "cardId", "storeId", "priceCents",
+                 array_position(${CONDICIONES_SQL}, condition)
+     ) elegidos
+     ORDER BY "cardName", "priceCents"`,
+    [cardIds],
+  );
+}
+
+/** Todas las fuentes de una carta, para que el usuario pueda cambiar la elegida. */
+export async function getSourcesForCard(cardId: number): Promise<SourceListing[]> {
+  return query<SourceListing>(
+    `${SOURCE_LISTING_SELECT}
+      WHERE l.in_stock AND p.card_id = $1
+      ORDER BY l.price_cents, st.name`,
+    [cardId],
+  );
+}
+
+/** Un listado por id, para validar que la fuente que pidió el usuario existe. */
+export async function getSourceListing(listingId: number): Promise<SourceListing | null> {
+  return one<SourceListing>(`${SOURCE_LISTING_SELECT} WHERE l.id = $1 AND l.in_stock`, [listingId]);
+}
+
 export interface CardStorePrice {
   cardId: number;
   storeId: number;

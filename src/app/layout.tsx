@@ -5,6 +5,7 @@ import { getProvenance, type Provenance } from "@/lib/db/queries";
 import NotConfigured from "@/components/NotConfigured";
 import { getUserLocation } from "@/lib/location-server";
 import { getSesion } from "@/lib/auth/session";
+import { countOpenComandaCopies } from "@/lib/db/comandas";
 import LocationPicker from "@/components/LocationPicker";
 import "./globals.css";
 
@@ -35,8 +36,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // La sesión es decoración de la barra, igual que la procedencia: si el
   // proveedor de identidad no responde, el buscador sigue funcionando sin cuenta.
   let sesion = null;
+  let enComanda = 0;
   try {
     sesion = await getSesion();
+    if (sesion) enComanda = await countOpenComandaCopies(sesion.user.id);
   } catch (err) {
     console.error("[layout] no se pudo leer la sesión:", err);
   }
@@ -78,6 +81,27 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/tiendas" className="rounded-pill px-3 py-1.5 font-medium text-muted transition hover:bg-surface hover:text-accent">
                   Tiendas
                 </Link>
+                {sesion && (
+                  <>
+                    <Link
+                      href="/wishlist"
+                      className="hidden rounded-pill px-3 py-1.5 font-medium text-muted transition hover:bg-surface hover:text-accent sm:block"
+                    >
+                      Wishlist
+                    </Link>
+                    <Link
+                      href="/comanda"
+                      className="rounded-pill px-3 py-1.5 font-medium text-muted transition hover:bg-surface hover:text-accent"
+                    >
+                      Comanda
+                      {enComanda > 0 && (
+                        <span className="ml-1.5 rounded-pill bg-accent px-2 py-0.5 text-[12px] font-bold text-accent-ink tnum">
+                          {enComanda}
+                        </span>
+                      )}
+                    </Link>
+                  </>
+                )}
                 {sesion ? (
                   <Link
                     href="/cuenta"
