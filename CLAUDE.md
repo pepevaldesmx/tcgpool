@@ -269,13 +269,18 @@ App móvil nativa. Web responsive es suficiente.
   Resolver a favor del feed BORRA el capturado y publica el del feed como
   listado nuevo; renombrar el capturado con el `external_id` del feed reventaba
   la llave única cuando otra fila ya lo tenía.
-- **TRANSITORIO — el panel se abre con `stores.panel_token`.** Se muere en
-  cuanto haya cuentas de verdad (`users` + `memberships`), pero sigue vivo
-  mientras tanto: quitarlo el mismo día que se agrega su reemplazo deja el panel
-  muerto entre un deploy y el otro. Quien tiene el link entra; el token se compara contra la base y las acciones lo
-  revalidan además contra el slug, porque si no, cambiar una palabra en la URL
-  editaría el inventario de otra tienda. Token inválido y tienda inexistente dan
-  el mismo 404: distinguirlos confirmaría cuáles existen. El panel no se indexa.
+- **TRANSITORIO — el panel se abre con DOS llaves: la membresía y el token.**
+  `abrirPanel` acepta las dos. La membresía (`users` + `memberships`) es lo
+  definitivo; `stores.panel_token` sigue vivo porque matarlo el mismo día que
+  llegaron las cuentas dejaría el panel muerto entre un deploy y el otro, y a las
+  tiendas que ya tienen su link sin entrar mientras crean su cuenta. Se retira
+  cuando las tres tiendas hayan entrado con correo. Si la URL trae token, ése se
+  usa y no se cae a la sesión: si lo trae, es lo que quiso usar. Ninguna de las
+  dos vías cree el slug de la URL —el token se compara contra la base y se exige
+  que sea el de esa tienda; la membresía se consulta para esa tienda— porque si
+  no, cambiar una palabra en la dirección editaría el inventario de otra. Token
+  inválido, sin permiso y tienda inexistente dan el mismo 404: distinguirlos
+  confirmaría cuáles existen. El panel no se indexa.
 - **El precio de referencia sale de Scryfall, que republica TCGplayer bajo
   licencia.** Es la misma referencia con la que las tiendas mexicanas fijan sus
   precios, pero obtenida por una vía que no se puede cortar: scrapear TCGplayer
@@ -326,6 +331,50 @@ App móvil nativa. Web responsive es suficiente.
   de las tiendas son el centro de su ciudad, así que más precisión no mejora
   nada y sería recolectar ubicación fina sin necesitarla. La cookie es entrada
   no confiable: `parseLocation` valida y devuelve null ante basura.
+- **La identidad es de Supabase; el usuario es nuestro.** Supabase Auth prueba
+  que el correo es suyo y nada más; de ahí para adelante la identidad que importa
+  es la fila de `users`, porque es a ella que cuelgan membresías, comandas y
+  wishlist. `auth_id` es el puente. Se entra con link al correo y no con
+  contraseña: no hay nada que recordar, recuperar ni filtrar, y para una
+  plataforma cuyo trato es "te aviso cuando aparezca tu carta", el correo
+  verificado no es un trámite extra —es el producto. La sesión se valida con
+  `getUser()`, nunca con `getSession()`: la cookie la controla el visitante.
+- **Al entrar se ADOPTA la fila que ya exista con ese correo.** Es el caso
+  normal: el admin da de alta la tienda y concede la membresía por correo ANTES
+  de que el dueño haya entrado nunca; cuando entra, su `auth_id` se pega a esa
+  fila y encuentra su panel ya armado. Crear una segunda fila lo dejaría sin
+  tienda, y el índice único por correo reventaría.
+- **El administrador se declara en `ADMIN_EMAILS`, no se gana por llegar
+  primero.** "Si no hay admins, el primero que entre lo es" convierte a
+  cualquiera que descubra la URL antes que nosotros en dueño de la plataforma.
+- **El destino después de entrar se valida (`rutaSegura`).** Es un parámetro de
+  la URL, o sea entrada de quien sea: sin validarlo, un link a
+  `/entrar?next=https://otrositio` usa nuestro login como trampolín —la persona
+  entra de verdad y acaba en otra parte creyendo que sigue aquí—. Sólo rutas de
+  esta app, y `//host` queda fuera porque el navegador la lee como otro dominio.
+  Y el link del correo regresa al dominio por el que LLEGÓ la petición
+  (`origenDeLaPeticion`): quemar el de producción manda a quien prueba en local a
+  producción.
+- **El refresco de sesión vive en `src/proxy.ts`.** En Next 16 el archivo se
+  llama `proxy`, no `middleware`. El token dura una hora y un Server Component no
+  puede escribir cookies: intentar el refresco ahí perdería el token nuevo y
+  desconectaría a la persona a media compra aunque su sesión fuera válida. El
+  `matcher` excluye estáticos e imágenes, o habría una llamada al proveedor de
+  identidad por cada icono.
+- **Salir es POST.** Con GET, cualquier imagen o link ajeno apuntando a `/salir`
+  sacaría a la persona de su sesión sin que lo pidiera.
+- **El SQL de cuentas vive en `src/lib/db/accounts.ts`**, aparte de `queries.ts`,
+  que es el catálogo: son las personas y su relación con los vendedores, no
+  cartas. La regla de que las pantallas no hablan con Postgres directo se
+  mantiene igual.
+- **Un afiliado NO administra la tienda que lo avala.** En `sellers`, `store_id`
+  significa dos cosas según el `type`: para una tienda es ella misma, para un
+  afiliado es quien lo avala. Unir sin distinguir le daba al afiliado el panel de
+  la tienda.
+- **El id del usuario sale de la sesión, nunca del formulario.** Si viniera del
+  formulario, cambiar un número editaría el perfil de otra persona.
+- **El perfil se escribe sin `COALESCE`: null BORRA.** Un teléfono capturado mal
+  que no se puede vaciar se vuelve un dato equivocado permanente.
 - **El criterio de cercanía es MISMA CIUDAD antes que kilómetros**
   (`proximityRank`). Es la única diferencia que el comprador siente —recoger en
   tienda, envío al día siguiente—; entre dos ciudades distintas todo es
@@ -370,8 +419,16 @@ son la única vía para tocar la base desde donde no se tiene la cadena.
 
 Next.js (App Router) + PostgreSQL (`pg`) + Tailwind, desplegado en Vercel.
 Una sola base para catálogo y señales de demanda, con `DATABASE_URL` como única
-configuración. El build no la toca: sólo compila. La ingesta corre aparte (cron
-de GitHub Actions) y escribe directo a la base.
+configuración indispensable. El build no la toca: sólo compila. La ingesta corre
+aparte (cron de GitHub Actions) y escribe directo a la base.
+
+Las cuentas usan Supabase Auth y piden dos variables más
+(`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) más
+`ADMIN_EMAILS`. Sin ellas el buscador funciona igual y `/entrar` lo dice: las
+cuentas son una capa encima del catálogo, no su cimiento. Ver `.env.example`.
+En Supabase hay que dar de alta las URLs de retorno (Authentication → URL
+Configuration → Redirect URLs): `https://tcgpool.vercel.app/auth/callback` y
+`http://localhost:3000/auth/callback`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

@@ -4,6 +4,7 @@ import { isConfigured } from "@/lib/db";
 import { getProvenance, type Provenance } from "@/lib/db/queries";
 import NotConfigured from "@/components/NotConfigured";
 import { getUserLocation } from "@/lib/location-server";
+import { getSesion } from "@/lib/auth/session";
 import LocationPicker from "@/components/LocationPicker";
 import "./globals.css";
 
@@ -30,6 +31,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   const location = await getUserLocation();
+
+  // La sesión es decoración de la barra, igual que la procedencia: si el
+  // proveedor de identidad no responde, el buscador sigue funcionando sin cuenta.
+  let sesion = null;
+  try {
+    sesion = await getSesion();
+  } catch (err) {
+    console.error("[layout] no se pudo leer la sesión:", err);
+  }
 
   // El aviso de procedencia es decoración, no contenido: si la base no responde
   // —o si es un build sin DATABASE_URL, donde Next prerenderiza el 404— la barra
@@ -68,6 +78,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/tiendas" className="rounded-pill px-3 py-1.5 font-medium text-muted transition hover:bg-surface hover:text-accent">
                   Tiendas
                 </Link>
+                {sesion ? (
+                  <Link
+                    href="/cuenta"
+                    className="ml-1 max-w-[12rem] truncate rounded-pill border border-line bg-surface px-3 py-1.5 font-semibold text-ink transition hover:border-accent hover:text-accent"
+                  >
+                    {sesion.user.name ?? sesion.user.email}
+                  </Link>
+                ) : (
+                  <Link
+                    href="/entrar"
+                    className="ml-1 rounded-pill bg-accent px-3.5 py-1.5 font-semibold text-accent-ink transition hover:shadow-lift"
+                  >
+                    Entrar
+                  </Link>
+                )}
               </nav>
             </div>
           </header>

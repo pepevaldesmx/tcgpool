@@ -3,30 +3,31 @@
 import { revalidatePath } from "next/cache";
 import {
   deleteManualListing,
-  getStoreByPanelToken,
   getStoreSellerId,
   importManualListings,
   loadCardIndex,
   resolveConflict,
   saveManualListing,
 } from "@/lib/db/queries";
+import { abrirPanel } from "@/lib/auth/panel";
 import { leerInventarioCsv, MAX_FILAS } from "@/lib/ingest/csv-import";
 import type { Condition } from "@/lib/types";
 
 /**
  * Acciones del panel de tienda.
  *
- * TODAS vuelven a validar el token contra la base y comparan el slug: el token
- * viaja en el formulario y es lo único que autoriza. Confiar en el slug de la
- * URL dejaría que cualquiera editara el inventario de otra tienda cambiando una
- * palabra en la dirección.
+ * TODAS vuelven a autorizar contra la base, y el slug del formulario NO se
+ * cree: el token se compara y se exige que sea el de esa tienda, y la membresía
+ * se consulta para esa tienda. Confiar en el slug de la URL dejaría que
+ * cualquiera editara el inventario de otra tienda cambiando una palabra en la
+ * dirección.
  */
 async function authorize(formData: FormData): Promise<{ id: number; slug: string }> {
   const token = String(formData.get("token") ?? "");
   const slug = String(formData.get("slug") ?? "");
-  const store = await getStoreByPanelToken(token);
-  if (!store || store.slug !== slug) throw new Error("No autorizado");
-  return { id: store.id, slug: store.slug };
+  const acceso = await abrirPanel(slug, token);
+  if (!acceso) throw new Error("No autorizado");
+  return { id: acceso.store.id, slug: acceso.store.slug };
 }
 
 export async function resolveConflictAction(formData: FormData) {

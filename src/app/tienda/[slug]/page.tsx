@@ -3,10 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   getPanelStats,
-  getStoreByPanelToken,
   listPendingConflicts,
   listStoreInventory,
 } from "@/lib/db/queries";
+import { abrirPanel } from "@/lib/auth/panel";
 import { conditionLabel, moneyExact } from "@/lib/format";
 import { timeAgo } from "@/lib/format";
 import { resolveConflictAction, deleteListingAction } from "./actions";
@@ -32,10 +32,13 @@ export default async function PanelPage({ params, searchParams }: Props) {
   const { t = "", q = "", agotadas } = await searchParams;
   const includeSoldOut = agotadas === "1";
 
-  const store = await getStoreByPanelToken(t);
-  // Mismo 404 para token inválido y tienda inexistente: decir "token incorrecto"
-  // confirmaría que la tienda existe y convertiría esto en un oráculo.
-  if (!store || store.slug !== slug) notFound();
+  // Con cuenta basta la membresía; sin ella, el link con token sigue abriendo.
+  const acceso = await abrirPanel(slug, t);
+  // Mismo 404 para token inválido, sin permiso y tienda inexistente: decir
+  // "token incorrecto" confirmaría que la tienda existe y convertiría esto en un
+  // oráculo.
+  if (!acceso) notFound();
+  const { store } = acceso;
 
   const [stats, conflicts, inventory] = await Promise.all([
     getPanelStats(store.id),

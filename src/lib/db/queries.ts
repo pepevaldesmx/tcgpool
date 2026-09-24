@@ -550,6 +550,22 @@ export async function getStoreByPanelToken(token: string): Promise<PanelStore | 
   );
 }
 
+/**
+ * La misma tienda, resuelta por slug.
+ *
+ * Es para quien entra con cuenta: ahí el slug ya no autoriza nada por sí solo
+ * —la membresía es la que autoriza— así que buscar por slug es legítimo. El
+ * token sigue existiendo para quien todavía no tiene cuenta.
+ */
+export async function getStoreBySlugPanel(slug: string): Promise<PanelStore | null> {
+  return one<PanelStore>(
+    `SELECT id, slug, name, city, source_type AS "sourceType",
+            data_source AS "dataSource", last_synced_at AS "lastSyncedAt"
+       FROM stores WHERE slug = $1 AND active`,
+    [slug],
+  );
+}
+
 export interface PanelListing {
   id: number;
   cardName: string;
