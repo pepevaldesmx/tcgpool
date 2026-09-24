@@ -20,15 +20,15 @@
       "slug": "yellow-rabbit",
       "name": "Yellow Rabbit",
       "url": "https://yellowrabbit.mx",
-      "city": "Guadalajara",
+      "city": "CDMX",
       "sourceType": "shopify",
       "domainVerified": true,
       "sourceConfig": {
         "domain": "yellowrabbit.mx",
         "maxPages": 20
       },
-      "lat": 20.6597,
-      "lng": -103.3496,
+      "lat": 19.4326,
+      "lng": -99.1332,
       "defaultGame": "magic"
     },
     {
