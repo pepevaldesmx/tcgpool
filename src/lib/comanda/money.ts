@@ -83,12 +83,18 @@ export interface Desglose {
   shippingCents: number;
   /** Lo que el usuario paga. */
   totalCents: number;
-  /** Nuestro 2.32%, DESCONTADO del subtotal. */
+  /** Nuestro 2.32%, DESCONTADO del precio de las cartas. */
   commissionCents: number;
-  /** La comisión de la terminal, también descontada. */
+  /** Lo que cobra la terminal por el cargo completo. */
   processingCents: number;
+  /** La parte de la terminal que corresponde a las cartas. Sale del vendedor. */
+  processingCardsCents: number;
+  /** La parte que corresponde al envío. Sale del envío, NO del vendedor. */
+  processingShippingCents: number;
   /** Lo que se reparte entre tiendas y afiliados. */
   payoutCents: number;
+  /** Lo que queda del envío para pagarle al mensajero. */
+  deliveryNetCents: number;
 }
 
 export function desglosar(input: {
@@ -101,12 +107,34 @@ export function desglosar(input: {
   const totalCents = subtotalCents + consolidationCents + shippingCents;
 
   const commissionCents = Math.round((subtotalCents * COMISION_BPS) / 10_000);
-  // La terminal cobra sobre lo que se le cargó a la tarjeta, no sobre las
-  // cartas: el envío también pasa por ahí.
+
+  // La terminal cobra sobre TODO el cargo, cartas y envío juntos, porque es un
+  // solo cobro a la tarjeta.
   const processingCents =
     totalCents > 0
       ? Math.round((totalCents * PROCESAMIENTO_BPS) / 10_000) + PROCESAMIENTO_FIJO_CENTS
       : 0;
+
+  // Pero se PARTE, y cada parte la absorbe quien generó el cobro: la de las
+  // cartas sale del vendedor, la del envío sale del envío. Cobrarle al vendedor
+  // la comisión de un envío que él no cobró le quitaría dinero por un servicio
+  // que no dio.
+  //
+  // El PORCENTAJE se reparte en proporción. La CUOTA FIJA, no: se carga entera a
+  // las cartas, porque existe por haber un cobro y el cobro existe por la venta
+  // —el envío es un añadido—. Prorratearla también hacía que al vendedor le
+  // llegara distinto según cómo el comprador eligió recibir su pedido, que es una
+  // decisión en la que el vendedor no tiene voz. Así su descuento no depende de
+  // ella, y es algo que él puede verificar.
+  //
+  // La parte del envío es el RESIDUO, no otro redondeo: así las dos suman
+  // exactamente lo que cobra la terminal, sin inventar ni perder un centavo.
+  const envioCents = consolidationCents + shippingCents;
+  const porcentaje = totalCents > 0 ? Math.round((totalCents * PROCESAMIENTO_BPS) / 10_000) : 0;
+  const porcentajeCartas =
+    totalCents > 0 ? Math.round((porcentaje * subtotalCents) / totalCents) : 0;
+  const processingCardsCents = totalCents > 0 ? porcentajeCartas + PROCESAMIENTO_FIJO_CENTS : 0;
+  const processingShippingCents = processingCents - processingCardsCents;
 
   return {
     subtotalCents,
@@ -115,9 +143,14 @@ export function desglosar(input: {
     totalCents,
     commissionCents,
     processingCents,
-    // Nunca negativo: una comanda de $20 con $3.48 fijos de terminal dejaría a
-    // los vendedores debiendo dinero, y eso no es un pago, es un error.
-    payoutCents: Math.max(0, subtotalCents - commissionCents - processingCents),
+    processingCardsCents,
+    processingShippingCents,
+    // Nunca negativo: una carta de tres pesos no cubre la cuota fija de la
+    // terminal, y un pago negativo no es un pago, es un error.
+    payoutCents: Math.max(0, subtotalCents - commissionCents - processingCardsCents),
+    // Esto sí puede quedar en negativo y tiene que verse: significa que el cobro
+    // de entrega no alcanzó a pagar la corrida del mensajero.
+    deliveryNetCents: envioCents - processingShippingCents,
   };
 }
 

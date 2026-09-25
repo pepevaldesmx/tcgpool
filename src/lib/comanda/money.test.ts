@@ -1,6 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
+  ENTREGAS,
   costoEntrega,
   desglosar,
   CONSOLIDACION_CENTS,
@@ -68,8 +69,64 @@ describe("desglosar", () => {
       entrega: "consolidar_y_enviar",
       ciudadesOrigen: 1,
     });
-    assert.equal(d.payoutCents, d.subtotalCents - d.commissionCents - d.processingCents);
+    assert.equal(d.payoutCents, d.subtotalCents - d.commissionCents - d.processingCardsCents);
     assert.ok(d.payoutCents < d.subtotalCents);
+  });
+
+  it("la comisión de terminal del envío NO se le cobra a la tienda", () => {
+    // Misma venta de cartas, con y sin envío: al vendedor le llega lo mismo.
+    // Cobrarle la comisión de un envío que él no cobró le quitaría dinero por un
+    // servicio que no dio.
+    const sinEnvio = desglosar({
+      subtotalCents: 50_000,
+      entrega: "recoger_en_cada_tienda",
+      ciudadesOrigen: 1,
+    });
+    const conEnvio = desglosar({
+      subtotalCents: 50_000,
+      entrega: "consolidar_y_enviar",
+      ciudadesOrigen: 1,
+    });
+    assert.equal(conEnvio.payoutCents, sinEnvio.payoutCents);
+  });
+
+  it("las dos partes de la terminal suman exactamente lo que cobra", () => {
+    // El residuo, no dos redondeos: así no se inventa ni se pierde un centavo.
+    for (const subtotal of [1_337, 50_000, 99_999, 123_457]) {
+      for (const entrega of ENTREGAS) {
+        const d = desglosar({ subtotalCents: subtotal, entrega, ciudadesOrigen: 2 });
+        assert.equal(
+          d.processingCardsCents + d.processingShippingCents,
+          d.processingCents,
+          `${subtotal} / ${entrega}`,
+        );
+        // Y ninguna parte puede salir negativa: una comisión negativa sería un
+        // ingreso inventado.
+        assert.ok(d.processingShippingCents >= 0, `${subtotal} / ${entrega}`);
+        assert.ok(d.processingCardsCents >= 0, `${subtotal} / ${entrega}`);
+      }
+    }
+  });
+
+  it("sin envío, toda la comisión de terminal es de las cartas", () => {
+    const d = desglosar({
+      subtotalCents: 50_000,
+      entrega: "recoger_en_cada_tienda",
+      ciudadesOrigen: 1,
+    });
+    assert.equal(d.processingShippingCents, 0);
+    assert.equal(d.processingCardsCents, d.processingCents);
+    assert.equal(d.deliveryNetCents, 0);
+  });
+
+  it("dice cuánto queda del envío para el mensajero", () => {
+    const d = desglosar({
+      subtotalCents: 50_000,
+      entrega: "consolidar_y_recoger",
+      ciudadesOrigen: 1,
+    });
+    assert.equal(d.deliveryNetCents, 5_000 - d.processingShippingCents);
+    assert.ok(d.deliveryNetCents > 0 && d.deliveryNetCents < 5_000);
   });
 
   it("nunca deja a los vendedores debiendo dinero", () => {

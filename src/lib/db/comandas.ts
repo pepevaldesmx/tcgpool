@@ -56,6 +56,50 @@ export interface Comanda {
   ciudadesOrigen: number;
   /** Tiendas distintas del pedido. Lo que el plan intenta minimizar. */
   tiendas: number;
+  /** Renglones de tiendas que todavía no se ingieren en vivo. */
+  renglonesDemo: number;
+  /** Renglones cuya fuente ya no alcanza para la cantidad pedida. */
+  renglonesSinStock: number;
+  /** Si no, `porQueNoSeCobra` dice qué falta. */
+  cobrable: boolean;
+  porQueNoSeCobra: string | null;
+}
+
+/**
+ * ¿Se puede cobrar esta comanda?
+ *
+ * Un renglón de una tienda en muestra tiene precio y stock sintéticos: cobrarlo
+ * sería vender una carta que no existe. La comanda SÍ se arma con ellos —es lo
+ * que permite enseñarle el flujo completo a un dueño de tienda antes de que su
+ * catálogo esté conectado— pero el cobro se detiene aquí, no en la conciencia de
+ * quien opere la plataforma.
+ */
+function revisarCobro(lines: ComandaLine[]): {
+  renglonesDemo: number;
+  renglonesSinStock: number;
+  cobrable: boolean;
+  porQueNoSeCobra: string | null;
+} {
+  const renglonesDemo = lines.filter((l) => l.storeDataSource === "sample").length;
+  const renglonesSinStock = lines.filter(
+    (l) => l.stockActual == null || l.stockActual < l.qty,
+  ).length;
+
+  const porQueNoSeCobra =
+    lines.length === 0
+      ? "La comanda está vacía."
+      : renglonesDemo > 0
+        ? renglonesDemo === 1
+          ? "Un renglón es de una tienda con catálogo de muestra: no se puede cobrar una carta cuyo precio y stock son sintéticos."
+          : `${renglonesDemo} renglones son de tiendas con catálogo de muestra: no se puede cobrar una carta cuyo precio y stock son sintéticos.`
+        : null;
+
+  return {
+    renglonesDemo,
+    renglonesSinStock,
+    cobrable: porQueNoSeCobra === null,
+    porQueNoSeCobra,
+  };
 }
 
 const LINE_SELECT = `
@@ -105,6 +149,7 @@ async function armar(row: ComandaRow): Promise<Comanda> {
     lines,
     ciudadesOrigen: ciudades.size,
     tiendas: tiendas.size,
+    ...revisarCobro(lines),
     desglose: desglosar({ subtotalCents, entrega: delivery, ciudadesOrigen: ciudades.size }),
   };
 }

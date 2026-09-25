@@ -64,9 +64,15 @@ carta se va a la wishlist y no se cobra. No se aparta inventario: la regla de
 
 ## El dinero
 
-De la comanda se restan las comisiones de cobro y **2% + IVA (2.32%) nuestro**;
-el resto se le paga a tiendas y afiliados. Ganamos 2%; el 0.32% es IVA del SAT,
-no ingreso. Envíos y consolidación se cobran aparte.
+Del **precio de las cartas** se restan la comisión de cobro y **2% + IVA (2.32%)
+nuestro**; el resto se le paga a tiendas y afiliados. Ganamos 2%; el 0.32% es IVA
+del SAT, no ingreso.
+
+Envíos y consolidación se cobran **aparte y encima**, y su propia comisión de
+terminal **sale del envío, no de la tienda**: el vendedor no cobró el envío, así
+que descontarle su comisión le quitaría dinero por un servicio que no dio. El
+resultado es que al vendedor le llega lo mismo sin importar cómo el comprador
+eligió recibir su pedido, que es una decisión en la que él no tiene voz.
 
 | Entrega (misma ciudad) | |
 |---|---|
@@ -395,15 +401,33 @@ App móvil nativa. Web responsive es suficiente.
   la tienda todavía es de muestra, el renglón lleva su marca `demo`: una comanda
   con renglones sintéticos no puede presentarse como una compra real.
 - **La aritmética del dinero es pura y vive en `src/lib/comanda/money.ts`.**
-  Nuestra comisión se RESTA del subtotal, no se suma al usuario: de $500 el
-  usuario paga $500. Sumarla encima subiría el precio de las cartas frente al de
-  la tienda y nos pondría a competir con nuestros propios vendedores. Envío y
-  consolidación sí se suman, porque no son cartas: son un servicio que le
-  pagamos al mensajero, y por eso no entran a la base del pago a vendedores. El
-  pago a vendedores nunca es negativo: una carta de tres pesos no cubre la cuota
-  fija de la terminal, y un pago negativo no es un pago, es un error. Las tarifas
-  de cobro están declaradas como SUPUESTO en un solo lugar, no repartidas por la
-  aplicación.
+  Nuestra comisión se RESTA del precio de las cartas, no se suma al usuario: de
+  $500 el usuario paga $500. Sumarla encima subiría el precio de las cartas
+  frente al de la tienda y nos pondría a competir con nuestros propios
+  vendedores. Envío y consolidación sí se suman, porque no son cartas: son un
+  servicio que le pagamos al mensajero, y por eso no entran a la base del pago a
+  vendedores. El pago a vendedores nunca es negativo: una carta de tres pesos no
+  cubre la cuota fija de la terminal, y un pago negativo no es un pago, es un
+  error. Las tarifas de cobro están declaradas como SUPUESTO en un solo lugar, no
+  repartidas por la aplicación.
+- **La comisión de terminal se PARTE: la de las cartas sale del vendedor, la del
+  envío sale del envío.** La terminal cobra una sola vez sobre todo el cargo,
+  pero cada parte la absorbe quien la generó. El PORCENTAJE se reparte en
+  proporción; la CUOTA FIJA se carga entera a las cartas, porque existe por haber
+  un cobro y el cobro existe por la venta —el envío es un añadido—. Prorratearla
+  también hacía que al vendedor le llegara distinto según la entrega que eligió el
+  COMPRADOR, y esa es una decisión en la que el vendedor no tiene voz: así su
+  descuento no depende de ella y él puede verificarlo. La parte del envío es el
+  RESIDUO de la resta, no un segundo redondeo, para que las dos sumen exactamente
+  lo que cobra la terminal sin inventar ni perder un centavo. `deliveryNetCents`
+  dice qué queda del cobro de entrega para pagarle al mensajero, y puede salir
+  negativo: eso significa que no alcanzó, y tiene que verse.
+- **Una comanda con renglones de muestra NO SE COBRA.** Un listado de una tienda
+  `data_source = 'sample'` tiene precio y stock sintéticos; cobrarlo sería vender
+  una carta que no existe. La comanda sí se ARMA con ellos —es lo que permite
+  enseñarle el flujo completo a un dueño de tienda antes de que su catálogo esté
+  conectado— pero `revisarCobro` detiene el cobro y la pantalla dice por qué. El
+  freno vive en el modelo, no en la conciencia de quien opere la plataforma.
 - **Recoger no paga envío aunque las cartas vengan de otra ciudad**: si el
   usuario va a la tienda, no hay paquete.
 - **La wishlist se llama por `card_id`, no por `printing_id`.** Cuando alguien

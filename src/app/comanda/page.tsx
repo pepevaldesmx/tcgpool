@@ -350,11 +350,34 @@ export default async function ComandaPage({
               <p className="mt-3 text-[13px] leading-relaxed text-muted">
                 El precio de las cartas es el de cada tienda: no le sumamos nada
                 encima. Al pagar revisamos carta por carta y, si alguien se te
-                adelantó, te enseñamos el cambio antes de cobrar.
+                adelantó, te enseñamos el cambio antes de cobrar
+                {comanda!.renglonesSinStock > 0 && (
+                  <>
+                    {" "}
+                    —hoy{" "}
+                    {comanda!.renglonesSinStock === 1
+                      ? "hay un renglón que ya no alcanza"
+                      : `hay ${comanda!.renglonesSinStock} renglones que ya no alcanzan`}
+                    —
+                  </>
+                )}
+                .
               </p>
-              <p className="mt-4 text-[13px] font-semibold text-muted">
-                El pago llega en el siguiente paso.
-              </p>
+
+              {/* El cobro se detiene aquí y no en la conciencia de quien opere la
+                  plataforma: un renglón de muestra tiene precio y stock
+                  sintéticos. */}
+              {comanda!.cobrable ? (
+                <p className="mt-4 text-[13px] font-semibold text-muted">
+                  El pago llega en el siguiente paso.
+                </p>
+              ) : (
+                <p className="mt-4 rounded-card border border-warn-line bg-warn-bg px-4 py-3 text-[13px] leading-relaxed text-warn">
+                  <strong className="font-semibold">Esta comanda no se puede cobrar.</strong>{" "}
+                  {comanda!.porQueNoSeCobra} Puedes seguir armándola y cambiar esos
+                  renglones a otra tienda.
+                </p>
+              )}
             </section>
           )}
         </>
