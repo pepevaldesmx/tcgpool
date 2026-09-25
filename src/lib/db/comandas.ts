@@ -1,5 +1,7 @@
 import { one, query } from "@/lib/db";
+import { addToWishlist } from "@/lib/db/wishlist";
 import { agruparPorFuente } from "@/lib/comanda/armar";
+import type { Revision } from "@/lib/comanda/revalidar";
 import { desglosar, type Desglose, type Entrega } from "@/lib/comanda/money";
 import type { SourceListing } from "@/lib/db/queries";
 
@@ -358,4 +360,84 @@ export async function freezeTotals(comandaId: number, d: Desglose): Promise<void
       d.totalCents,
     ],
   );
+}
+
+/**
+ * Escribe en la comanda lo que la revisión encontró.
+ *
+ * Corre DESPUÉS de que el usuario vio los cambios y los aceptó, nunca antes: una
+ * comanda que se reescribe sola mientras la persona la mira es una comanda en la
+ * que no se puede confiar.
+ *
+ * Las cartas que nadie tiene sí se guardan solas en la wishlist. Es el único
+ * lugar donde eso se hace sin preguntar, y la diferencia importa: al armar la
+ * comanda la persona está viendo qué hay, mientras que aquí ya había decidido
+ * comprar esa carta y se la ganaron en el último segundo.
+ */
+export async function aplicarRevision(
+  comandaId: number,
+  userId: number,
+  revision: Revision,
+): Promise<{ movidas: number; perdidas: number; ajustadas: number }> {
+  let movidas = 0;
+  let perdidas = 0;
+  let ajustadas = 0;
+
+  // Qué listado tiene cada renglón HOY, para detectar una mudanza que choque con
+  // un renglón que ya existe.
+  const porListado = new Map<number, number>();
+  for (const r of revision.renglones) {
+    // El estado de partida: el renglón sigue donde estaba salvo que se mueva.
+    if (r.cambio !== "movida" && r.cambio !== "perdida" && r.fuente == null) {
+      const actual = await one<{ listing_id: number | null }>(
+        `SELECT listing_id FROM comanda_lines WHERE id = $1 AND comanda_id = $2`,
+        [r.lineId, comandaId],
+      );
+      if (actual?.listing_id != null) porListado.set(actual.listing_id, r.lineId);
+    }
+  }
+
+  for (const r of revision.renglones) {
+    if (r.cambio === "igual") continue;
+
+    if (r.cambio === "perdida") {
+      await removeLine(comandaId, r.lineId);
+      if (r.cardId != null) await addToWishlist(userId, [r.cardId], "comanda");
+      perdidas += 1;
+      continue;
+    }
+
+    if (r.cambio === "movida" && r.fuente) {
+      const yaTiene = porListado.get(r.fuente.listingId);
+      if (yaTiene != null && yaTiene !== r.lineId) {
+        // La carta ya estaba en la comanda desde esa misma tienda: se suman las
+        // copias en un renglón y se borra el que se mudó. Dos renglones de la
+        // misma fuente reventarían la llave única, y de todos modos se pagarían
+        // y recogerían igual.
+        await query(
+          `UPDATE comanda_lines
+              SET qty = LEAST(qty + $3, GREATEST(1, $4))
+            WHERE id = $2 AND comanda_id = $1`,
+          [comandaId, yaTiene, r.qtyAhora, r.fuente.stock],
+        );
+        await removeLine(comandaId, r.lineId);
+      } else {
+        await changeLineSource(comandaId, r.lineId, r.fuente);
+        await setLineQty(comandaId, r.lineId, r.qtyAhora);
+        porListado.set(r.fuente.listingId, r.lineId);
+      }
+      movidas += 1;
+      continue;
+    }
+
+    // 'precio' y 'menos': misma fuente, otros números.
+    await query(
+      `UPDATE comanda_lines SET unit_price_cents = $3, qty = $4
+        WHERE id = $2 AND comanda_id = $1`,
+      [comandaId, r.lineId, r.precioAhora, Math.max(1, r.qtyAhora)],
+    );
+    ajustadas += 1;
+  }
+
+  return { movidas, perdidas, ajustadas };
 }

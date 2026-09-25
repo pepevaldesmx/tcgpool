@@ -1,3 +1,4 @@
+import { MARCA } from "@/lib/brand";
 /**
  * Estado para cuando no hay base de datos configurada.
  *
@@ -10,7 +11,7 @@ export default function NotConfigured() {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-24">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
-        TCG Pool
+        {MARCA}
       </p>
       <h1 className="mt-3 text-3xl font-bold tracking-tight">
         Falta conectar la base de datos

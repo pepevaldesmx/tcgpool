@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MARCA, MARCA_TITULO } from "@/lib/brand";
 import { isConfigured } from "@/lib/db";
 import { getProvenance, type Provenance } from "@/lib/db/queries";
 import NotConfigured from "@/components/NotConfigured";
@@ -11,8 +12,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "TCG Pool — busca cartas en tiendas mexicanas",
-    template: "%s · TCG Pool",
+    default: MARCA_TITULO,
+    template: `%s · ${MARCA}`,
   },
   description:
     "Busca una carta y mira qué tiendas mexicanas la tienen, en qué versión, condición y precio. Todo en una sola vista.",
@@ -66,7 +67,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 href="/"
                 className="text-[17px] font-bold tracking-tight text-ink"
               >
-                TCG Pool
+                {MARCA}
               </Link>
               <div className="ml-auto hidden sm:block">
                 <LocationPicker current={location} />
@@ -126,7 +127,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <footer className="mt-8 border-t border-line">
             <div className="mx-auto w-full max-w-6xl px-4 py-9 text-[13px] leading-relaxed text-muted">
               <p className="max-w-3xl">
-                TCG Pool agrega el catálogo público de tiendas mexicanas para que
+                {MARCA} agrega el catálogo público de tiendas mexicanas para que
                 encuentres una carta sin ir tienda por tienda. Los precios y el
                 stock se toman del sitio de cada tienda y pueden cambiar; la
                 compra siempre se cierra en la tienda.

@@ -123,6 +123,10 @@ App móvil nativa. Web responsive es suficiente.
 
 ## Invariantes técnicas
 
+- **TRANSITORIO — el nombre del servicio vive en `src/lib/brand.ts`.** Hoy es
+  *Tecegetitlán* y está sin decidir, igual que el dominio: por eso no se escribe
+  en ocho pantallas como si fuera prosa, se interpola desde ahí. Cambiarlo tiene
+  que costar una línea, no una cacería.
 - **`card → printing → listing` son tres niveles distintos.** Una carta tiene
   muchas impresiones (set + número + idioma + foil); cada impresión, muchos
   listings de tiendas distintas. No los colapses.
@@ -428,6 +432,40 @@ App móvil nativa. Web responsive es suficiente.
   enseñarle el flujo completo a un dueño de tienda antes de que su catálogo esté
   conectado— pero `revisarCobro` detiene el cobro y la pantalla dice por qué. El
   freno vive en el modelo, no en la conciencia de quien opere la plataforma.
+- **Antes de cobrar se revisa carta por carta, y el resultado se ENSEÑA.** No se
+  aparta inventario —bloquear el stock de una tienda por una compra que quizá no
+  se concrete le quitaría ventas reales— así que alguien puede ganar una carta en
+  el último segundo. `revalidar` es pura y devuelve por renglón qué pasó: `igual`,
+  `precio`, `menos` (ya no alcanzan las copias), `movida` (se consiguió en otra
+  tienda) o `perdida` (nadie la tiene, no se cobra). El precio nuevo se ADOPTA
+  —es el de la tienda, no el nuestro— pero nunca se cobra sin mostrarlo.
+- **La revisión pregunta por los ids EXACTOS (`getListingsStatus`), no por
+  `getSourceListings`.** Ésa devuelve el más barato de cada (carta, tienda), así
+  que el listado que el usuario eligió puede no aparecer aunque siga con stock
+  —basta que la tienda publicara otro más barato— y la revisión lo habría
+  declarado perdido sin razón.
+- **Al rearmar se prefiere una tienda que YA está en el pedido, aunque cueste
+  más.** Mudarse a una tienda nueva suma otra recolección: concentrar no es
+  estética, es la economía del mensajero. Entre tiendas nuevas, la más barata.
+- **Entre que se enseñan los cambios y se aprieta "pagar", el mundo se puede
+  mover otra vez.** Por eso la acción vuelve a revisar y compara la HUELLA
+  (`huellaRevision`) de lo que se enseñó: si no coincide, se enseña de nuevo y NO
+  se cobra. No es un secreto ni hay nada que firmar —es la forma de la comanda—;
+  alterarla sólo consigue que no coincida. La vista y la acción corren la MISMA
+  función (`revisarComandaAbierta`) para que una diferencia sea del mundo y no del
+  código.
+- **La comanda se reescribe DESPUÉS de que el usuario aceptó** (`aplicarRevision`),
+  nunca mientras la mira. Una mudanza que cae sobre un renglón que ya existe se
+  FUSIONA sumando copias: dos renglones de la misma fuente reventarían la llave
+  única y de todos modos se pagarían y recogerían igual.
+- **La carta perdida al pagar SÍ se guarda sola en la wishlist.** Es el único
+  lugar donde se hace sin preguntar, y no contradice la regla de arriba: al armar
+  la comanda la persona está viendo qué hay, mientras que aquí ya había decidido
+  comprarla y se la ganaron en el último segundo.
+- **El cobro es Stripe, y su llave secreta NUNCA lleva `NEXT_PUBLIC_`**: ese
+  prefijo la manda al navegador, y una llave secreta en el navegador es una llave
+  publicada. Sin `STRIPE_SECRET_KEY` la pantalla de pago funciona completa y lo
+  dice; el cobro es lo único que falta.
 - **Recoger no paga envío aunque las cartas vengan de otra ciudad**: si el
   usuario va a la tienda, no hay paquete.
 - **La wishlist se llama por `card_id`, no por `printing_id`.** Cuando alguien
@@ -511,6 +549,10 @@ cuentas son una capa encima del catálogo, no su cimiento. Ver `.env.example`.
 En Supabase hay que dar de alta las URLs de retorno (Authentication → URL
 Configuration → Redirect URLs): `https://tcgpool.vercel.app/auth/callback` y
 `http://localhost:3000/auth/callback`.
+
+El cobro es **Stripe** (`STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`,
+`STRIPE_WEBHOOK_SECRET`). Sin ellas la revisión previa al pago funciona completa y
+la pantalla dice que el cobro no está conectado.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

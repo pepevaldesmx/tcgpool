@@ -368,9 +368,12 @@ export default async function ComandaPage({
                   plataforma: un renglón de muestra tiene precio y stock
                   sintéticos. */}
               {comanda!.cobrable ? (
-                <p className="mt-4 text-[13px] font-semibold text-muted">
-                  El pago llega en el siguiente paso.
-                </p>
+                <Link
+                  href="/comanda/pagar"
+                  className="mt-4 block w-full rounded-pill bg-accent px-6 py-3 text-center text-[16px] font-semibold text-accent-ink shadow-card transition hover:shadow-lift"
+                >
+                  Continuar al pago
+                </Link>
               ) : (
                 <p className="mt-4 rounded-card border border-warn-line bg-warn-bg px-4 py-3 text-[13px] leading-relaxed text-warn">
                   <strong className="font-semibold">Esta comanda no se puede cobrar.</strong>{" "}

@@ -1450,6 +1450,35 @@ export async function getSourceListings(cardIds: number[]): Promise<SourceListin
   );
 }
 
+/** Cómo está HOY un listado concreto. */
+export interface ListingStatus {
+  listingId: number;
+  priceCents: number;
+  stock: number;
+  inStock: boolean;
+}
+
+/**
+ * El estado de unos listados concretos, por id.
+ *
+ * No sirve `getSourceListings` para esto: ésa devuelve el MÁS BARATO de cada
+ * (carta, tienda), así que el listado que el usuario eligió puede no aparecer
+ * aunque siga con stock —basta que la tienda haya publicado otro más barato— y la
+ * revisión al pagar lo declararía perdido sin razón. Aquí se pregunta por los
+ * ids exactos, y lo que no vuelve es lo que de verdad desapareció.
+ */
+export async function getListingsStatus(ids: number[]): Promise<Map<number, ListingStatus>> {
+  const mapa = new Map<number, ListingStatus>();
+  if (!ids.length) return mapa;
+  const rows = await query<ListingStatus>(
+    `SELECT id AS "listingId", price_cents AS "priceCents", stock, in_stock AS "inStock"
+       FROM listings WHERE id = ANY($1::int[])`,
+    [ids],
+  );
+  for (const row of rows) mapa.set(row.listingId, row);
+  return mapa;
+}
+
 /** Todas las fuentes de una carta, para que el usuario pueda cambiar la elegida. */
 export async function getSourcesForCard(cardId: number): Promise<SourceListing[]> {
   return query<SourceListing>(

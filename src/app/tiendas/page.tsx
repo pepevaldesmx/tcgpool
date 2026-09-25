@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MARCA } from "@/lib/brand";
 import { listStoresPublic } from "@/lib/db/queries";
 import { timeAgo } from "@/lib/format";
 
@@ -6,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Tiendas conectadas",
-  description: "Qué tiendas mexicanas están indexadas en TCG Pool y cuándo se sincronizaron.",
+  description: `Qué tiendas mexicanas están indexadas en ${MARCA} y cuándo se sincronizaron.`,
 };
 
 const SOURCE_LABELS: Record<string, string> = {
