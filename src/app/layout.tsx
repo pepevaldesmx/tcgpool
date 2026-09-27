@@ -64,7 +64,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             usuario={
               sesion ? { nombre: sesion.user.name ?? "", correo: sesion.user.email } : null
             }
-            enComanda={enComanda}
           />
 
           <main className="flex-1">{children}</main>
@@ -81,6 +80,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </Link>
                 <Link href="/wishlist" className="font-semibold text-ink transition hover:text-accent">
                   Mi wishlist
+                </Link>
+                <Link href="/comanda" className="font-semibold text-ink transition hover:text-accent">
+                  Mi comanda
+                  {enComanda > 0 && (
+                    <span className="ml-1.5 rounded-pill bg-accent px-2 py-0.5 text-[12px] font-bold text-accent-ink tnum">
+                      {enComanda}
+                    </span>
+                  )}
                 </Link>
               </div>
               <p className="max-w-3xl">

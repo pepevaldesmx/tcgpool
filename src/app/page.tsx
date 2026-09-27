@@ -10,8 +10,6 @@ import { getUserLocation } from "@/lib/location-server";
 
 export const dynamic = "force-dynamic";
 
-const SUGGESTED = ["Sol Ring", "Lightning Bolt", "Rhystic Study", "Cyclonic Rift"];
-
 export default async function HomePage() {
   const [stores, games, provenance] = await Promise.all([
     listStoresPublic(),
@@ -57,19 +55,6 @@ export default async function HomePage() {
           <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-night-ink text-balance sm:text-[46px]">
             Compra singles en múltiples tiendas de México en un solo lugar.
           </h1>
-
-          <div className="mt-6 flex flex-wrap items-center gap-2 text-[13px] text-night-muted">
-            <span>Prueba:</span>
-            {SUGGESTED.map((name) => (
-              <Link
-                key={name}
-                href={`/buscar?q=${encodeURIComponent(name)}`}
-                className="rounded-pill border border-night-line bg-night/50 px-3.5 py-1.5 text-night-ink transition hover:border-accent-night hover:text-accent-night"
-              >
-                {name}
-              </Link>
-            ))}
-          </div>
         </div>
       </section>
 
