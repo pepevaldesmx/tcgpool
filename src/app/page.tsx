@@ -1,5 +1,6 @@
 import Link from "next/link";
 import StoreList from "@/components/StoreList";
+import LocationPicker from "@/components/LocationPicker";
 import CardTile from "@/components/CardTile";
 import { listStoresPublic } from "@/lib/db/queries";
 import { getTrending } from "@/lib/trending";
@@ -57,9 +58,12 @@ export default async function HomePage() {
           <section className="border-b border-line py-10">
             <h2 className="text-2xl font-bold tracking-tight">Cartas de moda</h2>
             <p className="mt-1 text-sm text-muted">
+              {/* Cuando todavía no hay búsquedas que contar, el orden es por
+                  disponibilidad y hay que decirlo: llamarlas "las más buscadas"
+                  sin haber contado una sola búsqueda sería inventarlo. */}
               {trending.source === "demand"
-                ? "Las más buscadas que están disponibles ahora."
-                : "Todavía no medimos búsquedas: por ahora, las que más tiendas tienen en stock."}
+                ? "Las más buscadas con stock en CDMX."
+                : "Con stock en CDMX. Todavía no medimos búsquedas: por ahora, las que más tiendas tienen."}
             </p>
             <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
               {trending.cards.map((card) => (
@@ -70,7 +74,13 @@ export default async function HomePage() {
         )}
 
         <section className="py-10">
-          <h2 className="text-2xl font-bold tracking-tight">Tiendas</h2>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3">
+            <h2 className="text-2xl font-bold tracking-tight">Tiendas</h2>
+            {/* El selector vive aquí y no sólo en el pie: es donde la distancia
+                está a la vista, o sea donde se nota para qué sirve decir dónde
+                estás. */}
+            <LocationPicker current={location} />
+          </div>
           <div className="mt-3">
             <StoreList stores={stores} location={location} />
           </div>

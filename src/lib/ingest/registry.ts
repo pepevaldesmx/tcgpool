@@ -14,6 +14,8 @@ export interface StoreDefinition {
   sourceConfig: Record<string, unknown>;
   /** Juego a asumir cuando el feed no lo declara. Default: magic. */
   defaultGame?: GameId;
+  /** Foto de la tienda para su tarjeta. Ruta en `public/` o URL absoluta. */
+  imageUrl?: string;
   domainVerified?: boolean;
   active?: boolean;
 }

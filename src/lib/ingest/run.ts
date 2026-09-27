@@ -103,6 +103,7 @@ export async function syncStore(
     sourceType: def.sourceType,
     sourceConfig: def.sourceConfig,
     defaultGame,
+    imageUrl: def.imageUrl,
     active: def.active,
   });
   const sellerId = await upsertStoreSeller(storeId, def.name, `store-${def.slug}`);

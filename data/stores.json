@@ -14,7 +14,8 @@
       },
       "lat": 19.4326,
       "lng": -99.1332,
-      "defaultGame": "magic"
+      "defaultGame": "magic",
+      "imageUrl": "/tiendas/mtg-mexico.webp"
     },
     {
       "slug": "yellow-rabbit",
@@ -29,7 +30,8 @@
       },
       "lat": 19.4326,
       "lng": -99.1332,
-      "defaultGame": "magic"
+      "defaultGame": "magic",
+      "imageUrl": "/tiendas/yellow-rabbit.webp"
     },
     {
       "slug": "mtg-wolf",
@@ -42,7 +44,8 @@
       "sourceConfig": {},
       "lat": 19.4326,
       "lng": -99.1332,
-      "defaultGame": "magic"
+      "defaultGame": "magic",
+      "imageUrl": "/tiendas/mtg-wolf.webp"
     }
   ],
   "_nota_coords": "lat/lng son el centro de la ciudad, no la dirección de la tienda: sólo sirven para ordenar por cercanía.",

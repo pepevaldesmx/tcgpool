@@ -466,3 +466,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_comanda_abierta
 -- distintas sí son dos renglones, y esta llave lo permite.
 CREATE UNIQUE INDEX IF NOT EXISTS idx_comanda_lines_fuente
   ON comanda_lines (comanda_id, listing_id) WHERE listing_id IS NOT NULL;
+
+-- La foto de la tienda, para la tarjeta del directorio. Es del REGISTRO y no
+-- del feed: ninguna tienda publica su fachada en /products.json, y aunque la
+-- publicara, una sincronización no debería poder cambiarle la cara al sitio.
+ALTER TABLE stores ADD COLUMN IF NOT EXISTS image_url TEXT;

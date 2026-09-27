@@ -91,24 +91,25 @@ export async function upsertStore(s: {
   sourceType: string;
   sourceConfig: Record<string, unknown>;
   defaultGame?: GameId;
+  imageUrl?: string;
   shipsNationwide?: boolean;
   active?: boolean;
 }): Promise<number> {
   const row = await one<{ id: number }>(
     `INSERT INTO stores (slug, name, url, city, lat, lng, source_type, source_config,
-                         default_game, ships_nationwide, active)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11)
+                         default_game, image_url, ships_nationwide, active)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12)
      ON CONFLICT (slug) DO UPDATE SET
        name = EXCLUDED.name, url = EXCLUDED.url, city = EXCLUDED.city,
        lat = EXCLUDED.lat, lng = EXCLUDED.lng,
        source_type = EXCLUDED.source_type, source_config = EXCLUDED.source_config,
-       default_game = EXCLUDED.default_game,
+       default_game = EXCLUDED.default_game, image_url = EXCLUDED.image_url,
        ships_nationwide = EXCLUDED.ships_nationwide, active = EXCLUDED.active
      RETURNING id`,
     [
       s.slug, s.name, s.url, s.city ?? null, s.lat ?? null, s.lng ?? null,
       s.sourceType, JSON.stringify(s.sourceConfig ?? {}), s.defaultGame ?? null,
-      s.shipsNationwide !== false, s.active !== false,
+      s.imageUrl ?? null, s.shipsNationwide !== false, s.active !== false,
     ],
   );
   return row!.id;
@@ -1233,6 +1234,7 @@ export interface StorePublic {
   slug: string;
   name: string;
   url: string;
+  imageUrl: string | null;
   city: string | null;
   lat: number | null;
   lng: number | null;
@@ -1247,7 +1249,7 @@ export interface StorePublic {
 
 export async function listStoresPublic(): Promise<StorePublic[]> {
   return query<StorePublic>(
-    `SELECT s.id, s.slug, s.name, s.url, s.city, s.lat, s.lng,
+    `SELECT s.id, s.slug, s.name, s.url, s.image_url AS "imageUrl", s.city, s.lat, s.lng,
             s.source_type AS "sourceType", s.data_source AS "dataSource",
             s.last_synced_at AS "lastSyncedAt",
             COUNT(l.id)::int AS "listingCount",

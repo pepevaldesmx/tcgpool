@@ -24,6 +24,8 @@ export interface StoreConfig {
   sourceConfig: Record<string, unknown>;
   /** Juego a asumir cuando el feed no lo declara en `product_type`. */
   defaultGame?: GameId;
+  /** Foto de la tienda para su tarjeta. Ruta en `public/` o URL absoluta. */
+  imageUrl?: string;
   shipsNationwide?: boolean;
   active?: boolean;
 }
