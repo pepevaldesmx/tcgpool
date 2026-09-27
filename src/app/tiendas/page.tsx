@@ -20,7 +20,7 @@ export default async function StoresPage() {
   const stores = await listStoresPublic();
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10">
+    <div className="mx-auto w-full max-w-6xl aire py-10">
       <h1 className="text-4xl font-bold tracking-tight">Tiendas conectadas</h1>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
         Cada tienda se ingiere con su propio adaptador. Las que corren en Shopify

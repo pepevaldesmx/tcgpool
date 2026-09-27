@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 680" role="img" aria-label="Carta sin imagen">
+  <!-- Marcador de posición mientras no hay ilustración: proporción de carta
+       real (63×88 mm) para que la rejilla no se mueva cuando llegue la foto. -->
+  <defs>
+    <linearGradient id="f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e9eef2"/>
+      <stop offset="1" stop-color="#dbe3e9"/>
+    </linearGradient>
+  </defs>
+  <rect width="488" height="680" rx="26" fill="url(#f)"/>
+  <rect x="26" y="26" width="436" height="628" rx="14" fill="none" stroke="#c3d0da" stroke-width="2"/>
+  <g fill="none" stroke="#0f6e78" stroke-width="9" stroke-linecap="round" opacity="0.28">
+    <path d="M244 250v180"/>
+    <path d="M154 340h180"/>
+  </g>
+  <circle cx="244" cy="340" r="112" fill="none" stroke="#0f6e78" stroke-width="6" opacity="0.18"/>
+</svg>

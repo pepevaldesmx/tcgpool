@@ -130,7 +130,7 @@ export default async function DeckPage({ searchParams }: Props) {
   const totalCopies = lines.reduce((a, l) => a + l.qty, 0);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8">
+    <div className="mx-auto w-full max-w-6xl aire py-8">
       <h1 className="text-4xl font-bold tracking-tight">Buscar una lista</h1>
       <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">
         Pega tu decklist completa y te decimos con qué tiendas la surtes en el

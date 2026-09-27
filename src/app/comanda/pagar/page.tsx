@@ -43,7 +43,7 @@ export default async function PagarPage({
   const cobrables = revision.renglones.filter((r) => r.qtyAhora > 0);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10">
+    <div className="mx-auto w-full max-w-3xl aire py-10">
       <p className="text-[11px] uppercase tracking-[0.09em] text-muted">Antes de cobrar</p>
       <h1 className="mt-1 text-3xl font-bold tracking-tight">Revisamos tu comanda</h1>
       <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">

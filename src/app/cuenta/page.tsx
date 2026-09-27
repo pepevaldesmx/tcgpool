@@ -25,7 +25,7 @@ export default async function CuentaPage() {
   const afiliaciones = memberships.filter((m) => m.sellerType === "affiliate");
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10">
+    <div className="mx-auto w-full max-w-3xl aire py-10">
       <p className="text-[11px] uppercase tracking-[0.09em] text-muted">Mi cuenta</p>
       <h1 className="mt-1 text-3xl font-bold tracking-tight">{user.name ?? user.email}</h1>
       <p className="mt-1 text-[14px] text-muted">{user.email}</p>

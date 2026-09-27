@@ -20,7 +20,12 @@ export interface CardSummary {
   listedStoreCount: number;
   minPriceCents: number | null;
   maxPriceCents: number | null;
+  /** Listados con stock. */
   inStockCount: number;
+  /** Copias disponibles: la suma del stock, no el número de listados. */
+  copiesInStock: number;
+  /** Condición del listado más barato con stock, que es el precio que se muestra. */
+  cheapestCondition: string | null;
 }
 
 export interface ListingRow {
@@ -1088,7 +1093,13 @@ const CARD_SUMMARY_SELECT = `
          COUNT(DISTINCT l.store_id)::int AS "listedStoreCount",
          MIN(CASE WHEN l.in_stock THEN l.price_cents END)::int AS "minPriceCents",
          MAX(CASE WHEN l.in_stock THEN l.price_cents END)::int AS "maxPriceCents",
-         COUNT(*) FILTER (WHERE l.in_stock)::int AS "inStockCount"
+         COUNT(*) FILTER (WHERE l.in_stock)::int AS "inStockCount",
+         COALESCE(SUM(l.stock) FILTER (WHERE l.in_stock), 0)::int AS "copiesInStock",
+         -- La condición del listado MÁS BARATO con stock: el precio que se
+         -- enseña es el suyo, y "desde $39" sin decir en qué estado está esa
+         -- copia deja creer que es la sana.
+         (array_agg(l.condition ORDER BY l.price_cents) FILTER (WHERE l.in_stock))[1]
+           AS "cheapestCondition"
   FROM cards c
   LEFT JOIN printings p ON p.card_id = c.id
   LEFT JOIN listings l ON l.printing_id = p.id

@@ -69,7 +69,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <main className="flex-1">{children}</main>
 
           <footer className="mt-8 border-t border-line">
-            <div className="mx-auto w-full max-w-6xl px-4 py-9 text-[13px] leading-relaxed text-muted">
+            <div className="mx-auto w-full max-w-6xl aire py-9 text-[13px] leading-relaxed text-muted">
               <div className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-3">
                 <LocationPicker current={location} />
                 <Link href="/tiendas" className="font-semibold text-ink transition hover:text-accent">

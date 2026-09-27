@@ -9,7 +9,7 @@ import { MARCA } from "@/lib/brand";
  */
 export default function NotConfigured() {
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-24">
+    <div className="mx-auto w-full max-w-2xl aire py-24">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
         {MARCA}
       </p>

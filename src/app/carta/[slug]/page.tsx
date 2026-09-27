@@ -125,7 +125,7 @@ export default async function CardPage({ params, searchParams }: Props) {
   const available = listings.find((l) => l.inStock);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8">
+    <div className="mx-auto w-full max-w-6xl aire py-8">
       <TrackCardView slug={slug} />
       <div className="max-w-2xl">
         <SearchBox size="sm" />

@@ -27,7 +27,7 @@ export default async function EntrarPage({
   if (sesion) redirect(destino);
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-14">
+    <div className="mx-auto w-full max-w-md aire py-14">
       <h1 className="text-3xl font-bold tracking-tight">Entrar a {MARCA}</h1>
       <p className="mt-2 text-[15px] leading-relaxed text-muted">
         Con tu cuenta armas comandas, guardas cartas en tu wishlist y —si tienes

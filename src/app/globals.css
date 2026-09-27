@@ -73,6 +73,25 @@ html {
   color-scheme: light;
 }
 
+/* El aire lateral de la página, en un solo lugar.
+ *
+ * Va junto al `max-w-*` de cada pantalla, que sí cambia —el catálogo es ancho,
+ * la comanda es angosta—. Lo que no puede cambiar de una pantalla a otra es el
+ * margen: si cada una pone el suyo, el contenido baila al navegar. */
+.aire {
+  padding-inline: 1.25rem;
+}
+@media (min-width: 640px) {
+  .aire {
+    padding-inline: 2rem;
+  }
+}
+@media (min-width: 1024px) {
+  .aire {
+    padding-inline: 3rem;
+  }
+}
+
 /* Texto encima de una fotografía.
  *
  * Es lo que permite tener el velo bajo —que la foto se vea— sin que el titular

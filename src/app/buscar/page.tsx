@@ -32,7 +32,7 @@ export default async function SearchPage({ searchParams }: Props) {
   if (agotadas) results = await searchCards(q, { limit: 60, onlyInStock: false });
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8">
+    <div className="mx-auto w-full max-w-6xl aire py-8">
       {/* La búsqueda se le acredita a la carta que encabezó los resultados: es
           la que el usuario quiso decir. */}
       {results[0] && <TrackSearch slug={results[0].slug} query={q} />}

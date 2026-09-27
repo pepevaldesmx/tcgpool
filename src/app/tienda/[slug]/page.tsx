@@ -47,7 +47,7 @@ export default async function PanelPage({ params, searchParams }: Props) {
   ]);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10">
+    <div className="mx-auto w-full max-w-6xl aire py-10">
       <p className="text-[11px] uppercase tracking-[0.09em] text-muted">Panel de tienda</p>
       <h1 className="mt-1 text-4xl font-bold tracking-tight">{store.name}</h1>
       <p className="mt-2 text-sm text-muted">
