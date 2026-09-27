@@ -35,6 +35,17 @@
   --color-warn-bg: #fbf3e3;
   --color-warn-line: #e7d6b0;
 
+  /* Noche: la banda del héroe, lo único oscuro de la casa. La tinta del papel
+     llevada al fondo —mismo sesgo azul— para que la foto se sienta parte del
+     sistema y no una calcomanía encima. */
+  --color-night: #0b1a21;
+  --color-night-ink: #f2f7f8;
+  --color-night-muted: #9db6bf;
+  --color-night-line: #24424e;
+  /* El acento de siempre no alcanza contraste sobre el fondo oscuro; éste es el
+     mismo turquesa aclarado para que siga siendo el acento y además se lea. */
+  --color-accent-night: #3fc3c9;
+
   /* --- forma --- */
   --radius-card: 12px;
   --radius-control: 9px;

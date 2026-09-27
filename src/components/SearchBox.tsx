@@ -17,10 +17,13 @@ export default function SearchBox({
   initialQuery = "",
   autoFocus = false,
   size = "lg",
+  tono = "papel",
 }: {
   initialQuery?: string;
   autoFocus?: boolean;
   size?: "lg" | "sm";
+  /** En la barra del héroe el campo va sobre oscuro. */
+  tono?: "papel" | "noche";
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
@@ -87,6 +90,10 @@ export default function SearchBox({
 
   const big = size === "lg";
   const height = big ? "h-13" : "h-11";
+  // El campo se queda blanco sobre el oscuro: es lo que la gente reconoce como
+  // "aquí se escribe", y hundirlo en el fondo lo escondería justo donde más
+  // tiene que saltar. Lo que cambia es el botón y el borde.
+  const noche = tono === "noche";
 
   return (
     <div ref={boxRef} className="relative w-full">
@@ -114,15 +121,17 @@ export default function SearchBox({
             onKeyDown={onKeyDown}
             placeholder="Busca una carta… ej. Sol Ring"
             aria-label="Buscar carta"
-            className={`${height} w-full rounded-l-pill border border-r-0 border-line-strong bg-surface pl-11 pr-3 text-ink outline-none transition placeholder:text-muted focus:border-accent ${
-              big ? "text-base" : "text-[15px]"
-            }`}
+            className={`${height} w-full rounded-l-pill border border-r-0 bg-surface pl-11 pr-3 text-ink outline-none transition placeholder:text-muted ${
+              noche ? "border-transparent focus:border-accent-night" : "border-line-strong focus:border-accent"
+            } ${big ? "text-base" : "text-[15px]"}`}
           />
         </div>
         <button
           type="button"
           onClick={() => submit()}
-          className={`${height} shrink-0 rounded-r-pill bg-accent px-7 text-[15px] font-bold text-accent-ink transition hover:brightness-110`}
+          className={`${height} shrink-0 rounded-r-pill px-7 text-[15px] font-bold transition hover:brightness-110 ${
+            noche ? "bg-accent-night text-night" : "bg-accent text-accent-ink"
+          }`}
         >
           Buscar
         </button>

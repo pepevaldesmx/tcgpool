@@ -1,5 +1,4 @@
 import Link from "next/link";
-import SearchBox from "@/components/SearchBox";
 import DeckPasteBox from "@/components/DeckPasteBox";
 import StoreList from "@/components/StoreList";
 import SampleDataNotice from "@/components/SampleDataNotice";
@@ -23,40 +22,65 @@ export default async function HomePage() {
   const location = await getUserLocation();
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4">
-      <section className="border-b border-line pb-10 pt-12 sm:pt-16">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
-          Buscador de singles TCG en México
-        </p>
-        <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight sm:text-[46px]">
-          Encuentra tu carta en tiendas mexicanas y afiliados.
-        </h1>
+    <div>
+      {/* El héroe se sale del contenedor a propósito: es la única banda a sangre
+          de la casa, y la foto no funciona recortada a la caja de texto. */}
+      <section className="relative isolate overflow-hidden bg-night">
+        {/* La foto va como <img> y no como fondo de CSS para poder dar varios
+            tamaños: quien abre esto está en la tienda, con datos. */}
+        <img
+          src="/hero-1280.webp"
+          srcSet="/hero-800.webp 800w, /hero-1280.webp 1280w, /hero-1920.webp 1920w"
+          sizes="100vw"
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          className="absolute inset-0 -z-10 h-full w-full object-cover object-[70%_38%] opacity-45"
+        />
+        {/* Dos velos, no uno: el vertical asienta el texto sobre la parte densa
+            de la foto, y el horizontal protege la columna izquierda, que es
+            donde cae todo lo que se lee. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 bg-gradient-to-r from-night via-night/85 to-night/35"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 bg-gradient-to-b from-night/70 via-transparent to-night"
+        />
 
-        {/* Los dos motores, uno debajo del otro: primero la carta suelta,
-            que es el caso común; la lista completa queda a un scroll corto. */}
-        <div className="mt-8 max-w-3xl">
-          <SearchBox size="lg" />
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-[13px] text-muted">
+        {/* El padding de arriba deja pasar la barra, que flota encima. */}
+        <div className="mx-auto w-full max-w-6xl px-4 pb-14 pt-32 sm:pb-20 sm:pt-36">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent-night">
+            Buscador de singles TCG en México
+          </p>
+          <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-night-ink text-balance sm:text-[46px]">
+            Compra singles en múltiples tiendas de México en un solo lugar.
+          </h1>
+
+          <div className="mt-6 flex flex-wrap items-center gap-2 text-[13px] text-night-muted">
             <span>Prueba:</span>
             {SUGGESTED.map((name) => (
               <Link
                 key={name}
                 href={`/buscar?q=${encodeURIComponent(name)}`}
-                className="rounded-pill border border-line bg-surface px-3.5 py-1.5 text-ink shadow-card transition hover:border-accent hover:text-accent"
+                className="rounded-pill border border-night-line bg-night/50 px-3.5 py-1.5 text-night-ink transition hover:border-accent-night hover:text-accent-night"
               >
                 {name}
               </Link>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="mt-8 rounded-card border border-line bg-surface p-6 shadow-card">
-            <h2 className="text-lg font-bold">¿Traes la lista completa?</h2>
-            <p className="mt-1 text-[15px] text-muted">
-              Pégala entera y te decimos con qué tiendas la surtes en menos pedidos.
-            </p>
-            <div className="mt-3.5">
-              <DeckPasteBox rows={5} />
-            </div>
+      <div className="mx-auto w-full max-w-6xl px-4">
+        <div className="mt-8 rounded-card border border-line bg-surface p-6 shadow-card">
+          <h2 className="text-lg font-bold">¿Traes la lista completa?</h2>
+          <p className="mt-1 text-[15px] text-muted">
+            Pégala entera y te decimos con qué tiendas la surtes en menos pedidos.
+          </p>
+          <div className="mt-3.5">
+            <DeckPasteBox rows={5} />
           </div>
         </div>
 
@@ -65,7 +89,6 @@ export default async function HomePage() {
             <SampleDataNotice provenance={provenance} />
           </div>
         )}
-      </section>
 
       {trending.cards.length > 0 && (
         <section className="border-b border-line py-9">
@@ -115,12 +138,13 @@ export default async function HomePage() {
         </ul>
       </section>
 
-      <section className="py-9">
-        <h2 className="text-2xl font-bold tracking-tight">Tiendas</h2>
-        <div className="mt-3">
-          <StoreList stores={stores} location={location} />
-        </div>
-      </section>
+        <section className="py-9">
+          <h2 className="text-2xl font-bold tracking-tight">Tiendas</h2>
+          <div className="mt-3">
+            <StoreList stores={stores} location={location} />
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

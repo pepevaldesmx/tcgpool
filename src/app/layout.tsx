@@ -8,6 +8,7 @@ import { getUserLocation } from "@/lib/location-server";
 import { getSesion } from "@/lib/auth/session";
 import { countOpenComandaCopies } from "@/lib/db/comandas";
 import LocationPicker from "@/components/LocationPicker";
+import SiteHeader from "@/components/SiteHeader";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -58,74 +59,30 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="es">
       <body className="font-sans antialiased">
-        <div className="flex min-h-screen flex-col">
-          {/* Barra deliberadamente callada: la marca no compite con el
-              buscador, que es a lo que viene la gente. */}
-          <header>
-            <div className="mx-auto flex w-full max-w-6xl items-center gap-6 px-4 py-3">
-              <Link
-                href="/"
-                className="text-[17px] font-bold tracking-tight text-ink"
-              >
-                {MARCA}
-              </Link>
-              <div className="ml-auto hidden sm:block">
-                <LocationPicker current={location} />
-              </div>
-              <nav className="flex items-center gap-1 text-[14px]">
-                <Link href="/buscar" className="rounded-pill px-3 py-1.5 font-medium text-muted transition hover:bg-surface hover:text-accent">
-                  Buscar
-                </Link>
-                <Link href="/lista" className="rounded-pill px-3 py-1.5 font-medium text-muted transition hover:bg-surface hover:text-accent">
-                  Listas
-                </Link>
-                <Link href="/tiendas" className="rounded-pill px-3 py-1.5 font-medium text-muted transition hover:bg-surface hover:text-accent">
-                  Tiendas
-                </Link>
-                {sesion && (
-                  <>
-                    <Link
-                      href="/wishlist"
-                      className="hidden rounded-pill px-3 py-1.5 font-medium text-muted transition hover:bg-surface hover:text-accent sm:block"
-                    >
-                      Wishlist
-                    </Link>
-                    <Link
-                      href="/comanda"
-                      className="rounded-pill px-3 py-1.5 font-medium text-muted transition hover:bg-surface hover:text-accent"
-                    >
-                      Comanda
-                      {enComanda > 0 && (
-                        <span className="ml-1.5 rounded-pill bg-accent px-2 py-0.5 text-[12px] font-bold text-accent-ink tnum">
-                          {enComanda}
-                        </span>
-                      )}
-                    </Link>
-                  </>
-                )}
-                {sesion ? (
-                  <Link
-                    href="/cuenta"
-                    className="ml-1 max-w-[12rem] truncate rounded-pill border border-line bg-surface px-3 py-1.5 font-semibold text-ink transition hover:border-accent hover:text-accent"
-                  >
-                    {sesion.user.name ?? sesion.user.email}
-                  </Link>
-                ) : (
-                  <Link
-                    href="/entrar"
-                    className="ml-1 rounded-pill bg-accent px-3.5 py-1.5 font-semibold text-accent-ink transition hover:shadow-lift"
-                  >
-                    Entrar
-                  </Link>
-                )}
-              </nav>
-            </div>
-          </header>
+        <div className="relative flex min-h-screen flex-col">
+          <SiteHeader
+            usuario={
+              sesion ? { nombre: sesion.user.name ?? "", correo: sesion.user.email } : null
+            }
+            enComanda={enComanda}
+          />
 
           <main className="flex-1">{children}</main>
 
           <footer className="mt-8 border-t border-line">
             <div className="mx-auto w-full max-w-6xl px-4 py-9 text-[13px] leading-relaxed text-muted">
+              <div className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+                <LocationPicker current={location} />
+                <Link href="/tiendas" className="font-semibold text-ink transition hover:text-accent">
+                  Tiendas conectadas
+                </Link>
+                <Link href="/lista" className="font-semibold text-ink transition hover:text-accent">
+                  Buscar una lista
+                </Link>
+                <Link href="/wishlist" className="font-semibold text-ink transition hover:text-accent">
+                  Mi wishlist
+                </Link>
+              </div>
               <p className="max-w-3xl">
                 {MARCA} agrega el catálogo público de tiendas mexicanas para que
                 encuentres una carta sin ir tienda por tienda. Los precios y el
