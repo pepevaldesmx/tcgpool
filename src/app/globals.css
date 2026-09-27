@@ -46,6 +46,12 @@
      mismo turquesa aclarado para que siga siendo el acento y además se lea. */
   --color-accent-night: #3fc3c9;
 
+  /* El velo de la foto: NEUTRO a propósito (R=G=B). `night` tiene sesgo azul
+     verdoso —está bien para una superficie de la casa— pero encima de una
+     fotografía le lava el color y todo sale verde. Un velo neutro sólo baja la
+     luz y deja los colores de la imagen como son. */
+  --color-scrim: #0b0b0b;
+
   /* --- forma --- */
   --radius-card: 12px;
   --radius-control: 9px;
@@ -65,6 +71,18 @@
 
 html {
   color-scheme: light;
+}
+
+/* Texto encima de una fotografía.
+ *
+ * Es lo que permite tener el velo bajo —que la foto se vea— sin que el titular
+ * quede ilegible cuando por debajo pasa una zona clara. La sombra es ancha y
+ * suave, del mismo neutro del velo, así que oscurece sólo el halo inmediato de
+ * cada letra en vez de apagar la imagen entera. */
+.sobre-foto {
+  text-shadow:
+    0 1px 2px color-mix(in srgb, var(--color-scrim) 80%, transparent),
+    0 2px 24px color-mix(in srgb, var(--color-scrim) 85%, transparent);
 }
 
 body {

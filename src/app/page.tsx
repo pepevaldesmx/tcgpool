@@ -23,7 +23,7 @@ export default async function HomePage() {
     <div>
       {/* El héroe se sale del contenedor a propósito: es la única banda a sangre
           de la casa, y la foto no funciona recortada a la caja de texto. */}
-      <section className="relative isolate overflow-hidden bg-night">
+      <section className="relative isolate overflow-hidden bg-scrim">
         {/* La foto va como <img> y no como fondo de CSS para poder dar varios
             tamaños: quien abre esto está en la tienda, con datos. */}
         <img
@@ -33,26 +33,27 @@ export default async function HomePage() {
           alt=""
           aria-hidden="true"
           fetchPriority="high"
-          className="absolute inset-0 -z-10 h-full w-full object-cover object-[70%_38%] opacity-45"
+          className="absolute inset-0 -z-10 h-full w-full object-cover object-[50%_100%]"
         />
-        {/* Dos velos, no uno: el vertical asienta el texto sobre la parte densa
-            de la foto, y el horizontal protege la columna izquierda, que es
-            donde cae todo lo que se lee. */}
+        {/* Dos velos, los dos NEUTROS y lo más ligeros que aguanta el texto: el
+            horizontal protege la columna izquierda, que es donde cae todo lo que
+            se lee, y el vertical sólo cierra contra la barra y contra la sección
+            clara de abajo. A la derecha se van a nada para que la foto se vea. */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-gradient-to-r from-night via-night/85 to-night/35"
+          className="absolute inset-0 -z-10 bg-gradient-to-r from-scrim/70 via-scrim/25 to-transparent"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-gradient-to-b from-night/70 via-transparent to-night"
+          className="absolute inset-0 -z-10 bg-gradient-to-b from-scrim/55 via-transparent to-scrim/50"
         />
 
         {/* El padding de arriba deja pasar la barra, que flota encima. */}
         <div className="mx-auto w-full max-w-6xl px-4 pb-14 pt-32 sm:pb-20 sm:pt-36">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent-night">
+          <p className="sobre-foto text-xs font-semibold uppercase tracking-[0.14em] text-accent-night">
             Buscador de singles TCG en México
           </p>
-          <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-night-ink text-balance sm:text-[46px]">
+          <h1 className="sobre-foto mt-3 max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-night-ink text-balance sm:text-[46px]">
             Compra singles en múltiples tiendas de México en un solo lugar.
           </h1>
         </div>

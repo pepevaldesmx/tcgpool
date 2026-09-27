@@ -36,7 +36,7 @@ export default function SiteHeader({ usuario }: { usuario: UsuarioBarra | null }
   const sobreHeroe = ruta === "/";
 
   const claseBarra = sobreHeroe
-    ? "absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-night/95 via-night/70 to-transparent pb-6"
+    ? "absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-scrim/90 via-scrim/55 to-transparent pb-6"
     : "bg-night";
 
   return (
