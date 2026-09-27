@@ -1,0 +1,26 @@
+name: Aplicar el esquema
+
+# Aplica `schema.sql` y nada más. Existe porque hasta ahora la única vía de
+# migrar era una sincronización completa, que tarda minutos: cuando un deploy
+# estrena una columna, la base tiene que ganarle al deploy, no esperar al cron
+# de las 6 horas con la app tirando 500 mientras tanto.
+#
+# El esquema es idempotente (CREATE TABLE IF NOT EXISTS / ADD COLUMN IF NOT
+# EXISTS), así que correrlo de más no hace nada.
+on:
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Aplicar el esquema
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run db:migrate
