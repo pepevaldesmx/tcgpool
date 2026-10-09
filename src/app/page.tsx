@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MARCA } from "@/lib/brand";
 import StoreList from "@/components/StoreList";
 import LocationPicker from "@/components/LocationPicker";
 import CardTile from "@/components/CardTile";
@@ -33,10 +34,7 @@ export default async function HomePage() {
             horizontal protege la columna izquierda, que es donde cae todo lo que
             se lee, y el vertical sólo cierra contra la barra y contra la sección
             clara de abajo. A la derecha se van a nada para que la foto se vea. */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-gradient-to-r from-scrim/70 via-scrim/25 to-transparent"
-        />
+        <div aria-hidden="true" className="velo-texto absolute inset-0 -z-10" />
         <div
           aria-hidden="true"
           className="absolute inset-0 -z-10 bg-gradient-to-b from-scrim/55 via-transparent to-scrim/50"
@@ -47,9 +45,21 @@ export default async function HomePage() {
           <p className="sobre-foto text-xs font-semibold uppercase tracking-[0.14em] text-accent-night">
             Buscador de singles TCG en México
           </p>
-          <h1 className="sobre-foto mt-3 max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-night-ink text-balance sm:text-[46px]">
+          <h1 className="sobre-foto mt-3 max-w-2xl text-4xl font-bold leading-[1.1] tracking-tight text-night-ink text-balance sm:text-[46px]">
             Compra singles en múltiples tiendas de México en un solo lugar.
           </h1>
+          {/* El alcance, dicho de frente en la primera pantalla. Quien busca
+              Pokémon o vive en Monterrey se entera aquí y no después de una
+              búsqueda sin resultados que lo deja creyendo que escribió mal.
+              Lleva respaldo propio en vez de apoyarse en el velo: son tres
+              párrafos de texto claro sobre una foto brillante, y protegerlos
+              subiendo el velo habría apagado la foto entera. Así el respaldo
+              sólo cubre lo que se lee. */}
+          <p className="mt-6 max-w-xl rounded-card border-l-2 border-accent-night bg-scrim/75 px-4 py-3 text-[15px] leading-relaxed text-night-ink backdrop-blur-sm">
+            Por ahora {MARCA} funciona únicamente con Magic: The Gathering y
+            tiendas en CDMX. Estamos probando el modelo y esperamos que sea
+            exitoso para empezar a expandir hacia el país y hacia otros TCG.
+          </p>
         </div>
       </section>
 

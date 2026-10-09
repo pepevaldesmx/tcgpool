@@ -92,6 +92,23 @@ html {
   }
 }
 
+/* El velo del héroe, con sus paradas explícitas.
+ *
+ * Acompaña el ANCHO DE LA COLUMNA DE TEXTO, no media pantalla: así protege
+ * exactamente donde se lee y suelta la foto en cuanto el texto se acaba. Un
+ * degradado simétrico obliga a elegir entre un titular ilegible y una foto
+ * apagada; éste no. Si la columna de texto cambia de ancho, estas paradas se
+ * vuelven a medir. */
+.velo-texto {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--color-scrim) 82%, transparent) 0%,
+    color-mix(in srgb, var(--color-scrim) 64%, transparent) 46%,
+    color-mix(in srgb, var(--color-scrim) 30%, transparent) 68%,
+    transparent 84%
+  );
+}
+
 /* Texto encima de una fotografía.
  *
  * Es lo que permite tener el velo bajo —que la foto se vea— sin que el titular
